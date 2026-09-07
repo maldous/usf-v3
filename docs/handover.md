@@ -1,36 +1,48 @@
 # USF V3 handover
 
-## Source admission and parallel-safety boundary - 2026-09-07
+## Graph-owned record variants - 2026-09-07
 
-Accepted carrier before this documentation checkpoint is
-d5f17f5e080c6f1e10e5cce8ac1945d9b55b8b7a, tree
-a8e5f6b39d9a31f0a216389ab8a7b196ff50b630. Its tracked tree was clean.
-Fresh profile-bound work interrogation still returns active construction and
-basis f57d66c8e296d8ffd56253dbfcc429b63d3430148f63d3b7966563b0114d259b.
-The prior 875-test/five-confined-check full gate covers that semantic carrier,
-not the implementation postimages.
+Carrier before this checkpoint: 3c0e58664e7a715c0dc27e6abc741d3cdee08210,
+tree 5e6a7d687bda416277d34429eaf24d77aaa4884a. Graph-owned allowedValue,
+recordAlternative and discriminatorProperty semantics were then applied through
+transaction c3a5887c96cc630478ae49360500575be8bed68626ff8d77c623ba330bc5f277.
+The corpus passed all 16 integrity invariants. Current construction receipt:
+evidence/construction-authority/27e6b1528ef4d0fb73ffc49d11b73cc42ee0bd173385239f2d323fe9cea5f1fb.json,
+receiptDigest sha256:978ffdebb168cd905146d2c32c02114847c5d7d88f6a4cd318ba8dbbe17f4778.
+Fresh CLI work readback is construction eligible at basis
+sha256:9d0c69f34d742d97d9c5ca96edd444284f73797b17fee4f8468bb55b4203d4da.
+Full primary gate passed 875 ordinary tests and five confined checks, exit 0:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`.
+Temporal log: .usf/inputs/cli-record-variants-full-check.log.
+This validates primary semantic/grant changes, not implementation postimages.
 
-MAIN owns all ignored candidate paths; Bohr completed a read-only safety review
-and is frozen. Candidate local preparation now requires the selected contract's
+MAIN owns all ignored candidate paths; Bohr completed the bounded variant tests
+and is frozen. Candidate local preparation requires the selected contract's
 exact local-authored source and preparation-algorithm requirements and types.
 The pure constructor/parser also requires matching requirement/dependency
 digests in the immutable basis. Missing, partial, foreign-contract and rehashed
 omission/mismatch cases refuse. This is not fresh authority authentication by
 the pure parser; normal current-basis validation remains mandatory downstream.
 
-The eight-file bounded test invocation recorded in the preceding checkpoint
-now passes 47 tests, zero failures/skips. Strict installed tsc --noEmit passes
-for candidate resolve.ts and local-contribution, resolver and fake-call-resolve
-tests. No candidate integration, provider invocation or completion was claimed.
+The eight-file bounded candidate suite now passes 52 tests, zero failures/skips.
+The new primitive tests cover allowed-value bounds, malformed/ambiguous variants,
+schema/reader agreement and branch-selection provenance. Strict installed
+tsc --noEmit passes for the generic kernel and coverage test; prior local source
+checks also passed. No candidate integration, provider invocation or completion
+was claimed. Fresh diagnostic candidate CLI interrogation returns complete=false,
+executionAuthority=none, parallelSafety=unproven, zero descriptors and 95 gaps,
+report digest sha256:dfde03b8eae6808982e715dfce39ada3b27e8a8a51d69fd8c176ff85e58f6f04.
 Hermes was freshly live at cycle 539, supervisor e2f6e23b399268910ef4311d9,
 PID 2054583, selected ready=0; this is not programme completion.
 
 Next executable transition: interrogate the existing work/profile through
 `./bin/usf work` as below, then continue only the admitted candidate scope.
 For typed parallel-safety schema authoring, inspect `./bin/usf help transact`
-and author graph-owned allowed/constant discriminator and record-alternative
-primitives before implementing their generic schema derivation. Existing
-field specifications cannot express branch-specific required proof fields.
+and use the newly admitted allowedValue/recordAlternative/discriminatorProperty
+primitives to define actual unproven/blocked/proved assessment records. Candidate
+generic schema generation derives const/enum and closed oneOf alternatives from
+these semantics, and its record reader reports exact branch-selection provenance.
+This structural capability is not an operational safety evaluator.
 Required safety records must bind exact assessed members/pairs, scopes and
 resources, semantic/currentness basis, conflicts, obligations and verifier
 evidence. An empty conflict set or a declared proved tag is never proof.
