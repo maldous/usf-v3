@@ -1,5 +1,68 @@
 # USF V3 handover
 
+## Typed local preparation contract checkpoint - 2026-09-07
+
+Carrier before this checkpoint: e92909529df27d1eeb37de251e79576578a640cf,
+tree 3e73d895a98c85aa1fcff66a6a634d527db4ab01. Atomic transaction
+da444e3c46e1d106aa283bb3b3b0b106d73a80d91eefc301158292a4f11b09c1
+published typed local-preparation input/effect/artifact/recovery semantics and
+their graph-generated canonical descriptor schema together. Integrity: 116
+graphs, 60694 quads, 16 invariants, zero violations. Fresh graph rederivation
+matches the tracked schema exactly: 16 records, zero structural gaps, digest
+sha256:c1d477ec43b0e6b4aa82e599397009debd1510d1555149661fe45fa22652b973.
+The request uses the existing JSON input transport, external rootIdentity and
+manifestPath, and bounded write/delete operations. Caller basis/preimages and
+provider facts are forbidden. Semantic schema identity references the record
+specification; JSON fragments are not treated as semantic resource IRIs.
+
+Construction publication settled at
+evidence/construction-authority/f86cbb31c8d11807401387ca2dff436e5388451da306794cb8cf71e3431c0036.json,
+receiptDigest sha256:e27130ecc10cb1afc59096e12e2280d4ca98de47aefcfab3eb314719f7f35743.
+Fresh installed work readback is construction eligible through integrate at
+basis sha256:257b2c472ec80168c2ca089699f4e3bc36233ce4f7fa1c1a20368df38ae24ef5.
+No provider, integration, completion or parallel-safety claim follows.
+
+The full gate passed 875 ordinary tests and all five confined checks, exit 0:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`.
+Temporal log: .usf/inputs/local-preparation-contract-full-check.log.
+The initial run overlapped construction publication and refused
+PROVIDERS_LEAF_LOCK_BUSY (874/875); the final run began after publication
+settled. Do not overlap primary mutations with full validation.
+Candidate eight-file suite is 56/56; strict tsc passes for kernel, handler and
+coverage tests. These are candidate diagnostics, not integrated acceptance.
+
+Fresh candidate-only CLI interrogation returns one structural descriptor and
+99 unresolved diagnostics, report digest
+sha256:46056436e27d6995ac611f4328163335710bd4677f3ce1dafef8b36be7d97f8a.
+complete=false, executionAuthority=none, parallelSafety.state=unproven and
+terminalClosure.equal=false. The unconsumed local proposal is not terminal
+completion. Schema-valid proved assessments remain unauthenticated shapes;
+independent currentness, pair/conflict analysis and completion/recovery
+obligation evaluation are still required. No refusal was weakened.
+
+Next executable development transition: inspect current help, then
+`./bin/usf work --profile urn:usf:profile:cli-transition-definition:1 --selector urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json`.
+Use only its existing 20-path candidate scope. Implement the generic no-effect
+observation adapter in candidate src/commands/transition.ts and delegate
+resolve prepare-local through it, using the same graph-derived descriptor,
+request schema, explicit adapter admission and current native preparation
+guards. No independent parser, private packager, fake provider envelope or
+effectful adapter admission. Then ordinary resolve/apply/check/integrate.
+The installed primary CLI does not yet implement prepare-local or transition
+interrogation. USF-1194 owns this delivery dependency; USF-1192 retains safety,
+terminal/recovery closure and full operational acceptance.
+
+Ignored material classification: .usf/inputs/cli-transition-implementation
+(5.6M) remains unaccepted construction postimages, not a supported runtime
+dependency. Its required wrapper/schema/source must be integrated before BAU
+relies on it. Draft transaction inputs, proof candidates and check logs are
+bounded temporal authoring/observation state; authoritative graph/schema and
+publication receipt are tracked. Preserve rejected drafts and historical
+receipts; no abandoned worktree or unrelated stream was removed. Disk readback:
+335G available, 81% used. USF-1193 retains clean-clone/runtime-state audit scope.
+Linear progress comments: USF-1192 f2693ed8-6d7e-46c5-83b8-d57efebc53f4;
+USF-1194 1e163e11-f2e3-4943-b10e-ac161d60deb8. Both remain In Progress.
+
 ## Canonical safety schema published - 2026-09-07
 
 Carrier before this checkpoint: cd89d9677081a50cb79fdd112b4f95ec05435b09,

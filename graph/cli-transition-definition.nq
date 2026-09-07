@@ -16,7 +16,7 @@
 <urn:usf:cli-contract:artifact:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-contract:effect:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-contract:effect:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-effect:1> <urn:usf:graph:cli-transition-definition> .
-<urn:usf:cli-contract:effect:1> <urn:usf:predicate:text> "Explicit effect category, allowed scope, contact posture, guard/claim policy, currentness recheck and readback evaluator are mandatory. Observation performs no durable writes, receipt repair, worktree changes or provider contact. Mutation delegates to existing admitted handlers and existing narrow exclusion; no second lock or scheduler. First implementation admits only the interrogation observation adapter; mutation mappings remain unmapped." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:effect:1> <urn:usf:predicate:text> "Explicit effect category, allowed scope, contact posture, guard/claim policy, currentness recheck and readback evaluator are mandatory. Observation performs no durable writes, receipt repair, worktree changes or provider contact. Mutation delegates to existing admitted handlers and existing narrow exclusion; no second lock or scheduler. First implementation admits interrogation and explicitly contract-admitted local proposal preparation as no-effect observation adapters; mutation mappings remain unmapped." <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-contract:effect:1> <urn:usf:predicate:type> <urn:usf:type:CliEffectContract> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-contract:effect:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-contract:input:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-transition-definition> .
@@ -1170,9 +1170,7 @@
 <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:text> "Compiled native adapter identity local-contribution-prepare; proposed API prepareLocalContribution(root, selection, proposedOperations). src/commands/resolve.ts owns preparation CLI binding; src/collaboration/local-contribution.ts owns envelope production; same resolveContributions owns resolution. A graph adapter IRI never becomes an arbitrary module import. Preparation returns a proposal on stdout only." <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:type> <urn:usf:type:CliTransitionAdapter> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
-<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:adapterIdentity> <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:command> <urn:usf:command:resolve-prepare-local:1> <urn:usf:graph:cli-transition-definition> .
-<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:owner> <urn:usf:contract:cli-transition-definition:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:text> "Canonical planned preparation transition, not a new lifecycle. Structural typed input/effect/recovery/proof records must be completed through the current graph field-specification mechanism before the generic kernel reports mapping complete. Missing records remain explicit gaps; this declaration grants no execution." <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:type> <urn:usf:type:CliTransitionDescriptor> <urn:usf:graph:cli-transition-definition> .
@@ -1185,7 +1183,6 @@
 <urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:forContract> <urn:usf:contract:cli-transition-definition:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:historyScan> "none" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:outputSchema> <urn:usf:schema:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
-<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:synopsis> "usf resolve prepare-local --root IRI --manifest PATH --input PATH|-" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:completionValidationObligation> <urn:usf:validation:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
@@ -2211,3 +2208,290 @@
 <urn:usf:requirement:cli-parallel-safety-schema:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-parallel-safety:1> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:requirement:cli-parallel-safety-schema:1> <urn:usf:predicate:text> "Generate the canonical typed safety assessment schema from the declared record closure. Bind all variants, fields, scopes, conflicts and proof obligations into work currentness. Schema validity is not proof, and topology cannot authorize parallel execution." <urn:usf:graph:cli-transition-definition> .
 <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:predicate:text> "A collection-valued property is always present in the canonical projection, including an explicit empty array when minimumCardinality is zero. Minimum collection cardinality constrains array entries, not property presence. Generated required sets include every collection field; optional scalar fields remain absent when minimumCardinality is zero and no source value exists. Missing pair, scope, resource or conflict collections must not be confused with an observed empty collection." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:resolve-prepare-local:1> <urn:usf:predicate:synopsis> "usf resolve prepare-local --input PATH|-" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:type> <urn:usf:type:CliRecordSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:unknownFieldPolicy> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:schemaFragment> "/$defs/localPreparationRequest" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:schemaIdentity> <urn:usf:cli-transition-descriptor:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:sourceType> <urn:usf:type:CliLocalPreparationRequest> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:schemaDerivationRule> <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:amendment:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliLocalPreparationRequest> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:type> <urn:usf:type:CliRecordSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:unknownFieldPolicy> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:schemaFragment> "/$defs/localPreparationOperation" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:schemaIdentity> <urn:usf:cli-transition-descriptor:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:sourceType> <urn:usf:type:CliLocalPreparationOperation> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:schemaDerivationRule> <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:amendment:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliLocalPreparationOperation> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:type> <urn:usf:type:CliRecordSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:unknownFieldPolicy> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:schemaFragment> "/$defs/localPreparationWrite" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:schemaIdentity> <urn:usf:cli-transition-descriptor:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:sourceType> <urn:usf:type:CliLocalPreparationWrite> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:schemaDerivationRule> <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:amendment:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliLocalPreparationWrite> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:type> <urn:usf:type:CliRecordSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:unknownFieldPolicy> "refuse" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:schemaFragment> "/$defs/localPreparationDelete" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:schemaIdentity> <urn:usf:cli-transition-descriptor:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:sourceType> <urn:usf:type:CliLocalPreparationDelete> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:schemaDerivationRule> <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:amendment:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:type:CliLocalPreparationDelete> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:recordAlternative> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:recordAlternative> <urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:predicate:discriminatorProperty> "kind" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationRootIdentity> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:outputProperty> "rootIdentity" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-iri:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:predicate:text> "Caller supplies one stable work identity; work/profile/basis/permission identities are derived and cannot be overridden." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationManifestPath> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:outputProperty> "manifestPath" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:predicate:text> "Explicit selected authority manifest while unique manifest discovery is unavailable; repository-relative path validated by the existing root resolver." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationOperations> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:outputProperty> "operations" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-record:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:collection> "true" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:maximumCardinality> "64" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:text> "Genuinely external proposed file bytes/deletions; at most 64 operations and 1048576 aggregate UTF-8 transport bytes, validated before any output." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationKind> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:outputProperty> "kind" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:text> "Exact operation discriminator; local input never supplies expected preimage digests." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-kind:1> <urn:usf:predicate:allowedValue> "write" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationPath> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:outputProperty> "path" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-path:1> <urn:usf:predicate:text> "Exact repository-relative path in the selected write scope with a declared preimage; traversal, symlink escape and undeclared paths refuse." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationKind> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:outputProperty> "kind" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:text> "Exact operation discriminator; local input never supplies expected preimage digests." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-kind:1> <urn:usf:predicate:allowedValue> "delete" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationPath> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:outputProperty> "path" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-delete:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-delete-path:1> <urn:usf:predicate:text> "Exact repository-relative path in the selected write scope with a declared preimage; traversal, symlink escape and undeclared paths refuse." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationContent> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:outputProperty> "content" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:minimumLength> "0" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:maximumLength> "1048576" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:text> "Exact proposed text or canonical base64 bytes; empty content is permitted. Aggregate transport-byte limit is enforced by input derivation." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationEncoding> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:outputProperty> "encoding" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:maximumLength> "6" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:text> "Optional encoding; omitted encoding derives utf8. Noncanonical base64 refuses." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:allowedValue> "utf8" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-encoding:1> <urn:usf:predicate:allowedValue> "base64" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationMediaType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:outputProperty> "mediaType" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-text:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:maximumLength> "255" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-field-specification:field-local-preparation-write-media-type:1> <urn:usf:predicate:text> "Optional supplied media type, not execution permission." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationRootIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationManifestPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationOperations> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationContent> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationEncoding> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:localPreparationMediaType> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-basis:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-basis:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-basis:1> <urn:usf:predicate:text> "Resolve exactly one selected WorkPacket, contract and RealisationProfile from rootIdentity and manifestPath, then use deriveWork and deriveCurrentRealisationBasis. Preserve the exact immutable basis; reject missing, stale or ambiguous scope and caller-provided authority overrides." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-input:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-input:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-input:1> <urn:usf:predicate:text> "Use existing bounded --input JSON transport only. Validate rootIdentity, manifestPath and proposed operations against the graph-generated localPreparationRequest schema. Permit no additional properties or supplied basis/preimage/provider facts. Derive utf8 when encoding is omitted. Bound aggregate proposed content to 1048576 UTF-8 bytes and at most 64 distinct operations; transport remains capped by the existing 4 MiB command-input boundary." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-guard:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-guard:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-guard:1> <urn:usf:predicate:text> "Require current construction eligibility and explicit selected-contract local-authored source and preparation-algorithm requirements. Requirement/dependency digests must match the immutable basis. Preparation is no-effect observation, not provider dispatch, acceptance or permission publication." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-scope:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-scope:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-scope:1> <urn:usf:predicate:text> "Derive current semantic reads and exact file preimages from the selected work/basis and proposed operation paths. Reobserve bounded no-follow source identities before output; refuse unsafe links, file movement, unsupported files and undeclared paths. Empty static scope arrays do not assert that context-derived scopes are empty; operational scope derivation remains mandatory." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-readback:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-readback:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-readback:1> <urn:usf:predicate:text> "Parse the closed LocalContribution and rederive exact current basis/preimages before returning it. Bind actual preparation-tool source digest and operation bytes. Unknown original author/model/token/cost remain null; no invocation or review independence is asserted." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-digest:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-digest:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-digest:1> <urn:usf:predicate:text> "Use canonical localContributionDigest over the closed local wire record excluding only its artifactDigest field; bind basisDigest, sorted distinct operations, derived preimages and observed toolDigest. Replay identical current inputs produces the same identity; content/basis changes produce a new proposal." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-intent:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-intent:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-intent:1> <urn:usf:predicate:text> "A readonly preparation invocation has no durable intent mutation. Its proposed operations and selected basis determine the returned local artifact identity; incomplete stdout after interruption is not an artifact and must be discarded." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-boundary:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-boundary:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-boundary:1> <urn:usf:predicate:text> "There is no external or primary mutation boundary in local preparation. It reads current authority/proposed bytes and emits stdout only; subsequent resolve/apply/check/integrate transitions own their own effects and recovery." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-replay:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-replay:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-replay:1> <urn:usf:predicate:text> "After interruption or unknown/truncated stdout, re-interrogate current authority and repeat readonly preparation. Never apply partial JSON or reuse stale basis. No call-result, provider attempt, lock, receipt or completion record is repaired or manufactured." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-terminal:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-terminal:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-terminal:1> <urn:usf:predicate:text> "Local preparation terminates only with a closed structurally valid current proposal or a typed refusal. Its terminal result is not Golden Path completion. Normal downstream validation, review, integration and completion/reconciliation obligations remain required." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-input:1> <urn:usf:predicate:type> <urn:usf:type:CliInputContract> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:type> <urn:usf:type:CliEffectContract> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:type> <urn:usf:type:CliArtifactContract> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:type> <urn:usf:type:CliRecoveryContract> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-input:1> <urn:usf:predicate:schema> <urn:usf:schema:local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-input:1> <urn:usf:predicate:inputDerivationRule> <urn:usf:rule:local-preparation-input:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-input:1> <urn:usf:predicate:text> "Supply rootIdentity, selected manifestPath and external operations through one bounded JSON input. Work/profile/basis/preimages and provenance are derived; no guessed lifecycle flags or provider facts are accepted." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-input:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-request-root-identity:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-input:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-request-manifest-path:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-input:1> <urn:usf:predicate:fieldSpecification> <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:effectClass> "observation" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:contact> "none" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:guardRule> <urn:usf:rule:local-preparation-guard:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:scopeDerivationRule> <urn:usf:rule:local-preparation-scope:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:readbackRule> <urn:usf:rule:local-preparation-readback:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:safetyDerivationRule> <urn:usf:rule:local-preparation-serial-safety:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:predicate:text> "Readonly proposed-byte preparation with derived current scopes. No primary writes, provider/network contact, durable intent, evidence publication or integration; lack of writes alone does not prove parallel safety." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:schema> <urn:usf:local-contribution:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:producer> <urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:work> <urn:usf:work:cli-transition-definition> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:profile> <urn:usf:profile:cli-transition-definition:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:basisDerivationRule> <urn:usf:rule:local-preparation-basis:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:authenticationRule> <urn:usf:rule:local-preparation-readback:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:digestDerivationRule> <urn:usf:rule:local-preparation-digest:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:proofObligation> <urn:usf:proof:cli-transition-definition:construction> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:predicate:text> "LocalContribution is a bounded proposal with observed tool/byte lineage and unknown original model/usage. It proves neither provider success nor review independence, integration, completion or runtime behavior; ordinary resolve consumes it." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:intentDerivationRule> <urn:usf:rule:local-preparation-intent:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:irreversibleBoundaryRule> <urn:usf:rule:local-preparation-boundary:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:unknownOutcomeRule> <urn:usf:rule:local-preparation-replay:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:reconciliationRule> <urn:usf:rule:local-preparation-replay:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:terminalRecoveryProofRule> <urn:usf:rule:local-preparation-terminal:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:recoveryObligation> <urn:usf:rule:local-preparation-readback:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:recoveryObligation> <urn:usf:rule:local-preparation-replay:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:predicate:text> "Before or after interrupted stdout, discard incomplete output and rederive a current readonly proposal. No durable side effect is acknowledged by preparation; never manufacture state to resume." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:inputContract> <urn:usf:cli-contract:local-preparation-input:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:effectContract> <urn:usf:cli-contract:local-preparation-effect:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:produces> <urn:usf:cli-contract:local-preparation-artifact:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-transition:local-contribution-prepare:1> <urn:usf:predicate:recoveryContract> <urn:usf:cli-contract:local-preparation-recovery:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-preparation-input:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-preparation-input:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-preparation-input:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:local-preparation-input:1> <urn:usf:predicate:text> "Require graph-generated closed local preparation inputs and structurally typed transition records before native adapter admission. Currentness and operation guards remain independent mandatory evaluation, not schema assertions." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:requirement:local-preparation-input:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:local-preparation-request:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:local-preparation-request:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:local-preparation-request:1> <urn:usf:predicate:repositoryPath> "schemas/cli-transition-descriptor.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:schema:local-preparation-request:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:predicate:admitsObservationAdapter> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:admitsObservationAdapter> <urn:usf:cli-adapter:local-contribution-prepare:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-serial-safety:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-serial-safety:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:local-preparation-serial-safety:1> <urn:usf:predicate:text> "Admit one no-effect proposal observation only after the current construction/source/input guards pass. Do not infer parallel safety from this serial admission. The observation returns a proposal or refusal and never applies its operations; downstream effects reauthenticate their own currentness. A concurrent source change may refuse observation and never licenses state repair." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:rule:cli-transition-unmapped:1> <urn:usf:predicate:text> "The explicitly contract-admitted local-contribution-prepare observation adapter is a bounded exception for readonly proposal preparation only. It does not map legacy resolve, apply, check, integrate, provider, publication or recovery effects into the generic interpreter." <urn:usf:graph:cli-transition-definition> .

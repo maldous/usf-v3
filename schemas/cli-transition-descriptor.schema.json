@@ -262,6 +262,119 @@
       ],
       "type": "object"
     },
+    "localPreparationDelete": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "delete",
+          "description": "Exact operation discriminator; local input never supplies expected preimage digests.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "path": {
+          "description": "Exact repository-relative path in the selected write scope with a declared preimage; traversal, symlink escape and undeclared paths refuse.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "path"
+      ],
+      "type": "object"
+    },
+    "localPreparationOperation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/localPreparationDelete"
+        },
+        {
+          "$ref": "#/$defs/localPreparationWrite"
+        }
+      ]
+    },
+    "localPreparationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "manifestPath": {
+          "description": "Explicit selected authority manifest while unique manifest discovery is unavailable; repository-relative path validated by the existing root resolver.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "operations": {
+          "description": "Genuinely external proposed file bytes/deletions; at most 64 operations and 1048576 aggregate UTF-8 transport bytes, validated before any output.",
+          "items": {
+            "$ref": "#/$defs/localPreparationOperation"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "rootIdentity": {
+          "description": "Caller supplies one stable work identity; work/profile/basis/permission identities are derived and cannot be overridden.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "manifestPath",
+        "operations",
+        "rootIdentity"
+      ],
+      "type": "object"
+    },
+    "localPreparationWrite": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "description": "Exact proposed text or canonical base64 bytes; empty content is permitted. Aggregate transport-byte limit is enforced by input derivation.",
+          "maxLength": 1048576,
+          "minLength": 0,
+          "type": "string"
+        },
+        "encoding": {
+          "description": "Optional encoding; omitted encoding derives utf8. Noncanonical base64 refuses.",
+          "enum": [
+            "base64",
+            "utf8"
+          ],
+          "maxLength": 6,
+          "minLength": 1,
+          "type": "string"
+        },
+        "kind": {
+          "const": "write",
+          "description": "Exact operation discriminator; local input never supplies expected preimage digests.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "mediaType": {
+          "description": "Optional supplied media type, not execution permission.",
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "path": {
+          "description": "Exact repository-relative path in the selected write scope with a declared preimage; traversal, symlink escape and undeclared paths refuse.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "content",
+        "kind",
+        "path"
+      ],
+      "type": "object"
+    },
     "parallelSafety": {
       "oneOf": [
         {
