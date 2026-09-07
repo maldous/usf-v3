@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:cli-schema-derivation:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "rootIdentity",
+    "manifestPath",
+    "work",
+    "contract",
+    "profile",
+    "sourceBasis",
+    "schemaDigest",
+    "descriptorSchema",
+    "operationalGaps",
+    "executionAuthority"
+  ],
+  "properties": {
+    "schema": {
+      "const": "urn:usf:cli-schema-derivation:1"
+    },
+    "rootIdentity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "manifestPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "work": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "contract": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "sourceBasis": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "schemaDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "descriptorSchema": {
+      "type": "object"
+    },
+    "operationalGaps": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reasonCode",
+          "subject",
+          "field"
+        ],
+        "properties": {
+          "reasonCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        }
+      }
+    },
+    "executionAuthority": {
+      "const": "none"
+    }
+  }
+}

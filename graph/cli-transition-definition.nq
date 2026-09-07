@@ -2559,3 +2559,23 @@
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "graph/v3-convention.nq" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "graph/v3-convention.nq" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "graph/v3-convention.nq" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:type> <urn:usf:type:RegisteredCliCommand> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:commandPath> "transition schema" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:forContract> <urn:usf:contract:cli-transition-definition:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:algorithm> <urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:externalContact> "none" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:availability> "planned" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:outputSchema> <urn:usf:cli-schema-derivation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:command:transition-schema:1> <urn:usf:predicate:authorityEffect> "Emit the graph-generated descriptor schema and exact source/schema digests on stdout only. No source writes, construction permission, evidence publication, terminal acceptance or parallel authority." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:cli-schema-derivation:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:cli-schema-derivation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:requirement:cli-schema-derivation:1> <urn:usf:predicate:text> "Provide CLI-only descriptor schema derivation for one uniquely selected work/profile/contract through existing graph field specifications. Reuse interrogation selector parsing. Refuse missing or invalid structural specifications; do not require a current installed schema merely to derive its governed replacement. Runtime operational gaps remain explicit and execution authority is none." <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:requirement:cli-schema-derivation:1> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:schemaPath> "schemas/cli-schema-derivation.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "schemas/cli-schema-derivation.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "schemas/cli-schema-derivation.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:local-contribution:1> <urn:usf:predicate:repositoryReadFile> "schemas/cli-schema-derivation.schema.json" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-schema-derivation:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-schema-derivation:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:cli-schema-derivation:1> <urn:usf:predicate:repositoryPath> "schemas/cli-schema-derivation.schema.json" <urn:usf:graph:cli-transition-definition> .
