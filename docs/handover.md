@@ -1,5 +1,54 @@
 # USF V3 handover
 
+## Current boundary - CLI Hermes autonomy and full roster, 2026-09-07
+
+User direction: ANQR semantic realisation must be performed by CLI-started Hermes
+using Linear as its ledger and current USF graph authority. A hosted agent may
+implement and verify Hermes, not replace it by manually delivering product issues.
+General timing/skill improvements must not delay that autonomous delivery path.
+
+Do not use the legacy configured Cerebras/Groq pair as the roster. The installed
+graph executor calls deriveRouteUniverse over the complete semantic catalogue,
+graph-bound economics, credential aliases/endpoints, installed adapters, current
+task qualifications and the work's capability/context requirements. Configured
+rows from providers status are only a projection. Catalogue presence, routability,
+qualification and accepted progress are separate; diagnose current eligible routes
+without a named-provider dependency or declaring all capacity exhausted from a
+failed pair. Missing full-frontier CLI observability is a gap, not permission to
+substitute legacy configuration. User-authorized operator skill correction was
+validated; raw SHA256 228d8831c08c2495f430be1e250b86c84e216c1702f122a12882d2d025f9e38f.
+This host skill update does not silently replace the pinned repository context or
+grant runtime authority.
+
+Verified/pushed source boundary: 5020b6f on anqr-experience-realisation. Full check
+COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check passed 875/875
+ordinary tests and five confined fixture checks. Log:
+.usf/inputs/hermes-postrelocation-full-check.log. Dispatch fixture containment
+repair integrated 8e1581586e74341393b22065fef71d6701a0742f. Feedback helper was
+relocated through governed integration 2b49d1477f07e0d2f8d93259a7dde7f0cae8fbf6
+to src/commands/hermes-feedback.ts; primary architecture12/12 then full gate pass.
+The helper is advisory infrastructure, not live collectors or self-authenticated ROI.
+
+Both required Linear keys are in owner-private .usf/credentials/linear.env (0600).
+ANQR identity/workflow readback succeeded. USF key identity exposes only the USF
+team; the current multi-team policy refuses UIF/UXF membership. Do not dump keys.
+The configured binding manifest contains retained USF-1162 bindings, not ANQR
+delivery bindings. CLI Linear runtime completion authority remains unproven.
+Actual Cerebras typescript qualification attempted four cases and returned
+PROBE_QUALIFY_NO_OBSERVATION with AI_APICallError for each: no usable answer or
+qualified route was proven, and this operator probe is not autonomous failover.
+
+Next implementation lane: authenticated retained-binding/integration recovery,
+work urn:usf:work:hermes-binding-recovery, profile :1, manifest
+graph/manifests/hermes-binding-recovery.json. Published construction receipt:
+evidence/construction-authority/3dc1c3379100829feb68f6846d2fb6a51783e94910500c2e089e6009fcde2fa0.json.
+Six-file implementation is a private draft, not accepted. Preserve its exact
+attempts, scopes and frozen source on continuation. Original supervisor PID2054583
+was preserved; its selected application ready0 is not programme completion.
+No ANQR product change, live autonomous delivery, staging or production is claimed.
+
+Older checkpoints below are retained history, not current roster or runtime proof.
+
 ## Current accepted checkpoint - USF-1162 completion and replay 2026-09-06
 
 USF-1162 is implemented and current at integrated carrier `f3dee697b8051b997c700838e6829d9134e60e49`. Candidate `sha256:24e2e32ca3b91ac55a311963d4b6bada5a0127bf26e0f4ca5f9eaee6421dde36` passed the graph-selected `urn:usf:validation:linear-work-binding` check under `urn:usf:mode:confined-fixture-process:2`; checked-candidate receipt digest `sha256:6b1093a90ca57b8329bde225b50b74c2a78e339b5eecae09487b3c9270d5fd99`. Independent frozen-byte review found one bounded Hermes change: completed binding selection returns no private work while all nonterminal currentness checks remain. Guarded dry-run and integration passed with request `sha256:7d31c46b1f0fc123e3c5ac37a2bedcc633c94e684f75e9b4d555f559a2b4199e` and observation `sha256:bd7b65ad5b24ec8a2e1b86fea4398e57972178f768ae24f40eb1de531f27e67a`. The shell required owner-private `umask 0077` so Git-created detached worktree directories satisfied the unchanged authenticated confinement policy; no policy or host permission was weakened.
