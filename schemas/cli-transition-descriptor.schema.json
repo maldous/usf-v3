@@ -100,6 +100,36 @@
       ],
       "type": "object"
     },
+    "completionEvidenceRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "candidateDigest": {
+          "description": "Reference to a previously produced no-change candidate, not caller-authored evidence. Existing workspace authentication enforces canonical sha256 identity, source currentness and the complete validation-receipt denominator.",
+          "maxLength": 71,
+          "minLength": 71,
+          "type": "string"
+        },
+        "manifestPath": {
+          "description": "Explicit repository-relative selected manifest; contained loading and exact semantic context are mandatory.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "rootIdentity": {
+          "description": "Selected stable work identity. The adapter derives exact profile and work; a binding root remains unimplemented until separately admitted.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidateDigest",
+        "manifestPath",
+        "rootIdentity"
+      ],
+      "type": "object"
+    },
     "effect": {
       "additionalProperties": false,
       "properties": {
@@ -1442,6 +1472,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "algorithm": {
+      "description": "Exact semantic algorithm identity interpreted by the admitted adapter; declaration alone grants no execution.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
     "command": {
       "description": "Exact RegisteredCliCommand resource and version; not a command-name guess.",
       "maxLength": 4096,
@@ -1509,6 +1546,13 @@
       "minItems": 1,
       "type": "array",
       "uniqueItems": true
+    },
+    "publicationPolicy": {
+      "description": "Selected semantic publication policy identity; reference is not publication or completion authority.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
     },
     "recovery": {
       "$ref": "#/$defs/recovery",
