@@ -1,5 +1,78 @@
 # USF V3 handover
 
+## Full check-adapter bundle in progress - 2026-09-07 UTC
+
+Acceptance boundary is the complete completion-check-receipts adapter, not
+native-source, grant-refresh or prose-only movement. USF-1192 owns the full
+executable circuit; USF-1189 independently proves and cuts it over afterward.
+Atlas/USF-1188 remains suspended.
+
+Last fully checked and pushed source remains
+501f236012a0de3287f1f366879cacec9284c886 (962 tests and five confined gates).
+Current integrated source is 7d6db32bdece9418d5cc516c95af86d2f3fa3a66,
+tree 301174fbe49307495eb6776a90f9a997d2b6511c, intentionally unpushed.
+Before this semantic amendment the tracked tree was clean and ten commits ahead.
+Native recovery integration 69ae2422 and composition integration 7d6db32b
+read back integration-success with no rollback required. Observations:
+sha256:d5c8cb776836e3f65d96ed065a86051372481ea5286f595e814459c3d6dff476
+sha256:14bc215e1bbcb8e947e55473cfdc8009e4dd6dd7add24d352ade7026c78747f6.
+
+Direct genuine interruption regression passed 1/1 in 68410.881264ms; retained
+root receipt-set/replay regression passed 1/1 in 249883.334731ms. Logs:
+.usf/inputs/selective-recovery-stagea-direct-regression.log
+.usf/inputs/selective-recovery-stageb-direct-regression.log.
+Full authoritative check then FAILED: 968 tests, 966 pass, 2 fail, zero skipped
+or cancelled, 443883.285426ms ordinary duration. Fixture gates did not run.
+Log .usf/inputs/selective-recovery-full-check.log. This is not batch acceptance.
+
+Failures: drift fixture watches a runtime path missing execution-view, so its
+fault is not injected; ensure removes a pending receipt that its refusal test
+requires preserved. The bundle must also prove current legacy receipt reuse
+without dispatch or inventing an intent. Do not relax refusal assertions.
+
+Pre-bundle transition interrogation digest:
+sha256:cbce9350b925c26c896e9a889f2001102f52f5c89dd856a82c9b091a096d891e.
+113 diagnostics: three unmapped adapters (check receipts, proof, publication),
+23 operational-rule, 73 implementation-only-leaf, six evaluator, four record
+cardinality, plus inventory and terminal families. No complete diagnostic
+family has been removed by the native repairs. Complete=false,
+executionAuthority=none; parallel safety remains unproven.
+
+This amendment supplies the reviewed pending-publication snapshot requirement.
+Next: derive ordinary current construction evidence/proof, publish and verify
+one scoped grant, then author the entire check-adapter bundle. Existing ignored
+postimages are bounded development inputs, never operational helpers.
+Mendel owns check.ts; Maxwell owns adversarial receipt, interruption fixture and
+completion integration tests; Turing owns transition.ts, cli.ts, help.ts and
+transition unit/contract tests; main owns work-completion.ts and sole integration.
+Bohr prepares only the next proof/publication/recovery semantic bundle.
+No competing transaction writer, steward or Hermes supervisor is permitted.
+
+Next interrogation:
+./bin/usf transition inspect --root urn:usf:work:cli-transition-definition
+--manifest graph/manifests/cli-transition-definition.json.
+Use resolve prepare-local, resolve, apply, exact graph-selected checks and
+integrate. Carrier subdivisions required by the 512KiB manifest limit are NOT
+separate acceptance boundaries. Before the next full check, prove check receipts
+is no longer TRANSITION_ADAPTER_UNMAPPED and focused acceptance passes. Then run:
+COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check.
+test-full --plan is available through node scripts/test-full.mjs; the current
+plan selects 114 ordinary test files at concurrency four plus five fixture gates.
+
+Next acceptance bundle combines proof, publication, durable source-write/receipt
+creation recovery, SIGKILL/replay and terminal artifacts; then close evaluator,
+operational-rule, coverage and CLI-only acceptance gaps. Runtime authority file
+mode currentness and pre-effect manifest bounds remain explicit 1192 gaps.
+No full-circuit ETA is calibrated; test durations are observations, not forecasts.
+
+Hermes supervisor e2f6e23b399268910ef4311d9 PID2054583 remains preserved.
+Read current lifecycle/stewardship through supported CLI before further mutation.
+No provider, credential, production, paid-fallback, completion or cut-over claim.
+Linear comments dc022d09-72df-404f-8f69-1f535be5ddda and
+e6b1411e-144f-4df7-a281-016eea4c217d were separately read back. They preserve
+regressions, ownership and the acceptance-boundary change. Historical rejected
+candidates remain retained; do not manually repair their receipts or manifests.
+
 ## Current composition repair in progress - 2026-09-07 UTC
 
 Last full-gate accepted and pushed source remains501f236012a0de3287f1f366879cacec9284c886,
