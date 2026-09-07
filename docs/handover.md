@@ -1,5 +1,61 @@
 # USF V3 handover
 
+## Selective checks and execution-intent batch in progress - 2026-09-07 UTC
+
+Last accepted, fully checked and remotely read-back source remains
+501f236012a0de3287f1f366879cacec9284c886, tree
+4a59d8de28033e301d0da90f288d09bd6fb2b381: 962 tests and five confined gates.
+The following semantic carrier is NOT a newly accepted source capability.
+
+Current work urn:usf:work:cli-transition-definition, profile
+urn:usf:profile:cli-transition-definition:1, manifest
+graph/manifests/cli-transition-definition.json has active construction permission
+through integrate, basis
+sha256:272d9343ffb1dba781fe98db14ea8b0b84db2b9a390b746f508fa572a94c2f19.
+Construction publication 7d4dcfe2ed4a89c90301a88009075086cbb8525ddf711a97ed79b60594764701
+under evidence/construction-authority is published and verified; receipt
+sha256:6bc188ad6a37556754353196529b1ae6fcd516f70e36a255a194eba02da9db4e.
+Earlier85a5 publication is historical, not current authoring authority.
+
+The canonical descriptor schema now includes the graph-generated stable
+completionCheckReceiptSet fragment, digest
+sha256:f326abeeb059d300a68f03ce4ada2ce472f703745a09ec07f9fd0441eea6bcd7.
+No result-schema copy is required. The separate native operational intent schema
+is tracked at schemas/checked-candidate-execution-intent.schema.json; it is
+recovery state, not a second transition descriptor or semantic completion proof.
+Graph-owned rules require durable pre-effect intent and forbid both legacy and
+canonical check execution from bypassing a retained unknown outcome. A process
+lock alone cannot prove execution never happened after interruption. Existing
+scalar receipt schema/digest and confinement remain unchanged. Conditional
+adapter admission still requires exact compiled rules, schemas and native guards.
+
+One integration owner. Bounded source postimages are being authored under
+.usf/inputs/selective-check-authoring: native check/intent by Mendel;
+kernel/CLI/help by Euclid; check adversarial tests and declared interruption
+fixture by Bohr; no-effect identity and completion integration tests by Maxwell;
+receipt-set derivation by main, independently reviewed by Turing.
+These are deliberately retained, unintegrated development candidates, not
+supported runtime helpers. No normal operation may depend on this directory.
+No worker may integrate or publish a competing source candidate.
+
+Next executable transition is current interrogation:
+./bin/usf transition inspect --root urn:usf:work:cli-transition-definition
+--manifest graph/manifests/cli-transition-definition.json.
+Then assemble only reviewed exact postimages through resolve prepare-local,
+resolve, apply, graph-selected checks and integrate. Do not run source from the
+sparse authoring directory or repair native receipts. The interruption fixture
+must demonstrate actual process death and no duplicate child, not planted
+STARTED records relabelled as live proof. Full gate and push/readback follow
+native acceptance; no source acceptance is claimed before them.
+
+USF-1192 retains the full executable circuit, all recovery/adapters, authenticated
+terminal closure, generated coverage, parallel convergence, clean-clone fixtures
+and bounded real run. USF-1189 only independently proves and cuts over that
+completed circuit. Durable progress and rejected restart claims are in1192
+comments66f88303-b1a7-43e4-8776-e186438fabfc and
+bba89748-0ecf-4e97-aad9-612bed803dd2. Hermes remains live; keep it running.
+No1192 completion, parallel proof, provider contact, production or cutover claim.
+
 ## Receipt-currentness repair integrated; full circuit remains primary - 2026-09-07 UTC
 
 USF-1192 owns the COMPLETE executable Linear/Hermes/USF/completion/Linear circuit.

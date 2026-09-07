@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:checked-candidate-execution-intent:1",
+  "title": "USF checked candidate execution intent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "state", "intentDigest", "candidateDigest",
+    "validationObligationIri", "workIri", "explicitProfileIri",
+    "originalConstructionBasisDigest", "scopedDependencyDigest",
+    "workspaceIdentityDigest", "candidateTreeDigest",
+    "validationResourceDigest", "validationCommandDigest",
+    "validationEnvironmentDigest", "validationExecutionModeDigest",
+    "validationToolDependencyDigest", "validationSchemaDependencyDigest",
+    "validationAuthorityDependencyDigest",
+    "validationExecutionAuthorityResourceDigest", "executionInputDigest",
+    "intentPath", "receiptPath", "receiptDigest"
+  ],
+  "properties": {
+    "schema": {"const": "urn:usf:checked-candidate-execution-intent:1"},
+    "state": {"enum": ["PREPARED", "STARTED", "SETTLED", "UNKNOWN"]},
+    "intentDigest": {"$ref": "#/$defs/digest"},
+    "candidateDigest": {"$ref": "#/$defs/digest"},
+    "validationObligationIri": {"$ref": "#/$defs/iri"},
+    "workIri": {"$ref": "#/$defs/iri"},
+    "explicitProfileIri": {"$ref": "#/$defs/iri"},
+    "originalConstructionBasisDigest": {"$ref": "#/$defs/digest"},
+    "scopedDependencyDigest": {"$ref": "#/$defs/digest"},
+    "workspaceIdentityDigest": {"$ref": "#/$defs/digest"},
+    "candidateTreeDigest": {"$ref": "#/$defs/digest"},
+    "validationResourceDigest": {"$ref": "#/$defs/digest"},
+    "validationCommandDigest": {"$ref": "#/$defs/digest"},
+    "validationEnvironmentDigest": {"$ref": "#/$defs/digest"},
+    "validationExecutionModeDigest": {"$ref": "#/$defs/digest"},
+    "validationToolDependencyDigest": {"$ref": "#/$defs/digest"},
+    "validationSchemaDependencyDigest": {"$ref": "#/$defs/digest"},
+    "validationAuthorityDependencyDigest": {"$ref": "#/$defs/digest"},
+    "validationExecutionAuthorityResourceDigest": {"$ref": "#/$defs/digest"},
+    "executionInputDigest": {"$ref": "#/$defs/digest"},
+    "intentPath": {"type": "string", "pattern": "^\\.usf/receipts/check/[0-9a-f]{64}/[0-9a-f]{64}\\.intent\\.json$"},
+    "receiptPath": {"type": "string", "pattern": "^\\.usf/receipts/check/[0-9a-f]{64}/[0-9a-f]{64}\\.json$"},
+    "receiptDigest": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"}
+  },
+  "allOf": [{
+    "if": {"properties": {"state": {"const": "SETTLED"}}},
+    "then": {"properties": {"receiptDigest": {"$ref": "#/$defs/digest"}}},
+    "else": {"properties": {"receiptDigest": {"const": null}}}
+  }],
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "iri": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$"}
+  }
+}

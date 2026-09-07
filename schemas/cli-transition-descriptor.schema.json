@@ -100,6 +100,149 @@
       ],
       "type": "object"
     },
+    "completionCheckReceiptMember": {
+      "additionalProperties": false,
+      "properties": {
+        "obligationIri": {
+          "description": "One graph-derived completion validation obligation identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "receiptDigest": {
+          "description": "Digest read from an authenticated scalar checked-candidate receipt.",
+          "maxLength": 71,
+          "minLength": 71,
+          "type": "string"
+        },
+        "receiptPath": {
+          "description": "Derived repository-relative final receipt path, not caller input.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "validationResultSetDigest": {
+          "description": "Authenticated validation result-set digest from the scalar receipt.",
+          "maxLength": 71,
+          "minLength": 71,
+          "type": "string"
+        }
+      },
+      "required": [
+        "obligationIri",
+        "receiptDigest",
+        "receiptPath",
+        "validationResultSetDigest"
+      ],
+      "type": "object"
+    },
+    "completionCheckReceiptSet": {
+      "additionalProperties": false,
+      "properties": {
+        "candidateDigest": {
+          "description": "Derived no-change candidate identity, never caller input.",
+          "maxLength": 71,
+          "minLength": 71,
+          "type": "string"
+        },
+        "constructionBasisDigest": {
+          "description": "Current authenticated construction basis digest.",
+          "maxLength": 71,
+          "minLength": 71,
+          "type": "string"
+        },
+        "nonClaims": {
+          "description": "Explicit fixed nonclaims; no invocation classification is emitted in this first result schema.",
+          "items": {
+            "enum": [
+              "completion",
+              "parallel-safety",
+              "partial-set-recovery",
+              "terminal-closure"
+            ],
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "profileIri": {
+          "description": "Exact versioned profile rederived from the selected root.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "receiptSetDigest": {
+          "description": "Canonical digest of this stable receipt-set record excluding only receiptSetDigest; invocation execution/reuse classification is excluded.",
+          "maxLength": 71,
+          "minLength": 71,
+          "type": "string"
+        },
+        "receipts": {
+          "description": "Authenticated scalar receipt members, one and only one per validation obligation.",
+          "items": {
+            "$ref": "#/$defs/completionCheckReceiptMember"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "schema": {
+          "const": "urn:usf:schema:completion-check-receipt-set-result:1",
+          "description": "Exact result wire-schema identity required by the canonical transition kernel.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "status": {
+          "const": "current",
+          "description": "Only fully authenticated current set state is returned; all other states refuse.",
+          "maxLength": 7,
+          "minLength": 7,
+          "type": "string"
+        },
+        "validationObligations": {
+          "description": "Sorted exact current completionValidationObligations denominator.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "workIri": {
+          "description": "Exact work rederived from the selected root.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidateDigest",
+        "constructionBasisDigest",
+        "nonClaims",
+        "profileIri",
+        "receiptSetDigest",
+        "receipts",
+        "schema",
+        "status",
+        "validationObligations",
+        "workIri"
+      ],
+      "type": "object"
+    },
     "completionEvidenceRequest": {
       "additionalProperties": false,
       "properties": {
@@ -1116,6 +1259,10 @@
         },
         "mayMutateWorkspace": {
           "description": "Whether this declared branch may create workspace bytes. False branches must preserve retained state.",
+          "type": "boolean"
+        },
+        "mayPersistReceipt": {
+          "description": "Whether this branch may persist an individual final check receipt. This is independent of mayMutateWorkspace because native checks also create candidate-local temporary execution bytes.",
           "type": "boolean"
         },
         "nextTransitions": {
