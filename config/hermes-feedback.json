@@ -16,7 +16,11 @@
     "requireExactAttemptAndComparableScopeJoin": true
   },
   "recurringFailure": {
-    "eligibleSemanticDispositions": ["failed-validation", "provider-failure", "merge-failure"],
+    "eligibleSemanticDispositions": [
+      "failed-validation",
+      "provider-failure",
+      "merge-failure"
+    ],
     "requireExactAttemptScopeAndDispositionJoin": true,
     "acceptedProgressOrRoiClaim": false
   },
@@ -29,13 +33,13 @@
   },
   "contextAllowlist": [
     {
-      "identity": "urn:usf:context:usf-operator:1",
-      "contentDigest": "sha256:3a28afb9f1305b2763ce32a00180ecde4c9f6a55c578dc442e28e8def6db4e79",
+      "identity": "urn:usf:context:usf-operator:2",
+      "contentDigest": "sha256:41e71aa7809280567607ef85fd588ea6a3780923e347f96d81a20b1ad3df2ae1",
       "contentClass": "public-governed-guidance",
       "provenanceIdentity": "urn:usf:provenance:tracked-context",
       "sourceName": "usf-v3-operator",
-      "sourceDigest": "sha256:14672e49700a4712b7db168825b4a6bea587b5f3364d22493fdbcbc826749800",
-      "importVersion": "usf-v3-operator-guidance:1"
+      "sourceDigest": "sha256:a3cff97711f1c50ef42b7f8b92f179436353dee76ce3c64cad519b59db77cc04",
+      "importVersion": "usf-v3-operator-guidance:2"
     }
   ]
 }

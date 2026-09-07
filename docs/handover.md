@@ -1,5 +1,65 @@
 # USF V3 handover
 
+## Check adapter mapped; final bundle verification - 2026-09-07 UTC
+
+USF-1192 remains primary; USF-1189 only independently proves/cuts over its
+completed circuit. Atlas is suspended. Do not stop at this checkpoint.
+
+Integrated source HEAD 13783a530cee234d8eb8285ab38cac50c1eea355,
+tree 6638233dccc1e60c083352542f8e00097bf27592. CLI integration 8ef303cf
+and test correction 13783a53 read back success, no rollback required.
+Observations:
+sha256:b09b02012bec003c2f7bad21345417c17435c2d87b173b495f092b239612ce2c
+sha256:79f4c45051cae1d531e480b724b1e797fc3de7f912ca873784a2a7165e65407c.
+Both graph-selected validations passed for each carrier. No source is pushed
+since last fully checked 501f236012a0de3287f1f366879cacec9284c886.
+
+Fresh installed transition inspect reduced diagnostics 113 -> 112:
+completion-check-receipts is no longer unmapped. Proof/publication remain
+unmapped; other diagnostic families are unchanged. Measured digest:
+sha256:0544da6817df214f6ee641cf63d3d34a6c0bc8d4f9e2fc8250c9e9798a2f9622.
+Subsequent grant/currentness changes require fresh interrogation. Complete is
+false, execution authority none, and parallel safety unproven.
+
+Full gate at c01465b FAILED 970/971, zero skipped/cancelled, 521088.895626ms;
+fixture gates were not reached. Log .usf/inputs/check-adapter-bundle-full-check.log.
+Sole stale test expected pending intent preflight refusal. Corrected tests
+require authenticated STARTED with unchanged preflight bytes/inode/intent,
+zero children, strict-receipt-reader refusal and unchanged unsafe-path guards.
+Direct corrected scalar test now PASSED 1/1 in 86306.355327ms:
+.usf/inputs/check-adapter-scalar-direct-retry.log.
+The genuine root pending-recovery/replay test passed in the full gate.
+A proposed basis race was independently withdrawn: the existing locked reader
+already authenticates the persisted immutable basis. No extra guard was added.
+
+Operator-requested skill context v2 is tracked in docs/context/usf-operator-context.md
+and its exact config/hermes-feedback.json allowlist, through transaction
+sha256:6419d767f709709d08fd3801e7782e322d52433ff50a8256f4e9e34b5506abff.
+It is provider-neutral advisory guidance, not learned ROI or execution authority.
+USF-1190 owns that guidance; USF-1192 still owns missing CLI diagnostics, including
+CHECK_FAILED details currently requiring diagnostic reproduction. No private
+skill or ignored helper is required to consume the tracked guidance.
+
+Next executable transition: run context tests, then
+COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check
+with log .usf/inputs/check-adapter-bundle-full-check-retry.log.
+Do not publish acceptance until it passes and current branch is pushed/read back.
+Then immediately promote the reviewed proof/publication semantic bundle and run
+disjoint native, kernel and fixture lanes, with one integration owner.
+Canonical native interface names are prepareCanonicalCompletionProof and
+runCanonicalCompletionPublication; recovery remains internal to the publisher.
+
+Hermes supervisor e2f6e23b399268910ef4311d9 remains preserved; last read cycle725
+was live. Re-read supported status for current liveness. Main stewardship session
+codex-usf-1192-semantic-cli-20260907 remains owned by the persistent foreground
+parent; never fabricate its claim or generation. No ambiguous integration or
+remote mutation remains. Failed candidate d7598b87 is retained as rejected;
+other prior candidates are historical, not work to replay. Disk readback:
+333G available, 81% used. No unrelated worktrees or provider accounts changed.
+Linear USF-1192 comments df2cefc1 and b4ad7f18 record exact prior boundaries;
+USF-1190 comment e5ac1d51 records guidance ownership. Update both from settled
+verification, not this forward instruction.
+
 ## Full check-adapter bundle in progress - 2026-09-07 UTC
 
 Acceptance boundary is the complete completion-check-receipts adapter, not
