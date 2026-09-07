@@ -1,0 +1,41 @@
+{
+  "schema": "urn:usf:hermes-feedback-config:1",
+  "version": 1,
+  "mode": "advisory-only-runtime",
+  "minimumDistinctSettledAttempts": 3,
+  "minimumDistinctSettledAcceptedAttempts": 3,
+  "measurement": {
+    "acceptedClockDomain": "monotonic-observed-phase-wall",
+    "queue": "unknown-unless-independently-measured",
+    "modelActive": "unknown-unless-independently-measured",
+    "tokens": "unknown-unless-independently-reported"
+  },
+  "acceptance": {
+    "requiredVerificationState": "independently-verified-by-consuming-runtime",
+    "requiredDisposition": "accepted",
+    "requireExactAttemptAndComparableScopeJoin": true
+  },
+  "recurringFailure": {
+    "eligibleSemanticDispositions": ["failed-validation", "provider-failure", "merge-failure"],
+    "requireExactAttemptScopeAndDispositionJoin": true,
+    "acceptedProgressOrRoiClaim": false
+  },
+  "guidance": {
+    "providerNeutral": true,
+    "proposalOnly": true,
+    "automaticSemanticActivation": false,
+    "automaticHostSkillUpdate": false,
+    "allowPrivateCodexRuntime": false
+  },
+  "contextAllowlist": [
+    {
+      "identity": "urn:usf:context:usf-operator:1",
+      "contentDigest": "sha256:3a28afb9f1305b2763ce32a00180ecde4c9f6a55c578dc442e28e8def6db4e79",
+      "contentClass": "public-governed-guidance",
+      "provenanceIdentity": "urn:usf:provenance:tracked-context",
+      "sourceName": "usf-v3-operator",
+      "sourceDigest": "sha256:14672e49700a4712b7db168825b4a6bea587b5f3364d22493fdbcbc826749800",
+      "importVersion": "usf-v3-operator-guidance:1"
+    }
+  ]
+}

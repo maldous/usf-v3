@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:hermes-feedback-event:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "observationIdentity", "observedAt", "sourceIdentity", "clockInstanceIdentity", "joins", "phase", "measurement", "usage", "rawProviderOutcome", "semanticDisposition", "settledResultReference", "context"],
+  "$defs": {
+    "nullableIdentity": { "type": ["string", "null"], "pattern": "^[A-Za-z0-9._:-]{1,160}$" },
+    "nullableDigest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "provenance": { "type": "object", "additionalProperties": false, "required": ["identity", "contentDigest", "producerIdentity"], "properties": { "identity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "contentDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }, "producerIdentity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" } } },
+    "reportedDuration": { "oneOf": [ { "type": "object", "additionalProperties": false, "required": ["valueNanoseconds", "provenance"], "properties": { "valueNanoseconds": { "type": "null" }, "provenance": { "type": "null" } } }, { "type": "object", "additionalProperties": false, "required": ["valueNanoseconds", "provenance"], "properties": { "valueNanoseconds": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }, "provenance": { "$ref": "#/$defs/provenance" } } } ] },
+    "reportedTokens": { "oneOf": [ { "type": "object", "additionalProperties": false, "required": ["value", "provenance"], "properties": { "value": { "type": "null" }, "provenance": { "type": "null" } } }, { "type": "object", "additionalProperties": false, "required": ["value", "provenance"], "properties": { "value": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }, "provenance": { "$ref": "#/$defs/provenance" } } } ] }
+  },
+  "properties": {
+    "schema": { "const": "urn:usf:hermes-feedback-event:1" },
+    "observationIdentity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "sourceIdentity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" },
+    "clockInstanceIdentity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" },
+    "joins": {
+      "type": "object", "additionalProperties": false,
+      "required": ["attemptIdentity", "logicalAttemptIdentity", "issueIdentity", "laneIdentity", "workIdentity", "realisationBasisDigest", "routeIdentity", "validationIdentity", "mergeIdentity", "comparableScopeIdentity"],
+      "properties": {
+        "attemptIdentity": { "$ref": "#/$defs/nullableIdentity" }, "logicalAttemptIdentity": { "$ref": "#/$defs/nullableIdentity" }, "issueIdentity": { "$ref": "#/$defs/nullableIdentity" }, "laneIdentity": { "$ref": "#/$defs/nullableIdentity" }, "workIdentity": { "$ref": "#/$defs/nullableIdentity" }, "realisationBasisDigest": { "$ref": "#/$defs/nullableDigest" }, "routeIdentity": { "$ref": "#/$defs/nullableIdentity" }, "validationIdentity": { "$ref": "#/$defs/nullableIdentity" }, "mergeIdentity": { "$ref": "#/$defs/nullableIdentity" }, "comparableScopeIdentity": { "$ref": "#/$defs/nullableIdentity" }
+      }
+    },
+    "phase": { "type": "object", "additionalProperties": false, "required": ["identity", "clockDomainIdentity", "startOffsetNanoseconds", "endOffsetNanoseconds"], "properties": { "identity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "clockDomainIdentity": { "const": "monotonic-observed-phase-wall" }, "startOffsetNanoseconds": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }, "endOffsetNanoseconds": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 } } },
+    "measurement": { "type": "object", "additionalProperties": false, "required": ["observedPhaseWallNanoseconds", "queue", "modelActive"], "properties": { "observedPhaseWallNanoseconds": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 }, "queue": { "$ref": "#/$defs/reportedDuration" }, "modelActive": { "$ref": "#/$defs/reportedDuration" } } },
+    "usage": { "type": "object", "additionalProperties": false, "required": ["inputTokens", "outputTokens"], "properties": { "inputTokens": { "$ref": "#/$defs/reportedTokens" }, "outputTokens": { "$ref": "#/$defs/reportedTokens" } } },
+    "rawProviderOutcome": { "enum": ["unknown", "succeeded", "refused", "failed", "timed-out", "cancelled", "not-applicable"] },
+    "semanticDisposition": { "enum": ["unknown", "accepted", "failed-validation", "provider-failure", "merge-failure"] },
+    "settledResultReference": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "object", "additionalProperties": false, "required": ["identity", "contentDigest", "verificationState", "settledAttemptIdentity", "comparableScopeIdentity", "semanticDisposition"], "properties": { "identity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "contentDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }, "verificationState": { "enum": ["unverified-supplied", "independently-verified-by-consuming-runtime"] }, "settledAttemptIdentity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "comparableScopeIdentity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "semanticDisposition": { "enum": ["accepted", "failed-validation", "provider-failure", "merge-failure"] } } }
+      ]
+    },
+    "context": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "type": "object", "additionalProperties": false, "required": ["identity", "contentDigest", "contentClass", "provenanceIdentity", "sourceName", "sourceDigest", "importVersion"], "properties": { "identity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "contentDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }, "contentClass": { "enum": ["public-governed-guidance", "public-governed-policy", "public-governed-schema"] }, "provenanceIdentity": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "sourceName": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" }, "sourceDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }, "importVersion": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$" } } } }
+  },
+  "description": "A closed bounded observation event. The helper computes only observed phase-wall time and additionally enforces end >= start. All durable joins are explicit nullable values. A supplied independent settled result reference may support an accepted or recurring-failure join only when its verification state, attempt, scope and disposition exactly match; the helper does not authenticate that reference. Queue/model-active and token values are known nonnegative quantities only with provenance, otherwise explicit nulls. Raw provider outcome is not semantic disposition."
+}
