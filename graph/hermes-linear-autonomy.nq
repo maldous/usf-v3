@@ -408,6 +408,7 @@
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "src/providers/types.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "src/realisation/basis.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "src/realisation/index.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "src/realisation/transition.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "src/schema/index.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:hermes-linear-autonomy> .
