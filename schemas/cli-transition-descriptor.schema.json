@@ -1186,6 +1186,16 @@
           "type": "array",
           "uniqueItems": true
         },
+        "diagnostics": {
+          "description": "diagnostics: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "items": {
+            "$ref": "#/$defs/terminalDiagnostic"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
         "edges": {
           "description": "edges: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
           "items": {
@@ -1264,6 +1274,7 @@
       },
       "required": [
         "declarations",
+        "diagnostics",
         "edges",
         "nodes",
         "reasonCodes",
@@ -1369,6 +1380,89 @@
         "transitions",
         "version",
         "work"
+      ],
+      "type": "object"
+    },
+    "terminalDiagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "expectedType": {
+          "description": "expectedType: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "observedTargets": {
+          "description": "observedTargets: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "predicate": {
+          "description": "predicate: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "property": {
+          "description": "property: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "reasonCode": {
+          "description": "reasonCode: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "rule": {
+          "description": "rule: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "ruleDigest": {
+          "description": "ruleDigest: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "scope": {
+          "description": "scope: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceDigest": {
+          "description": "sourceDigest: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "subject": {
+          "description": "subject: source-bound terminal diagnostic observation only; unknown identities stay absent, and no diagnosis authorizes execution, artifact satisfaction or parallel safety.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "observedTargets",
+        "reasonCode",
+        "sourceDigest",
+        "subject"
       ],
       "type": "object"
     },
