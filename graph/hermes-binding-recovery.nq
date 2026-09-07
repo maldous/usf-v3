@@ -26,9 +26,11 @@
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:hermes-binding-recovery:construction-authority> <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:nonClaim> "Construction and offline fixture acceptance do not prove live Linear access, qualified provider capacity, failover, product deployment or whole-platform completion. A fresh CLI-only live run and exact remote readback are separately required." <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:objective> "Recover authenticated original settled Linear binding lineage after source integration without redispatch or renewed source integration, then resume the existing currentness and completion publication path." <urn:usf:graph:hermes-binding-recovery> .
+<urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "src/commands/check.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-linear.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "src/commands/linear-binding.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "src/commands/linear-delivery.ts" <urn:usf:graph:hermes-binding-recovery> .
+<urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "src/realisation/index.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "src/realisation/transition.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "tests/integration/hermes-linear.test.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:contract:hermes-binding-recovery:1> <urn:usf:predicate:permitsWrite> "tests/integration/linear-binding.test.ts" <urn:usf:graph:hermes-binding-recovery> .
@@ -368,9 +370,11 @@
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:taskClassRequirement> "none" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:validation> <urn:usf:validation:hermes-binding-recovery> <urn:usf:graph:hermes-binding-recovery> .
+<urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "src/commands/check.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "src/commands/hermes-linear.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "src/commands/linear-binding.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "src/commands/linear-delivery.ts" <urn:usf:graph:hermes-binding-recovery> .
+<urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "src/realisation/index.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "src/realisation/transition.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "tests/integration/hermes-linear.test.ts" <urn:usf:graph:hermes-binding-recovery> .
 <urn:usf:work:hermes-binding-recovery> <urn:usf:predicate:writePath> "tests/integration/linear-binding.test.ts" <urn:usf:graph:hermes-binding-recovery> .
