@@ -5,6 +5,39 @@
 This checkpoint supersedes the ownership/current-state statements below;
 older identities remain historical evidence, not current authority.
 
+Latest semantic amendment adds graph-owned subject-identity derivation to all
+five record types. Applied transaction:
+sha256:0fd56d13957f8d10d471a50382ddee3b0a293b1a99f1e45c2c79ef0c0ccc36b1.
+Current construction receipt supersedes the convention-only receipt below:
+evidence/construction-authority/ad83b7a0b4b6586b756e07f67fbb42dab75de496de0c8180960723277a11d5aa.json,
+receiptDigest sha256:67f92c812fd2e703a313a2404f3bd74f6761f5be66efece33ff993c434843510.
+Fresh profile-bound work readback reports eligible active construction through
+integrate. The subject-identity primary full gate passed 875 tests and five
+confined checks, exit 0; .usf/inputs/cli-subject-identity-full-check.log.
+This remains semantic/grant validation, not candidate integration acceptance.
+
+All candidate ownership has returned to MAIN; Bohr is frozen. The generated
+descriptor schema digest is
+sha256:b2d722956364aefe993e0940a078525486f82f9107b6488efa353e0154d460f6.
+Thirty-four combined focused tests pass with zero skips/failures. Distinct
+artifact identities are retained in typed nested records; projection collisions
+refuse rather than silently deduplicate. Structural validity and operational
+completeness are separate; either may coexist with executionAuthority=none.
+Latest diagnostic report digest:
+sha256:e7ddf2829af16ec96b872157e585bfe0e223a6eea818ec13894153b16445e73e,
+source basis sha256:7d6e03aa836b0f2082f5867b489a06a55abd45264bfa58f88e62c4cbb95b32e5.
+It still exits 1, with zero descriptors for the actual work, 13 operational
+gaps, unproven parallel safety and unauthenticated terminal closure.
+
+USF-1194 is the bounded child of USF-1192 for native local-authored contribution
+preparation and truthful provenance. It blocks implementation publication,
+not independent semantic authoring. It must use the same canonical kernel and
+existing delivery path; no private packaging script or alternate integrator.
+The previous convention checkpoint was committed and remotely read back at
+b056f734d74ba428114c80d2fcb5c1384ee2edbb, tree
+aec76df8f4236eecdddbb16bd53b21881e4a4c53. Current carrier identities are obtained
+with Git readback; this document does not hash its own commit.
+
 Primary carrier before this checkpoint: HEAD
 4a16be2ccb749ce543dd92e11d53a0bd6088127a, tree
 3e321585d8da5e4d8de6004568e40eeca25e6e1d. The convention-closure manifest
