@@ -1,5 +1,66 @@
 # USF V3 handover
 
+## Coordination and reproducibility checkpoint - 2026-09-07
+
+Latest construction refresh: receipt
+evidence/construction-authority/5073cd3b38364e65b883db8381d7600044be6796cedd1b4f751d54def20dae67.json,
+receiptDigest sha256:b4efe8115d88213ad3c684950a570068f2d89d2c791a6e2b6b83599de503f4c9.
+It follows semantic scope transaction
+sha256:bda01693ddb6e0f2bcad576fb2246590f95dcc8952081154e093051144a0e9e3
+adding the shared schema validator and its unit tests. Fresh work read-back
+reports active construction permission, maximumThrough integrate. This is not
+completion. Bohr owns only those two candidate postimages; MAIN owns the other
+1192 paths. Structured field specifications, canonical schema reuse, recovery
+obligation closure and governed candidate integration remain required.
+
+Metrics proposal lane stopped with model-capacity error. Only a partial 136-line
+.usf/inputs/cli-transition-metrics-definition/cli-transition-metrics-definition.nq
+exists, with no manifest/transaction proposal; MAIN resumes ownership. USF-1190
+records the interruption. Do not load it as authority.
+
+User-authorized host cleanup completed: unused Docker images and build cache,
+root pip cache and apt package cache. Docker read-back: 65 images, zero build
+cache; containers 134 and volumes 4410 unchanged. Root disk now 335G available,
+81% used, compared with 74G/96% baseline. No USF candidate/worktree/runtime
+cleanup occurred. Exact commands/results are in USF-1193 comment
+13dfba51-872a-46bc-aa27-d2391c3eadec. Earlier storage figures below are historical.
+
+USF-1192 remains primary. USF-1193 is its sibling under USF-1189 and owns
+ignored-state dependency classification, safe cleanup, disk accounting and
+clean-clone reproducibility. Metrics remain USF-1190/1176/1173; they consume
+the semantic DAG and never establish completion or execution authority.
+
+Fresh local Git read-back: HEAD and origin tracking ref
+43bca69fd9476d14a71c898e6c62c77fd87c4005, tree
+434d150cefe8492902d673ee980a19dcd5af36f5. This is not a fresh network read-back.
+The CLI definition/manifest/grants and construction receipt
+evidence/construction-authority/bbf1434ab12b6c394b11330e56cc6f407f1adb87f9a4f3da6a836290b6fd320d.json
+remain uncommitted, together with the audit decision and this handover.
+No transition-kernel implementation has been integrated.
+
+Development-only drafts under .usf/inputs/cli-transition-implementation,
+.usf/inputs/cli-transition-metrics-definition and the older recovery/help
+locations below are not installed capability. Required implementation must
+move through governed tracked source and supported CLI contracts. Do not use
+private packaging/lifecycle scripts to bypass missing CLI derivation. A
+descriptor naming evaluators or topological waves does not yet explain exact
+input derivation, proof meaning, interruption recovery or parallel safety.
+
+The retained definition full-check log reports 875 ordinary tests passing,
+zero failures/skips, and five confined fixtures passing. It does not validate
+the ignored implementation drafts. Current metrics history does not support
+a completion ETA; unknown durations and confidence must remain unknown.
+
+Read-only storage baseline: .usf 6.3G, .git 58M; filesystem 96% used with 74G
+available. Git lists 19 worktrees. No deletion has been performed or abandoned
+status inferred from age. USF-1193 records the commands and directory breakdown.
+Next executable audit: use current CLI help and status to establish active
+ownership and recovery references before any cleanup. Continue USF-1192's
+governed descriptor/adapter implementation; missing native derivation remains
+CLI_TRANSITION_UNIMPLEMENTED, not permission for a private helper.
+
+Older checkpoints below retain their historical identities and observations.
+
 ## Primary focus - USF-1192, 2026-09-07
 
 USF-1192 supersedes the immediate USF-1189 delivery sequence. Implement one
@@ -55,7 +116,9 @@ recovery test PASS 1/1, no skips, 298447.56018 ms. This is not live autonomy or
 accepted source. Known gap: runHermesLinearCycle callback still observes the
 fresh binding before retained recovery; full controller-cycle and actual
 pre-integration resume coverage remain. Do not integrate merely from this pass.
-Earlier failed r2-r8 logs and their lineage are retained, not rewritten as passes.
+Earlier r2-r8 logs and their lineage are retained: r7 passed its earlier fixture;
+r8 failed before the two historical-source reader corrections. Neither is
+rewritten as the r9 result.
 
 Frozen UNACCEPTED help source is
 .usf/inputs/provider-classification-help-implementation. Work/profile/manifest
