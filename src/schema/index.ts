@@ -22,6 +22,8 @@ const ALLOWED_KEYWORDS = new Set([
   "format",
   "items",
   "maxItems",
+  "maxLength",
+  "maxProperties",
   "maximum",
   "minItems",
   "minLength",
@@ -32,6 +34,7 @@ const ALLOWED_KEYWORDS = new Set([
   "required",
   "title",
   "type",
+  "uniqueItems",
 ]);
 
 const SCHEMA_MAP_KEYWORDS = new Set(["$defs", "properties"]);
@@ -177,8 +180,10 @@ function stableMessage(keyword: string): string {
     case "const": return "must equal the required constant";
     case "enum": return "must equal an allowed value";
     case "format": return "must match the required format";
+    case "maxLength": return "must not exceed the maximum length";
     case "maximum": return "must not exceed the maximum";
     case "maxItems": return "must not contain more than the maximum number of items";
+    case "maxProperties": return "must not contain more than the maximum number of properties";
     case "minItems": return "must contain at least the minimum number of items";
     case "minLength": return "must satisfy the minimum length";
     case "minimum": return "must not be below the minimum";
@@ -186,6 +191,7 @@ function stableMessage(keyword: string): string {
     case "pattern": return "must match the required pattern";
     case "required": return "missing required property";
     case "type": return "must match the required type";
+    case "uniqueItems": return "must contain unique items";
     default: return "schema validation failed";
   }
 }

@@ -43,7 +43,7 @@ function invoke(
     timeout: 5_000,
     env: {
       ...process.env,
-      PATH: `${shimDirectory}:${process.env.PATH ?? ""}`,
+      PATH: `${shimDirectory}:${process.env.PATH ?? "/usr/bin:/bin"}`,
       GIT_SHIM_LOG: log,
       GIT_SHIM_MODE: mode,
       GIT_TERMINAL_PROMPT: "0",
