@@ -1,5 +1,65 @@
 # USF V3 handover
 
+## Shared admission checkpoint - 2026-09-07
+
+Source carrier 5e3738411238dbfbaca42063ce70f6695a929afb,
+tree e51cffae8275c666152374d36316eb6facd52d1c. Shared
+inspectObservationTransition now authenticates context, canonical schema,
+command/adapter/rule-role bindings and declared output schema/work/profile for
+both native preparation admission and no-effect interrogation. Actual output
+is independently checked after preparation. Serialized adapter declarations,
+duplicate adapters and wrong effect classes do not authenticate mapping.
+Actual semantic-source tests plant changed rules, command path, producer and
+output identities and verify matching refusals. Canonical predicate declarations
+are explicit validation reads, not manually manufactured fixture authority.
+
+Full gate passed 926 ordinary tests, zero failures/skips, and all five confined
+checks, exit 0: `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`.
+Log `.usf/inputs/shared-admission-full-check.log`. Strict targeted tsc passed.
+Independent narrow review found and verified the fix for preparation-only
+declared output checks. This review is not terminal completion acceptance.
+
+Integrated candidate sha256:f61c935fed6e1d811feffe23d9b6e4eaa14223a4557b1d18ca96deb2f7e42fe7;
+construction basis sha256:7afa145f3ab71bc20d638c117890749974c22713d8897f5f0eb7e691ade697fc.
+Both graph-selected checks and both postimage checks passed. Integration request
+sha256:fc273011e8d07c8df264dd7e22dc191c4f512a499777e306b73ec7ebfdd05333;
+observation sha256:4342cde8478b3876d565a9c557f0ed7a9f0df15a41213e62ab7b4572a7556a5d.
+Outcome integration-success/new-advancement/not-required-fast-forward.
+
+Fresh installed `./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json`
+returns 99 gaps and no TRANSITION_ADAPTER_UNMAPPED for the local adapter;
+digest sha256:0b1d05855a4383fb9bdf76b60136a81b92eaf5869991c94c2a9f1817ea719245.
+complete=false, executionAuthority=none, parallelSafety=unproven and
+terminalClosure.equal=false remain. Mapping proves compiled semantic
+compatibility only: native current construction eligibility, exhaustive command
+inventory, whole-path state/evidence/recovery evaluation and parallel permission
+remain separate and unfinished. Current postimage basis
+sha256:dbd817d883119a5a2cd2c0a1e98793d00e82c651551760137f2139abeb626987
+has construction authority none after source movement.
+
+Next semantic authoring transition: inspect current transact help, then author
+and transact a versioned contract-required terminal-closure declaration for this
+exact work/profile. Explicitly bind required transitions; reuse terminalArtifact,
+artifact proofObligation, recoveryContract and recoveryObligation. Declare exact
+bounded traversal predicates, resource types, scope/applicability rules and
+missing-reference/cycle refusal. Generate typed closure-report records through
+the existing field-specification mechanism; wrapper references canonical schema.
+Keep topological sinks, declaration completeness and authenticated satisfaction
+separate. No sink equality, declared proof shape or success may establish closure.
+USF-1192 comments a30b8231-b4ad-46a9-a6b8-6b682b33290d and
+bdcd3d9b-a8ce-4716-9186-c40610728d67 preserve this ownership and evidence.
+After semantic authoring, use current evidence/prove/publish construction help
+and fresh work readback before further bounded source edits. USF-1194 still owns
+native operation-preimage race/interruption coverage; USF-1189 cut-over is not
+accepted. No provider, runtime delivery, completion publication or Linear Done.
+
+Three delivered postimages matched tracked source. Removed redundant
+`.usf/inputs/shared-admission-source`; proposal inputs, failed/superseded
+candidates, check and integration receipts remain bounded temporal history.
+No new development-only implementation dependency. Unrelated worktrees and
+Hermes remain untouched. Final Git publication and stewardship readback are in
+the accompanying Linear checkpoint; this document does not establish those facts.
+
 ## Integrated descriptor safety checkpoint - 2026-09-07
 
 Source carrier: 1d2e27181cfe13698051e2ec658b2e3690dda941,
