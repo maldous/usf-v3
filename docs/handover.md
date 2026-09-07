@@ -1,5 +1,79 @@
 # USF V3 handover
 
+## Non-destructive no-change replay integrated - 2026-09-07 UTC
+
+USF-1192 progressed, not accepted. Semantic carrier
+1fb85c400cb30ed1664969515f47ceffb7e6cc1d and native integration
+eb225ac00fd3d02eaa4229922bba6e509ba74caa, tree
+b4fb403279d66b9dcd669739bc8dc36bb278eeed, implement one scoped prerequisite:
+materialiseNoChangeCandidate authenticates and reuses an exact existing
+workspace under its existing candidate lock. It no longer deletes/rebuilds
+valid retained state. Malformed/missing manifests, unexpected files and altered
+source refuse without deleting retained bytes. Fresh creation and its caught-error
+cleanup remain unchanged. Abrupt partial creation still requires explicit
+recovery work; no crash-atomic creation or power-loss durability is claimed.
+The canonical effect adapter remains unmapped, not admitted by this repair.
+
+Final candidate sha256:8be6773cbca39623dd9249ab0a21879759f569698cd15ecc4c3be929116195dd
+passed scoped TypeScript and both required graph-selected confined checks,
+then integration postimage validation. Native integration request
+sha256:e4af6981450c418e6b2929839711453b18d33ba69a3ecee94819b8f565e3890a,
+observation sha256:8efabfc511a89c2f36b58c5d91c4f50e75aa05963dd18286540797393aa5b1f0.
+Receipt lock wait2.738ms/hold3351.888ms are not end-to-end execution timing.
+Independent source review found no blocker. On the integrated primary tree,
+`node --test tests/integration/work-completion.test.ts` passed4/4, including
+retained real receipt regeneration and directory-FD-backed no-rebuild assertions.
+Corrupt/missing manifests, extra files and changed existing source are all
+explicitly refused and preserved before fixture restoration.
+
+The original UTF-8 contribution resolved to RESOLVE_BASIS_INVALID because its
+leading source comment was misclassified as an absolute path by candidate
+digest canonicalization. Existing graph-generated base64 operation encoding
+carried the exact same bytes through the supported path; no source text or
+path guard was weakened. USF-1194 comment
+c19bd2c7-1462-4dea-941d-ada17b6aa26a records the remaining normalization/error
+classification defect. Earlier candidate9eb7147 had a test callback type error;
+the corrected final candidate is the only accepted source result. Retain
+earlier proposals/observations as unaccepted temporal history.
+
+Current interrogation digest
+sha256:d9fafe876dda9fb693021b6bcd72220e6c1b2cc71d16b516b90392b60108b512
+remains complete=false, executionAuthority=none, parallelSafety=unproven.
+Terminal artifact declaration and required recovery edges remain missing.
+Canonical graph-generated schema digest remains
+sha256:bb96d092ff8628cf9040edf30eca56547b9f65aa911d5bedc250a9c32b67568e.
+No generic operational fields or topology-based parallel admission was added.
+
+Next exact read is `./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json`. Reconcile current construction
+authority, then express typed no-change producer inputs/effects/recovery states
+against this actual reuse/refusal behavior. Missing partial-workspace recovery
+must stay blocked until its supported implementation exists. For checks, reuse
+existing per-obligation receipt recovery and derive the full obligation set;
+do not create a second cohort transaction protocol. Complete-set projection,
+terminal satisfaction, independent safety proof, remaining adapters/inventory
+and CLI-only acceptance remain1192, with1189 cutover still open.
+
+Required implementation remains tracked. Removed104K redundant
+no-change-replay-source after native proposal/integrated-byte comparison;
+no tracked source references that authoring path. Candidates, requests and
+receipts remain intentionally temporal, not a second implementation. Disk334G
+available,81% used. No provider contact, parallel proof, terminal completion,
+ANQR delivery, autonomous cutover or clean-clone acceptance is claimed.
+
+Fresh `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`
+under umask022 exited0:949/949 ordinary tests, zero skips/cancellations, all
+five confined checks passed. Log `.usf/inputs/no-change-replay-full-check.log`.
+Hermes supervisor e2f6e23b399268910ef4311d9,PID2054583 remained live at cycle632,
+with no providerActivity or transactions in its snapshot. Supported handoff
+succeeded for claim sha256:f1acb3ef2f7c2c5c8b46a179541604db45c87ef14a618adaf6f5ba4434947a86,
+generation sha256:b961163c2c1d3ccd394532e31f2661b9ac24aa71e4e711625a3c464c8398cd49.
+Source integration was pushed/read back before this handover update. Obtain
+current HEAD/remote/steward readback; final publication and coordination
+identities are in the matching Linear checkpoint.
+
+
 ## Completion evidence adapter integrated; terminal gaps remain - 2026-09-07 UTC
 
 USF-1192 progressed, not accepted. Semantic carrier 6d72763 and native source
