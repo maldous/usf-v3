@@ -39,6 +39,16 @@ Postintegration construction publication is
 evidence/construction-authority/ac563311638ab215d5816d18ca326fd467c6e98e7963a49d41b5a4badf46e16a.json,
 receipt sha256:ad651bd93b4455ff4612e3fff5b61388f7a62bb051ce5c635ca4f4f9b1ed8836.
 Earlier e66ae3e... is the preimplementation grant; preserve it as history.
+The first full gate then correctly refused
+FIXTURE_PROCESS_CONSTRUCTION_AUTHORITY_INACTIVE because check.ts is a scoped
+fixture-runtime input. Refreshed only that profile through its existing
+construction evidence/proof/publication path, without host or confinement
+changes: evidence/construction-authority/46a6dec095347b5f2bb411202d59412fff404f293e3b663fcf5a9c1ef531cc59.json,
+receipt sha256:e999d2cddbea5ab3b2d5e3937f2ed3fdb0f5587670f87f7cc72fac494f0217d9.
+The CLI work remains construction-active, basis
+sha256:eaccddb20d64f38581accaddda7dedc27bb1ffafa8bd49cf553cbf6f5f902289.
+Final gate log is .usf/inputs/check-receipt-currentness-full-check-retry.log;
+the earlier failed gate is retained separately, never relabelled passing.
 
 The direct sparse-candidate fixture first refused MANIFEST_UNREADABLE. A proposed
 fixture read expansion then refused construction with WORK_DEPENDENCY_CONFLICT
