@@ -1,0 +1,2 @@
+<urn:usf:record:hermes-binding-recovery-grants-empty> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:hermes-binding-recovery-grants> .
+<urn:usf:record:hermes-binding-recovery-grants-empty> <urn:usf:predicate:text> "No construction authority, completion authority or runtime activation is published in this source." <urn:usf:graph:hermes-binding-recovery-grants> .

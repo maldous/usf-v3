@@ -27,6 +27,7 @@
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:mandatoryProofObligation> <urn:usf:proof:hermes-feedback:construction-authority> <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:nonClaim> "Lifecycle-recorder observations remain unadmitted operational facts. This helper does not authenticate acceptance, evidence, proof, completion, provider contact, model-active time, queue time, token usage, cost, charging, model identity, skill provenance or programme improvement. Historical site metrics are not acceptance evidence." <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:objective> "Provide a pure provider-neutral bounded observation helper that preserves exact joins and measurement provenance, consumes supplied settled result references, and emits only advisory accepted-progress/ROI or recurring-failure proposal candidates." <urn:usf:graph:hermes-feedback> .
+<urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-feedback.ts" <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:permitsWrite> "src/observability/hermes-feedback.ts" <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:permitsWrite> "tests/unit/observability/hermes-feedback.test.ts" <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:hermes-feedback> .
@@ -260,5 +261,6 @@
 <urn:usf:work:hermes-feedback> <urn:usf:predicate:taskClassRequirement> "none" <urn:usf:graph:hermes-feedback> .
 <urn:usf:work:hermes-feedback> <urn:usf:predicate:type> <urn:usf:type:WorkPacket> <urn:usf:graph:hermes-feedback> .
 <urn:usf:work:hermes-feedback> <urn:usf:predicate:validation> <urn:usf:validation:hermes-feedback> <urn:usf:graph:hermes-feedback> .
+<urn:usf:work:hermes-feedback> <urn:usf:predicate:writePath> "src/commands/hermes-feedback.ts" <urn:usf:graph:hermes-feedback> .
 <urn:usf:work:hermes-feedback> <urn:usf:predicate:writePath> "src/observability/hermes-feedback.ts" <urn:usf:graph:hermes-feedback> .
 <urn:usf:work:hermes-feedback> <urn:usf:predicate:writePath> "tests/unit/observability/hermes-feedback.test.ts" <urn:usf:graph:hermes-feedback> .
