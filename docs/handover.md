@@ -1,5 +1,96 @@
 # USF V3 handover
 
+## Terminal census integrated; full gate interrupted - 2026-09-07 UTC
+
+Local source carrier 6d41fa5672fadc2f5548720cad3c6300dcd58f7e,
+tree d58dbee6dcea773f0fa933054ecc1a52c3b17d13. Preceding semantic carrier
+d95a182 declares terminal declaration/policy/edge rules and canonical generated
+records. These commits are intentionally unpushed: the current full gate did
+not pass. Last pushed/read-back checkpoint remains 09be45f. Do not cite the
+earlier 930-test pass as validation of this delta.
+
+Implemented a no-effect graph-declared typed-edge terminal obligation census.
+Canonical schema digest sha256:524de9b1a90e8c5bbd8e551f8d7b03477b8eadfb03a776289dbe96b4256eb899
+was generated through installed transition schema and installed via transact.
+The interrogation wrapper references canonical terminalAssessment, not a
+second schema. Current installed inspection of work cli-transition-definition
+under graph/manifests/cli-transition-definition.json exposes 14 actual nodes
+and 17 rule-linked edges, including completion evidence/proof/validation and
+recovery. Actual source-row digests are retained. All nodes and satisfaction
+are unverified; structuralComplete=false with
+TRANSITION_TERMINAL_ARTIFACT_DECLARATION_MISSING. Global complete=false,
+executionAuthority=none, parallelSafety=unproven, terminalClosure.equal=false,
+101 gaps. Report sha256:1226bbc6084886b49f041ae3b044fbdf2da77d771bd78ea4bb1642f1f65e4f7f;
+semantic basis sha256:959fca90123b815528f6e350deb2fd2aadd39c180c81c179c18d59443fec67b0.
+
+Candidate sha256:5d3b994b0a5456e23c164a2c69db7faedd2ea2b9a49f412918a16b47d8f3c03e,
+construction basis sha256:e72d0383fdf1f6bda19bcf4ada937b384b26738ae9d8aab2fdb223537edc8614.
+Focused 45/45, strict targeted tsc, both graph-selected checks and postimage
+checks passed. Read-only review found seeded artifact scope, hidden longest
+path depth and producer lineage gaps; all fixed with regressions before
+integration. Producer consistency is shared with existing coverage.
+Integration request sha256:28f606c21de6c010a7fc20d176d223b7674a879f228a8f771336d681cda5a38c;
+observation sha256:1caaa3e125b282c85702e0d40898b70e5922df4894e254abdc804ef79765bc7f.
+Current postimage basis sha256:a011d248ba873e2e64334f8f379ccc72f48585574e003bb0950b1ca4cbafda69
+has construction authority none. No old grant authorizes the next repair.
+
+### Immediate recovery defect: USF-1195
+
+Full command `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check`
+hung in tests/unit/realisation/workspace.test.ts after the injected 1ms wall /
+5ms grace integration timeout. Log .usf/inputs/terminal-census-full-check.log
+is an interrupted run, exit 130, NOT a pass. Owned test PID3996914 remained
+in ep_poll; orphan Bubblewrap PID3997792, PGID3997791, PPID3247 retained output
+sockets 150273836/150273838 for minutes. Its exact argv bound the owned fixture
+.usf/tmp/usf-realisation-t2Bzd9/repo/.usf/integration-worktrees/ffff... .
+After readback, cancelled only owned gate PGID3990627 with SIGINT and removed
+only owned orphan PGID3997791 with SIGKILL. All recorded PIDs are absent;
+the test fixture directory is absent. Hermes was not signalled or restarted.
+
+Independent source review confirms src/realisation/transition.ts settles on
+direct-child exit, clearing escalation before descendant/pipe cleanup. The
+grace path also leaves streams open. Leader exit is not process-group or
+stdio closure. USF-1195 (52e6d6f6-a09c-453b-a89c-e12f3738174a), urgent child
+of1192, owns this separate recovery defect and blocks full acceptance.
+
+Next executable transition: inspect current transact/work authority, then
+author a bounded repair requirement and exact source scope before editing
+src/realisation/transition.ts and tests/unit/realisation/workspace.test.ts.
+Current1192 constraints keep integration handlers read-only; reconcile that
+explicitly or select an admitted owning work, never bypass it. Refine the
+existing integration timeout requirement to distinguish leader exit from
+bounded owned-group and pipe cleanup. Retain escalation during timeout,
+destroy owned streams at forced settlement, settle once, preserve actual
+signal/timeout observations; successful signal delivery is not proof of death.
+Add deterministic leader-exits-first/retained-pipe and startup-timeout
+regressions, without weakening confinement or skipping existing checks.
+Then fresh construction evidence/proof/publication, native candidate path,
+focused/governed checks, integrate and full gate before pushing these commits.
+Do not simply rerun until green or create a private cleanup helper.
+
+### Remaining1192 mapping
+
+Publication policy cli-transition-definition-no-change-completion:1 already
+binds completion-evidence-candidate, completion-proof-bundle and
+work-completion-publication-receipt schemas to evidence-completion,
+prove-completion and publish-work-completion commands. These are not yet
+work/profile-bound CliArtifactContracts or reciprocal producer descriptors.
+Author those mappings, explicit receipt terminality and complete consumers,
+then applicability/currentness/satisfaction interpretation. Remote Linear
+reconciliation needs an explicit selected binding/applicability/readback
+contract; issue linkage alone does not make it a semantic terminal artifact.
+USF-1192 comments7332f29d-0508-4866-be36-c640d673a2f7 and
+69b02aa0-26bf-4906-9518-4521f20085ff retain exact progress and next mappings.
+
+All three integrated postimages matched the temporary authoring copy; removed
+redundant136K .usf/inputs/terminal-source. Proposals, rejected/superseded
+candidates and receipts remain bounded temporal history (final workspace5.3M),
+not required implementation. Disk334Gavailable/81%used. Hermes
+e2f6e23b399268910ef4311d9 PID2054583 remained live, cycle590, no provider
+activity/transactions; selected ANQR ready0 is not programme completion.
+No full-gate, push, completion publication, independent parallel proof,
+provider or autonomous delivery claim for this checkpoint.
+
 ## Schema derivation CLI checkpoint - 2026-09-07
 
 Source carrier 9144fe41c86579735e342ac127756db9839aa6e1,
