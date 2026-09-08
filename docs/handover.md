@@ -1,5 +1,48 @@
 # USF V3 handover
 
+## Canonical schema registry integrated - 2026-09-08 UTC
+
+Accepted source HEAD 9b9c12a85b0a007ee7e0029f334ec4f2502cc7ad integrates
+the shared external-schema registry, all five transition validator consumers,
+typed native dependency-limit refusal preservation, and schema/coverage tests.
+All five file postimages match candidate
+b7f38fc99cb1b2b385f64b7cd83cc9dc540d7c6349eef546e5e220ee0386f3f5.
+Integration observation c9eea52c23ce4e7a40c8379d7cb65bf963be02f6b9de79dd43ea643c2195c5a8.
+Both confined graph-selected checks and both independent postimage validations
+passed without timeout. Check receipt digests: CLI f2c58379fb92bf0fca4d574fcdc10326de157cb5a600b3bc3ad3e26c55437e9e;
+local 8d16c028ad925e377ffcdea89b7e2f0ce28605cf0f9ed96f771a18a61647bac5.
+Lock wait 4.386ms, hold 5043.914ms; total elapsed is unknown. Focused registry
+8/8, coverage contract 63/63, command regressions 6/6 (25.723s), and TypeScript
+passed. No full gate or push follows the historical published boundary below.
+
+Commit 8139886584d3f4a092543a087c7f2e5b573348fb repaired duplicate runtime
+file bindings across named graphs and one absent, uninvoked future fixture.
+The existing validation commands and denominator are unchanged. Both native
+runtime closures now validate, with 76/68 file bindings and no missing paths.
+Old candidate e70cc4102d7b6b78044c19b53472edf6fd21c87e0631157850d9e5c002cab9f9
+is retained stale/refused, not checked or integrated. Construction publication
+9587d59d9faecd4ac028ff4954fc28ae98aba1cb472e194f57428d54260fccdb was verified;
+source integration changes its basis, so rederive current authority, never reuse it.
+
+USF-1192 remains the implementation owner. The ordinary four-adapter proposal
+exceeds the existing 1000-resource work closure (1164 measured). Do not raise
+the limit or drop operational, terminal or recovery authority. The next bounded
+work partitions only parser-coverage, parallel-safety and operational-support
+schema definitions into independently generated, authenticated modules using
+the same kernel. The estimated 956-resource cut is not validated acceptance.
+Native ordinary adapters and CLI/parser/help candidates remain unintegrated.
+USF-1197 receipts wait for final producer bytes; USF-1189 is independent cutover.
+
+Next executable interrogation:
+./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json
+
+Linear USF-1192 comment 98c5aa28-6f7a-4373-94fd-46bc6f4292e0 records this
+boundary. Discover current stewardship through the CLI and preserve the live
+Hermes supervisor; no historical session/claim value grants ownership. Required
+registry behavior is tracked; ignored proposal inputs are temporal, not BAU code.
+Unrelated artifacts/ are preserved. Topology, schema validity and idle Hermes
+do not prove parallel safety, terminal completion or autonomous delivery.
+
 ## Native ordinary recovery integrated - 2026-09-08 UTC
 
 This supersedes the ordinary-workspace safety finding below. Source commit
