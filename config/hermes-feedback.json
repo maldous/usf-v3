@@ -33,13 +33,13 @@
   },
   "contextAllowlist": [
     {
-      "identity": "urn:usf:context:usf-operator:3",
-      "contentDigest": "sha256:b4189e32ef5b74dfe338c3f10e3ad3a05f53e1c7b37631cb965a2bd493d67220",
+      "identity": "urn:usf:context:usf-operator:4",
+      "contentDigest": "sha256:a9e7e32b4abe989fa20357564a60ef3e5ec8341fdc1918f7649ed8ba418372f7",
       "contentClass": "public-governed-guidance",
       "provenanceIdentity": "urn:usf:provenance:tracked-context",
       "sourceName": "usf-v3-operator",
-      "sourceDigest": "sha256:122bf4fcfdd5c04ea4aaab6ea7af97bca948220bdf2103d35bebd0b15ed2cf9d",
-      "importVersion": "usf-v3-operator-guidance:3"
+      "sourceDigest": "sha256:92c0eb9ab5f0e4440aad5d7f51129b04d2119da0cfbf7afa1ff294e4ba3ec0bd",
+      "importVersion": "usf-v3-operator-guidance:4"
     }
   ]
 }

@@ -8,8 +8,8 @@ allowlist.
 
 This document contains a bounded attributed adaptation of
 `usf-v3-operator`, source digest
-`sha256:122bf4fcfdd5c04ea4aaab6ea7af97bca948220bdf2103d35bebd0b15ed2cf9d`,
-import version `usf-v3-operator-guidance:3`. It is repository content, not a
+`sha256:92c0eb9ab5f0e4440aad5d7f51129b04d2119da0cfbf7afa1ff294e4ba3ec0bd`,
+import version `usf-v3-operator-guidance:4`. It is repository content, not a
 runtime dependency on a Codex host path, session, credential, or private skill
 installation. The adaptation is limited to these operating rules:
 
@@ -50,13 +50,22 @@ installation. The adaptation is limited to these operating rules:
   but required implementations, contracts and guidance must be tracked.
 - Keep exact declared scope and concurrent exclusion. A proposal cannot widen
   its write set, select unrelated work, or bypass the current controller.
+- Current stewardship uses a caller-created opaque session identifier, not an
+  externally issued credential. An authorized fresh controller can generate a
+  fresh random identifier in one durable shell environment without printing it,
+  then use supported claim/recover. The CLI binds the digest to the actual
+  controlling parent. Never copy an old session, invent process identity, edit
+  claim records, bypass a live owner or replace a healthy supervisor. Keep
+  guarded operations under that parent and hand off before ending it. This does
+  not authorize generating or replacing provider credentials.
 - When a retained completed attempt requires replacement, create a governed
   superseding binding, prepare/run that exact binding, and read its settled
   attempt/result. Do not replay the stale binding or manufacture closure.
 
-Version 3 adds operator-directed confined-input and validation-family guidance
-from the USF-1192 parser cohort. Its scope is repository validation and diagnostic
-discipline, not provider qualification, semantic acceptance or host admission.
+Version 4 retains the confined-input and validation-family guidance and corrects
+the operator's mistaken external-credential classification of stewardship session
+initialization. Its scope is authorized caller setup and repository validation,
+not provider qualification, semantic acceptance or host admission.
 It is not an automatically learned skill proposal or a measured ROI claim.
 
 These imported rules are provider-neutral. They are advisory context for this
