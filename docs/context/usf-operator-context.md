@@ -8,8 +8,8 @@ allowlist.
 
 This document contains a bounded attributed adaptation of
 `usf-v3-operator`, source digest
-`sha256:a3cff97711f1c50ef42b7f8b92f179436353dee76ce3c64cad519b59db77cc04`,
-import version `usf-v3-operator-guidance:2`. It is repository content, not a
+`sha256:122bf4fcfdd5c04ea4aaab6ea7af97bca948220bdf2103d35bebd0b15ed2cf9d`,
+import version `usf-v3-operator-guidance:3`. It is repository content, not a
 runtime dependency on a Codex host path, session, credential, or private skill
 installation. The adaptation is limited to these operating rules:
 
@@ -27,6 +27,22 @@ installation. The adaptation is limited to these operating rules:
   declared validation closure. Run the registered test set, including help and
   parser contracts, before the full gate. An isolated overlay is diagnostic
   evidence, not governed acceptance.
+- Before confined validation, compare every runtime import, file read and
+  recursively imported manifest with the candidate tree and admitted runtime
+  read closure. Include helper fixtures in this audit. A broad read-only overlay
+  can hide undeclared dependencies; an incomplete copied overlay can omit valid
+  repository inputs. Neither establishes confined acceptance.
+- Keep whole-graph regressions in their governed whole-graph test family. Do
+  not widen runtime limits or skip assertions to fit an adapter check. Preserve
+  the original regression and its negative cases when correcting test ownership.
+- Inspect command-size limits and the candidate/postimage obligation-set rule
+  before changing validation coverage. Replace a duplicated test entry only if
+  another required obligation retains that coverage. Do not silently change the
+  required receipt denominator.
+- When a failed check omits diagnostic details, retain the refusal and record
+  the CLI observability gap. Inspect dependencies deterministically and repair
+  the supported diagnostic boundary rather than blindly retrying or introducing
+  ignored lifecycle scripts.
 - Keep adapter mapping, passing checks and authenticated terminal completion
   separate. DAG topology alone cannot establish parallel safety.
 - Record recurring operational gaps in Linear and fix the supported CLI surface.
@@ -38,7 +54,9 @@ installation. The adaptation is limited to these operating rules:
   superseding binding, prepare/run that exact binding, and read its settled
   attempt/result. Do not replay the stale binding or manufacture closure.
 
-Version 2 includes explicit operator-directed frontier and validation guidance.
+Version 3 adds operator-directed confined-input and validation-family guidance
+from the USF-1192 parser cohort. Its scope is repository validation and diagnostic
+discipline, not provider qualification, semantic acceptance or host admission.
 It is not an automatically learned skill proposal or a measured ROI claim.
 
 These imported rules are provider-neutral. They are advisory context for this

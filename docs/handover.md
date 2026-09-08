@@ -1,5 +1,98 @@
 # USF V3 handover
 
+## Parser bundle and confined-input correction - 2026-09-08 UTC
+
+This checkpoint supersedes current-state statements below; earlier sections
+remain historical evidence. USF-1192 owns implementation of the complete circuit;
+USF-1189 owns independent proof/cutover only. Atlas remains suspended.
+
+Current source/admission HEAD: f8ab894591f077ff245dc88bea8bec26cdb624ad,
+anqr-experience-realisation, ten commits ahead of origin and intentionally
+unpushed pending coherent acceptance. Tracked tree was clean at this readback;
+unrelated untracked artifacts are preserved. No new full gate has run. The last
+full-gated source remains 1b1b311fedc5b48c46df2634df8f4f159ad5be60: 995/995,
+zero failures/skips/cancellations, plus five graph-selected fixture checks.
+
+Scoped local integrations since that gate include native interrogation at
+2266e56e6a01b7de009cf6f9832a6184b92e34fa and evaluator authentication at
+84e9ff4b78a6454525d729886e4bef10fb41c0e6. Last installed current frontier:
+sha256:e8e38b3b7de8820552e8a899210a62e050682a7d532bc16df86083960140d45d,
+86 diagnostics: 73 implementation-only leaves, one inventory, ten parallel
+operational rules, and two terminal diagnostics. Zero unmapped adapters and
+zero evaluator diagnostics; complete=false, executionAuthority=none,
+parallelSafety=unproven. This reduced the earlier 105 diagnostic frontier by 19,
+but does not establish terminal completion or autonomous delivery.
+
+The unintegrated parser bundle binds five actual CLI selectors to the canonical
+parser contract and generated schema, retaining five explicit legacy fallback
+regions. It does not clear whole-command ownership for legacy dispatch. The
+composed read-only inspection retained the DAG and returned parserCoverage
+partial, five matches, five unresolved regions, zero parser diagnostics. Its
+111 overall diagnostics were overlay currentness refusals, not installed progress.
+
+Preserved failed candidates, each CHECK_FAILED/exit1 without a check receipt:
+- a22831b4f9cca3a2db2d1fb25b8eda3d2287bdde1dc47a3648e98ff4670ae6e1
+- 5ed522fa07817ae5e5f9a915ed0ef86617038c54588b56f1c9a70b6a41a20ede
+- 1161ccb4dbe6a4df09640ca99674bd6dbdbb40d62a3b320d91d6ce67d9c13301
+
+Do not repair their manifests, intents or receipts. The current check CLI
+discards failure output; bounded diagnostic persistence remains a USF-1192 gap.
+Static inspection proved an undeclared integrity.ts import and two independent
+whole-manifest fixture loads. The selected load needed 19 absent graph inputs;
+its grants file exceeded the preserved 512 KiB authority-file limit. Broad
+read-only overlay tests could see these inputs and were not confinement proof.
+
+The correction preserves the full selected-production integrity regression and
+both negative mutations in tests/unit/graph/integrity.test.ts. Compact parser
+fixtures now read only seven already admitted authored partitions and perform
+no full manifest load. The two required validation identities remain unchanged;
+the first command replaces a duplicated local-contribution test entry with the
+parser test, while the second required obligation retains the original test.
+No test drop, runner-limit increase, third obligation or integrator waiver.
+
+Frozen current test postimages under
+.usf/inputs/usf1192-evaluator-trace-gate-tests/postimages/:
+- tests/contract/cli-transition-coverage.test.ts:
+  6501b53c9ee2109429f6e2cf1c149f4f572691f327267ff936f04fc781715346
+- tests/unit/graph/integrity.test.ts:
+  b2ec929ac9de54eb3939fb57c0676f3df42ee6e1778e8c43a4f5c8eec8dc7ac0
+
+Compact contract tests: 61/61, 7191.775644ms. Integrity family: 20/20,
+432.938072ms. Primary-backed typecheck before the final fixture-only correction
+passed in 7801ms. Logs reside in the same lane's runtime directory. These are
+focused observations, not real confined acceptance of the corrected candidate.
+
+Exact next transition: prepare a fresh combined local candidate through
+resolve prepare-local using the supported root-only request. Reuse the v3
+validation request and rebuild the implementation request with the frozen
+contract hash above; the old v3 contribution contains the rejected full-manifest
+fixture and must not be replayed as corrected. Then resolve, apply, run both
+graph-selected checks and integrate only after authenticated passes. Do not
+spend the full gate before composed checks and exact frontier readback are ready.
+All required implementation must leave ignored postimages through integration.
+
+Current construction receipt:
+evidence/construction-authority/aba62603b38cd01c391e6120c7734f882f8b1572f4ec5f3711842efa9c09e5c0.json,
+digest afdcaadb2c4002c40dcfd1ee82815a433334e72a8b37e1a4e3e0d1a0f7f3ddf8.
+Main remains the sole integration owner; Turing owns only the two frozen test
+postimages. No competing supervisor or integrator has been created. Hermes
+e2f6e23b399268910ef4311d9/PID2054583 remained live, with no provider activity or
+transactions in the latest status read. Recheck lifecycle and stewardship via
+the CLI; never copy a historical claim identity into a new process.
+
+Remaining dependency path: accepted parser bundle, resolve/apply consumer and
+terminal-denominator authentication, remaining command ownership and parallel
+proof, genuine confined USF-1197 receipt consumption, then complete CLI-only
+Linear reconciliation and delivery acceptance. The local-preparation artifact
+needs its ordinary resolve consumer, not terminal status. Provider success,
+idle Hermes and Linear prose do not establish any of these outcomes.
+
+Linear USF-1192 contains current lane ownership, candidate failures and evidence;
+checkpoint 04ef6869-c346-4a2a-8090-fff259d68b21 records the first test-family
+correction. Operator context version 3 records these bounded validation lessons
+as provider-neutral guidance, not semantic authority or measured ROI.
+
+
 ## Full gate passed and source published - 2026-09-08 UTC
 
 This checkpoint supersedes current-state statements below; retained sections are history.
