@@ -123,6 +123,9 @@
 <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
 <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
 <urn:usf:schema:work-completion-publication-receipt:1> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-receipt.schema.json" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-receipt:2> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-receipt:2> <urn:usf:predicate:version> "2" <urn:usf:graph:profile-authority> .
+<urn:usf:schema:work-completion-publication-receipt:2> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-receipt-v2.schema.json" <urn:usf:graph:profile-authority> .
 <urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:profile-authority> .
 <urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:version> "1" <urn:usf:graph:profile-authority> .
 <urn:usf:schema:work-completion-publication-result:1> <urn:usf:predicate:repositoryPath> "schemas/work-completion-publication-result.schema.json" <urn:usf:graph:profile-authority> .

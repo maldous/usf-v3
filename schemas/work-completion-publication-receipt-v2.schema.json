@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:work-completion-publication-receipt:2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "algorithmIri", "algorithmVersion", "algorithmResourceDigest", "publicationPolicyIri", "publicationPolicyDigest", "publicationIntentDigest", "targetGraphIri", "semanticSourcePath", "publicationReceiptPath", "profileIri", "profileVersion", "manifestPath", "cohortManifestDigest", "authorityDependencies", "authorityDependencyDigest", "baseSourceDigest", "resultingSourceDigest", "baseSemanticDigest", "resultingSemanticDigest", "memberCount", "members", "operations", "deltaDigest", "validationResultDigest", "nonClaims", "receiptDigest"],
+  "properties": {
+    "schema": { "const": "urn:usf:work-completion-publication-receipt:2" },
+    "status": { "const": "verified" },
+    "algorithmIri": { "$ref": "#/$defs/iri" },
+    "algorithmVersion": { "const": "1" },
+    "algorithmResourceDigest": { "$ref": "#/$defs/digest" },
+    "publicationPolicyIri": { "$ref": "#/$defs/iri" },
+    "publicationPolicyDigest": { "$ref": "#/$defs/digest" },
+    "publicationIntentDigest": { "$ref": "#/$defs/digest" },
+    "targetGraphIri": { "$ref": "#/$defs/iri" },
+    "semanticSourcePath": { "$ref": "#/$defs/path" },
+    "publicationReceiptPath": { "type": "string", "pattern": "^evidence/work-completion/[0-9a-f]{64}\\.json$" },
+    "profileIri": { "$ref": "#/$defs/iri" },
+    "profileVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" },
+    "manifestPath": { "$ref": "#/$defs/path" },
+    "cohortManifestDigest": { "$ref": "#/$defs/digest" },
+    "authorityDependencies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "path", "digest"],
+        "properties": {
+          "kind": { "enum": ["schema", "tool"] },
+          "path": { "$ref": "#/$defs/path" },
+          "digest": { "$ref": "#/$defs/digest" }
+        }
+      }
+    },
+    "authorityDependencyDigest": { "$ref": "#/$defs/digest" },
+    "baseSourceDigest": { "$ref": "#/$defs/digest" },
+    "resultingSourceDigest": { "$ref": "#/$defs/digest" },
+    "baseSemanticDigest": { "$ref": "#/$defs/digest" },
+    "resultingSemanticDigest": { "$ref": "#/$defs/digest" },
+    "memberCount": { "type": "integer", "minimum": 1, "maximum": 32 },
+    "members": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ordinal", "workIri", "manifestPath", "manifestDigest", "realisationReceiptIri", "realisationDigest", "evidenceIri", "evidenceDigest", "proofResultIri", "proofDigest", "realisationBasisDigest", "scopedDependencyDigest", "candidateDigest", "policyDigest", "publicationIntentDigest"],
+        "properties": {
+          "ordinal": { "type": "integer", "minimum": 1, "maximum": 32 },
+          "workIri": { "$ref": "#/$defs/iri" },
+          "manifestPath": { "$ref": "#/$defs/path" },
+          "manifestDigest": { "$ref": "#/$defs/digest" },
+          "realisationReceiptIri": { "$ref": "#/$defs/iri" },
+          "realisationDigest": { "$ref": "#/$defs/digest" },
+          "evidenceIri": { "$ref": "#/$defs/iri" },
+          "evidenceDigest": { "$ref": "#/$defs/digest" },
+          "proofResultIri": { "$ref": "#/$defs/iri" },
+          "proofDigest": { "$ref": "#/$defs/digest" },
+          "realisationBasisDigest": { "$ref": "#/$defs/digest" },
+          "scopedDependencyDigest": { "$ref": "#/$defs/digest" },
+          "candidateDigest": { "$ref": "#/$defs/digest" },
+          "policyDigest": { "$ref": "#/$defs/digest" },
+          "publicationIntentDigest": { "$ref": "#/$defs/digest" }
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ordinal", "kind", "sourcePath", "line"],
+        "properties": {
+          "ordinal": { "type": "integer", "minimum": 1 },
+          "kind": { "const": "add" },
+          "sourcePath": { "$ref": "#/$defs/path" },
+          "line": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "deltaDigest": { "$ref": "#/$defs/digest" },
+    "validationResultDigest": { "$ref": "#/$defs/digest" },
+    "nonClaims": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "receiptDigest": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "iri": { "type": "string", "pattern": "^urn:[^<>\\s]+$" },
+    "path": { "type": "string", "pattern": "^(?!\\.git(?:/|$))(?!\\.usf(?:/|$))(?!\\.env(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$" }
+  }
+}
