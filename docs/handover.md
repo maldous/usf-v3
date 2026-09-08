@@ -1,5 +1,66 @@
 # USF V3 handover
 
+## Full gate passed and source published - 2026-09-08 UTC
+
+This checkpoint supersedes current-state statements below; retained sections are history.
+Validated and remote-read-back source: 1b1b311fedc5b48c46df2634df8f4f159ad5be60,
+origin/anqr-experience-realisation. Full command
+COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check
+settled exit0:995/995 tests, zero failures/skips/cancellations, runner3137165.73072ms,
+total3192.18s; all five graph-selected fixture checks passed. Exec85093 is terminal.
+Log .usf/inputs/usf1192-proof-publication-repair-full-check-1b1b311.log includes
+all five receipt paths for fixture candidate
+sha256:b5ff99609b16b4dacd9caea6fc721084383e72426aee32e09452a15ddee11d62.
+All five canonical publication interruption/replay cases passed. This documentation
+transaction follows the validated source boundary; no repeat full gate is warranted.
+
+Fresh frontier sha256:42c179d5065162d18a3cd9cebdec0851c663170df3f6c761d1d25f438a75db98:
+105 diagnostics,0unmapped;23 operational rules,73 implementation-only leaves,
+1 inventory,6 evaluators,1 terminal closure,1 terminal obligation.
+complete=false,executionAuthority=none,parallelSafety=unproven.
+USF-1192 owns implementation; USF-1189 only independent proof/cutover. Atlas suspended.
+
+Next coherent candidate: native operational-support interrogation. Main kernel
+.usf/inputs/usf1192-operational-support-kernel/postimages/src/graph/cli-transitions.ts
+SHA256789d3b78e4b16a82bd71f6a0411be7de5e264474f4ffb60a8f3f756faa9dfedb
+binds visible support trace into report digest. Adversarial5/5pass312.517ms,
+log .usf/inputs/usf1192-operational-support-tests/operational-support-invariants-run2.log.
+This is isolated evidence, not schema-aligned or integrated acceptance. Bohr owns
+native shared-context extraction, including existing admitted src/realisation/index.ts
+for read-only authentication without locks; producers retain native locking. Main owns
+kernel/command integration; Mendel owns generated semantic schema; Turing owns ordered
+path tests. Native facts do not interpret descriptor roles; canonical transition.ts does.
+Missing prerequisites must remain distinct from rule coverage and execution authority.
+
+Rejected as acceptance-ready: manual v2 schema/add-only output binding. Generated
+draft .usf/inputs/usf1192-operational-support-generated-records/ still needs exact
+native refusal codes, closed fact kinds and ordered outputPath semantics. Set-like
+collection generation cannot reject repeated path segments. Repair the canonical
+schema rule, not a shadow schema/parser. No graph/schema-only full gate.
+
+USF-1197 is the bounded receipt-handoff child. Maxwell owns four test/fixture paths;
+Euclid independently reviews. Direct producer12.13s and consumer26.13s passed;
+later mode-2-branch direct regression59.10s passed. None is actual mode-2 acceptance.
+Remaining: confined consumption with complete construction prerequisites, truthful
+source postimage provenance, complete generator invocation, actual no-child guard,
+and retained-byte negative matrix. Helper counters, dirty HEAD provenance and skips
+are not proof. Current candidates and review are recorded in Linear, not integrated.
+
+Next executable transition is read-only re-interrogation:
+./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json
+Finish both candidate lanes, focused checks and exact graph-selected validation;
+one new full gate only when a coherent diagnostic family can be accepted.
+
+Hermes supervisor e2f6e23b399268910ef4311d9/PID2054583 remained live. No provider,
+credential, paid fallback, production or Atlas effects. Steward parent597933 recovered
+through supported CLI after gate; reread status before mutation, not historical claims.
+Accepted integrations settled; isolated candidates remain intentionally retained active
+runtime state. Do not prune active worktrees. No USF-1192 completion, USF-1189 cutover,
+parallel-safety or autonomous-delivery claim follows from this gate/publication.
+Linear checkpoints92817676-ae65-40e5-b68f-793e30678b08 and
+ecb0c0cd-312b-41c3-9b5b-48927dc1b266; settled gate evidence follows.
+
+
 ## Integrated repair and staged-receipt gap - 2026-09-08 UTC
 
 This checkpoint supersedes earlier current-state claims below.
