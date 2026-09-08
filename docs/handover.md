@@ -1,5 +1,33 @@
 # USF V3 handover
 
+## Steward session correction - 2026-09-08 UTC
+
+The earlier STEWARD_SESSION_REQUIRED blocker was an operator interpretation
+error, not an unavailable credential. Current sessionDigest in
+src/continuous/stewardship.ts accepts a caller-supplied opaque identifier;
+claimStewardship binds its digest to the actual same-owner controlling parent.
+It is not a provider credential or a pre-existing externally issued identity.
+
+For authorized takeover, keep one durable shell, generate a fresh random session
+identifier in its environment without printing it, and invoke the supported
+hermes steward claim/recover path. Never copy an old session, invent a process
+identity, edit claim records, bypass live-owner refusal, or replace Hermes.
+Keep guarded operations under that same controlling parent and use supported
+handoff/release when ending it. Missing environment alone is not an external
+blocker when establishing a fresh caller session is authorized.
+
+Fresh supported recovery succeeded with controller PID61447/startTicks99070123,
+claim13c92387de825b43c20b1c4c567f474b8673a17098d6c68c24ccefbdd21e93de,
+generation9d6bf302808684f96a4682faefaa8985263abf0d0308a573862d02b88c332e71.
+The existing supervisor PID2054583/startTicks74413076 was preserved. These are
+historical readback identities, not values a successor may reuse as ownership.
+
+USF-1192 remains incomplete. The next implementation boundary is still ordinary
+changed-workspace recovery, branch applicability and its complete consumer chain.
+No source adapter, full gate, terminal completion or USF-1189 cutover is claimed
+by this operational correction. Earlier Linear blocker comments are superseded.
+
+
 ## Integrated parser and current frontier - 2026-09-08 UTC
 
 This supersedes the unintegrated parser status below. CLI/source bundle committed
