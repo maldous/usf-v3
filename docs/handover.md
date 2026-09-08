@@ -1,5 +1,58 @@
 # USF V3 handover
 
+## Integrated parser and current frontier - 2026-09-08 UTC
+
+This supersedes the unintegrated parser status below. CLI/source bundle committed
+through governed integration at a028891daf73f2165e3b03453af33ebf059c48b6;
+all eleven proposed file bytes matched readback. Both required confined checks
+and both independently derived postimage checks passed. Integration observation
+56fea8280a14ac355ae906ab38a835c9971667f84675843784d462dc1e76fdbe,
+lock wait 4.523ms, hold 4718.795ms, no timeout. Evidence:
+.usf/inputs/usf1192-parser-v4-{check-cli,check-local,integration}.json.
+
+Current construction publication is committed at e8bd1ec, receipt
+evidence/construction-authority/dc7dcd294c2c454cac86e13b4a391a0247365daf65732f99abee0252e4248e78.json,
+digest fc4eb1440e5bb64899ee8fd4c10a9244ba7ae37dfeb7b157126fabd0cc6dd1af.
+Settled installed frontier in .usf/inputs/usf1192-parser-current-frontier.json:
+833962e617870134159aa758be1b5d2b685752a1ddb27c50666493ec19416228,
+86 diagnostics: 73 implementation-only leaves, one inventory, ten parallel
+operational rules, two terminal. Zero unmapped adapters/evaluator diagnostics;
+five matched canonical parser selectors, five legacy fallback regions, zero
+parser diagnostics. Six descriptors/five waves remain usable. No claim of a
+further aggregate reduction from the previous current 86-diagnostic boundary.
+complete=false, executionAuthority=none, parallelSafety=unproven.
+
+Operator skill validation and tracked version-3 feedback/context tests passed
+(26/26). The advisory guidance and earlier handover checkpoint are committed at
+2a404cc1cb61e683252dbaae74d380fbdc546e4f and recorded in USF-1190 and USF-1192.
+No full gate or push has run since the earlier 995-test published boundary;
+the branch was thirteen commits ahead before this documentation checkpoint.
+Tracked state was clean apart from preserved unrelated untracked artifacts.
+All required parser implementation now lives in tracked source/schema/tests;
+ignored candidates and receipts are retained runtime/provenance, not a dependency.
+
+Next operational command remains the registered transition inspect for
+urn:usf:work:cli-transition-definition and graph/manifests/cli-transition-definition.json.
+The next implementation boundary must include ordinary change-workspace
+recovery and the complete consumer chain, not just move an unconsumed sink.
+Resolve/apply must use distinct Candidate and changed-workspace artifact
+identities; the existing no-change artifact is not an operational union.
+
+Safety finding for that boundary: ordinary materialiseCandidate currently removes
+an existing private workspace before rebuilding; command-level apply separately
+locks materialisation and operation application. Retained partial state is not
+phase-classified, and direct operation replay does not preserve the original
+delta. Fully applied workspace authentication exists, but does not prove prior
+acknowledgement. Do not retry the retained failed candidates to claim idempotent
+recovery, and do not generalize no-change replay guarantees to ordinary apply.
+This is USF-1192 implementation work, not USF-1189 commissioning work.
+
+Bounded check-failure diagnostics remain a separate explicit CLI gap. Do not
+weaken confinement or introduce ignored lifecycle scripts to bypass either gap.
+One Main integration owner remains; no provider or Linear delivery mutation,
+competing supervisor, deployment or Atlas operation was performed by this bundle.
+
+
 ## Parser bundle and confined-input correction - 2026-09-08 UTC
 
 This checkpoint supersedes current-state statements below; earlier sections
