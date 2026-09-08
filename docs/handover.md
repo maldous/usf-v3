@@ -1,5 +1,67 @@
 # USF V3 handover
 
+## Settled full gate and repair bundle - 2026-09-08 UTC
+
+This checkpoint supersedes current-state claims below; earlier sections remain
+historical evidence. USF-1192 owns implementation; USF-1189 only proof/cutover.
+
+Validated source HEAD: 9a150e741f1ffb51e1e8dcab4c4e6fcf2cc3a993.
+Tree clean, 19 ahead of origin before this documentation transaction; unpushed.
+Five-file fixture/preflight bundle was integrated at 0911d923e5b409efe2def673c2a69f051cf1bf0d;
+the earlier pending-five-files section below is historical, not a current queue.
+
+Full command COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check
+settled exit1: ORDINARY_TESTS_FAILED. 995 tests, 983 passed, 12 failed,
+zero skipped/cancelled; runner3090583.758133ms, total3100.14s.
+Later fixture-gate stage was not reached. Original exec44027 is terminal.
+Log: .usf/inputs/usf1192-proof-publication-bundle-full-check-9a150e7.log.
+All five canonical publication interruption/replay cases passed.
+Last full-gated/pushed source remains e69759e72921cfe726835889965286b341390852.
+
+Frozen pre-gate frontier digest:
+sha256:bf919cafa3069e3d8a0a5e94c4cb57eb50825c8701619d36cec2d6b690c04f41.
+105 diagnostics, zero unmapped: 23 operational rules, 73 implementation leaves,
+1 inventory, 6 evaluators, 1 terminal closure, 1 terminal obligation.
+complete=false, executionAuthority=none, parallelSafety=unproven.
+
+Next executable delivery: compose and validate the full failure-repair bundle,
+then current root-derived prepare-local/resolve/apply, exact graph-selected
+checks, bounded transition inspect, stable candidate, and one full gate.
+Do not repeat the full gate until focused failures are removed.
+
+Owned candidates, not integrated acceptance:
+- Bohr: lazy existing-kernel import in resolve.ts, digest
+  dd8c31bf3fecbd9bd5d919f562ae384191e3efc2cc5af3c8f51d572b163bb753;
+  unit transition test574415074b348b095b2db4dff7c6d98d9d04d3fd456639c37065e6a5caa83ecc.
+  Under .usf/inputs/usf1192-resolve-lazy-kernel/postimages/.
+  Three check regressions passed180.008s, actual delegation1/1 324.686ms,
+  typecheck passed. Remaining legacy bootstrap/integration cases need validation.
+- Maxwell: tests/integration/work-completion.test.ts and tracked fresh-check
+  fixture helper candidate. Dependent-cohort candidate437ba9e95bf6c6c0242f5d43185c03ce0d5196eb9a55eb2e52798a869fc1d912
+  passed1/1 50.67s after genuine predecessor acceptance/dependent construction.
+  Fresh receipt generation must replace reliance on historical .usf prototype;
+  retain historical receipt/provenance unchanged. Also correct blocked-work
+  currentness assertions and stale V1 terminal-lineage mutation target.
+- Turing: exact unsupported schema-binding diagnostic projection in transition.ts.
+  No broad catch or lifecycle rule duplication.
+
+Rejected candidate ab1518ac7e669f54ba17f9bc38bee4c2647a73bb842a148df5d2e31bed8847b6
+under .usf/inputs/usf1192-transition-receipt-readback/ must NOT be integrated:
+global throws for initially unauthenticated permissions would stop independent
+work. Preserve per-work blocked projection and strict authenticated reread.
+
+Linear settled-gate evidence: ebd367bc-028b-4557-9896-101fd5317225 on USF-1192.
+Hermes supervisor e2f6e23b399268910ef4311d9/PID2054583 remains live.
+No provider contact, integration, completion or cutover follows from liveness.
+Steward recovered through supported CLI in persistent parent PID597933:
+claim sha256:e6231e7ceb8c186db95d728cb2b6443260206a36805590c6c047c75b94426941,
+generation sha256:dbc14de107f69d2b2019fdae3483a42aa5d61f688883f77b57dccccb0785f352.
+Recheck live status and expiry before mutation; never copy stale claim state.
+No pending integration or ambiguous remote mutation was observed.
+Disk observation: 328G available, 82% used; no active candidate cleanup performed.
+Ignored candidates/logs are bounded diagnostic/runtime state, not implementation.
+
+
 ## USF-1192 publication source integrated - 2026-09-08 UTC
 
 Primary source boundary: 2f7913d0217c031a71469ddd17fc83d2db834b2e.
