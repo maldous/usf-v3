@@ -1346,7 +1346,9 @@
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/commands/canonical-parser-contracts.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/unit/commands/canonical-parser-contracts.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/integrity.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:requirement:canonical-parser-census:1> <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:requires> <urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:predicate:canonicalParserExport> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:predicate:canonicalSelectorTokens> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:predicate:complementOf> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-record-specifications> .
@@ -1360,6 +1362,12 @@
 <urn:usf:requirement:canonical-parser-census:1> <urn:usf:predicate:text> "Derive a complete bidirectional census only for the five exact canonical dispatch selectors. canonicalSelectorTokens is the exact ordered selector token array and forwardedArgumentOffset is the exact argument forwarding boundary. The shared parser export is the sole parser-owner source. Each admitted parser contract must match one discovered selector, fallback region, registered command and adapter identity exactly; duplicates, missing counterparts and mismatches refuse. Legacy dispatch remains visible and leaves the global inventory incomplete." <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:requirement:canonical-parser-census:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:requirement:canonical-parser-census:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:predicate:forContract> <urn:usf:contract:cli-transition-definition:1> <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/integrity.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:predicate:readPath> "tests/unit/graph/integrity.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:predicate:text> "Retain complete selected-production graph integrity regression and missing-type/malformed-field negatives in the existing whole-graph integrity test family. Confined parser contract tests retain their compact admitted graph fixtures. No test skip, semantic waiver, runtime read-bound expansion or completion claim." <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:type:CliCanonicalParserContract> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:type:CliCanonicalParserFallbackRegion> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:type:OperationalSupport:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
@@ -1369,7 +1377,10 @@
 <urn:usf:type:OperationalSupportMissing:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:type:OperationalSupportRefused:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:type:OperationalSupportUnavailableInput:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:readPath> "tests/unit/graph/integrity.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:semanticDependency> <urn:usf:requirement:cli-production-integrity-regression:1> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "graph/cli-transition-record-specifications.nq" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/commands/canonical-parser-contracts.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/unit/commands/canonical-parser-contracts.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/unit/graph/integrity.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
