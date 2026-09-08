@@ -1917,3 +1917,5 @@
 <urn:usf:predicate:schemaRole> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:predicate:schemaSelectionRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-definition> .
 <urn:usf:type:SemanticRecordSchemaBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:cli-transition-definition> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/realisation/checked-completion.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/fixtures/realisation/checked-completion.ts" <urn:usf:graph:cli-transition-definition> .
