@@ -1,5 +1,77 @@
 # USF V3 handover
 
+## Native proof/publication integrated; bundle validation pending - 2026-09-08 UTC
+
+Current integrated carrier ef07fe16766f6ae6241e2b9c0eeec9c473fe7941,
+tree 1b72dbe18363ae406b4ce004eb935ca75be7023d. Primary tracked tree was
+clean before this documentation transaction; six local commits intentionally
+unpushed. Last full-gate/pushed boundary remains e69759e72921cfe726835889965286b341390852.
+No full gate on the current proof/publication bundle.
+
+Native candidate f1f491a8b8786ed4d70023396000fb7bee2e79266d1bae3ee847a2abac3cf37a,
+basis 8f33ab0ce427e0c57fda7b709a19ff11255ebb5ee87c363d0ba51ad786ab00eb,
+passed both graph-selected obligations and integrated through the native CLI.
+Check receipts: cli-transition-definition
+1ca182da4e6c4ff38f0da1e573373ccc507db50f65482e016d1f54514d5b2bb4;
+local-contribution 9da35fabbb1118cb01d547e1a38bee28acb3b469ea8c6a8686da6f6786457b93.
+Integration observation ed5fbcdb8a81987a6251087abcdf98db7fff283bf577f5f980066c42abc3f6b4:
+both postimage obligations passed, lock wait 4.754ms, hold 3909.599ms,
+rollback not-required-fast-forward. Command elapsed was not captured.
+Configured validationWallTimeMilliseconds=120000 is not observed duration.
+Results: .usf/inputs/proof-publication-native-0ba-bridge-*.json.
+
+Installed native source hashes: commands/work-completion 0ba557d87420489bd714c745f7bc82e7eeef0fd04237491d27831cddf130acaa;
+realisation/work-completion 7e2ae080e4b7c64e6962b93b57c6eba75e01eb6e93cb9f01e08f291b88e0423d.
+The final kernel binding is NOT integrated. Candidate frontier previously
+showed 105 diagnostics and zero unmapped adapters, not accepted completion.
+Last installed interrogation before native integration was bounded, complete=false,
+executionAuthority=none, digest 096ed933ef5c40ce577435be2cd3ba26a49a2ec162168f73416f08511f74e9f0.
+Re-interrogate installed state after the final kernel candidate integrates.
+
+Native terminal test passed 1/1 (354255.416939ms runner); original three
+publication interruption boundaries passed together (1272029.17897ms).
+New two-window run with diagnostic fixture96baa529/helper4e7ff239 failed
+before either boundary: persistent candidate lock file was incorrectly
+classified as an active lock by fixture setup. Runner339794.984314ms.
+Log .usf/inputs/proof-publication-96baa529-4e7ff239-canonical-receipts-run1.log.
+Use native withCandidateLock to authenticate actual ownership; do not remove
+lock files or infer a held lock from file existence. No new-window pass claim.
+Earlier proof-publication-native-cohort-only.log was overwritten by the799feec
+run; its current bytes prove only that run. Do not claim prior contents survive.
+All future observation logs use unique names and no-clobber creation.
+
+Active bounded lanes: Main owns primary integration/stewardship; Maxwell owns
+integration/recovery fixture candidate; Bohr owns contract-test reconciliation;
+Turing reviews kernel packaging; Mendel independently reviews candidates.
+The diagnostic checkout proof-publication-native-diagnostic-19857b9 remains
+detached and frozen; no test process remained after the two-window run.
+Ignored candidate postimages are temporary, not installed operational helpers.
+
+Next executable transition: reconcile the final kernel contract tests with the
+installed coverage bridge, prepare the complete kernel/source/test candidate
+using resolve prepare-local (root urn:usf:work:cli-transition-definition,
+manifest graph/manifests/cli-transition-definition.json), resolve/apply, execute
+both graph-selected checks, then integrate. Final five-file serialized size
+must be verified against the existing 524288-byte bound; do not widen it.
+Independently repair and test the fixture lock assertion, exact receipt
+directory fsync barriers, and genuine two-member cohort positive/negative paths.
+The cohort variant changes only the isolated test dependency edge; production
+work independence is not claimed. All checks/evidence/proofs must be native.
+After fixture integration and fresh frontier reduction, freeze the whole bundle
+and run one full authoritative gate before push/readback.
+
+Hermes last readback supervisor e2f6e23b399268910ef4311d9 live, cycle794,
+providerActivity=[], transactions=[]. Steward claim
+0db67ec67690914d82bc38e93ffe52ec31edc75039eec91a32bbd98f743e175f,
+generation cb876e20b64f37055c2e6d98c5d33a7a41a9e341127ecfb5bf475b6aed657ba2,
+controlling PID597933; inspect current status before any renewal/recovery.
+No second supervisor or integration owner. Linear USF-1192 checkpoints
+fc456eb4-855a-4e21-b9db-26b67fae570c and3f58970a-d97b-48ce-ab03-fe203ed9bb47
+record integration and latest failure. USF-1192 owns all missing circuit
+implementation; USF-1189 only independently proves/cuts over it. Atlas suspended.
+No provider contact, full-gate completion, remote push, terminal completion,
+parallel safety, autonomous delivery or cut-over is claimed.
+
 ## Reader integrated; proof/publication bundle pending - 2026-09-08 UTC
 
 Current carrier 69a759c37b7dcbff02debce20a07c712222395e9,
