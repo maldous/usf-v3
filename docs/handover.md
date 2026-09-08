@@ -1,5 +1,51 @@
 # USF V3 handover
 
+## Proof/publication validation prerequisite - 2026-09-08 UTC
+
+HEAD before this transaction: 07743cb40b295f423c612ae1ce1612c2ba5085d2.
+Last fully checked/pushed boundary remains e69759e72921cfe726835889965286b341390852.
+Two authoring commits are intentionally unpushed; no full gate on this bundle.
+Installed frontier: 107 diagnostics, digest
+sha256:8df440aca7339dbce2c6c931165ea28fd8a8a7f51a5302a7937eeeb8ffa13252.
+Proof/publication remain unmapped; complete=false, executionAuthority=none.
+
+Reader candidate 6c3e3eae8e9df8ab08cd6003607e13a3bc146cbb06b30177ef8771125931a2ae
+refused CHECK_VALIDATION_AUTHORITY_INVALID before execution. Retain its result
+.usf/inputs/proof-publication-reader-check.json; no integration is claimed.
+The declared runtime closure included a 1,091,115-byte graph against the existing
+524,288-byte authority-file limit and a not-yet-installed interruption fixture.
+This transaction partitions semantic source into explicitly named tracked graphs,
+preserving original triples/multiplicity but changing provenance/currentness.
+It adds exact read closure and four command ownership/contact declarations.
+Reader/partition overlay tests passed 66/66; not governed runtime acceptance.
+
+Main now owns both native work-completion source files and sole integration/
+stewardship. Mendel is read-only reviewer. Turing owns kernel/CLI candidates;
+Maxwell owns integration/recovery fixtures. Bohr returned frozen partition and
+reader-test candidates. Native snapshot recovery and terminal authentication
+are candidate-only and have not passed runtime recovery acceptance. Latest
+native two-file typecheck passed 7479.416596ms before the final source-postimage
+guard; rerun focused validation on the frozen assembled candidate.
+
+Next executable transition: after settled partition transaction, interrogate
+transition schema using installed CLI, validate successful generated output,
+refresh exact construction authority, then prepare a replacement reader carrier
+including the genuine declared interruption fixture. Run exact graph-selected
+checks before integration. Retain the refused older candidate as superseded
+work, never repair its receipts. Once installed reader supports numeric bounds,
+promote pending snapshot file fields and terminal attachment through governed
+source/schema, then assemble proof/publication/kernel/recovery tests together.
+
+Do not run the full gate until focused and graph-selected checks pass, both
+adapter gaps/expected terminal diagnostics drop, and the candidate is frozen.
+The full gate decides the coherent proof/publication recovery bundle, not this
+source partition. Skills are advisory; no ignored helper is a runtime dependency.
+Hermes readback cycle755 live, supervisor e2f6e23b399268910ef4311d9,
+providerActivity=[], transactions=[]. Stewardship live, primaryMutation idle.
+Linear USF-1192 checkpoint 3693c90d-0e69-4a9a-a03a-b658e8129b15 read back.
+No provider contact, integration, remote push, terminal completion or cut-over
+is claimed. Required remaining implementation belongs to USF-1192, not USF-1189.
+
 ## Proof/publication lanes authorised - 2026-09-08 UTC
 
 Last fully checked/pushed HEAD remains e69759e72921cfe726835889965286b341390852.

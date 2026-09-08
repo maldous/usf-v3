@@ -22,6 +22,27 @@
       "graph": "urn:usf:graph:cli-transition-definition-grants",
       "role": "contract",
       "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/cli-transition-record-specifications.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:cli-transition-record-specifications",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/cli-transition-field-specifications.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:cli-transition-field-specifications",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/cli-transition-completion-field-specifications.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:cli-transition-completion-field-specifications",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }
