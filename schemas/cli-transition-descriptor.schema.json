@@ -58,11 +58,15 @@
           "minLength": 1,
           "type": "string"
         },
-        "originalBasisDigest": {
-          "description": "originalBasisDigest: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
+        "members": {
+          "description": "One through thirty-two unique native publication members; generated array uniqueness is structural only. Native authentication requires unique work identities and exact bijection between member proofBundleDigest and files with role proof-bundle, without changing shared profile, manifest, intent, authority, source, receipt or files.",
+          "items": {
+            "$ref": "#/$defs/CliCompletionPublicationSnapshotMember"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
         },
         "profile": {
           "description": "profile: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
@@ -102,9 +106,45 @@
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
+        }
+      },
+      "required": [
+        "authorityDependencyDigest",
+        "files",
+        "manifestPath",
+        "members",
+        "profile",
+        "publicationIntentDigest",
+        "receiptDigest",
+        "receiptPath",
+        "schema",
+        "sourcePath"
+      ],
+      "type": "object"
+    },
+    "CliCompletionPublicationSnapshotMember": {
+      "additionalProperties": false,
+      "properties": {
+        "candidateDigest": {
+          "description": "candidateDigest: independently rederived native member identity; the bundle evidence must bind this exact work, original basis and candidate and its native bundleDigest must equal proofBundleDigest. Serialized metadata is not authority.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "originalBasisDigest": {
+          "description": "originalBasisDigest: independently rederived native member identity; the bundle evidence must bind this exact work, original basis and candidate and its native bundleDigest must equal proofBundleDigest. Serialized metadata is not authority.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "proofBundleDigest": {
+          "description": "proofBundleDigest: independently rederived native member identity; the bundle evidence must bind this exact work, original basis and candidate and its native bundleDigest must equal proofBundleDigest. Serialized metadata is not authority.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
         },
         "work": {
-          "description": "work: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "description": "work: independently rederived native member identity; the bundle evidence must bind this exact work, original basis and candidate and its native bundleDigest must equal proofBundleDigest. Serialized metadata is not authority.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
@@ -112,16 +152,9 @@
         }
       },
       "required": [
-        "authorityDependencyDigest",
-        "files",
-        "manifestPath",
+        "candidateDigest",
         "originalBasisDigest",
-        "profile",
-        "publicationIntentDigest",
-        "receiptDigest",
-        "receiptPath",
-        "schema",
-        "sourcePath",
+        "proofBundleDigest",
         "work"
       ],
       "type": "object"
