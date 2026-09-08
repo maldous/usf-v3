@@ -1,5 +1,58 @@
 # USF V3 handover
 
+## Module candidate fixture repair - 2026-09-08 23:23 UTC
+
+Current accepted carrier is 868b731d0734c5c0ddd37dfbfa81a981cc1370c1,
+ahead 25 of origin. Tracked tree was clean; unrelated untracked artifacts/ is
+preserved. No current full gate or push is claimed. Hermes supervisor
+e2f6e23b399268910ef4311d9 remains live; do not replace it.
+
+The six-file schema-module candidate is not integrated. Preserve candidate
+8843d69983634738dff38624e0dca46d2f98441bc55ef173ee6f7b610e9aa388:
+its CLI validation refused before launch because nine test files exceeded the
+native eight-file grammar. Accepted transaction
+a0a264d6d59369942a34dfde325ea68779870252a944e87107aacd3b11688d86
+removed only the duplicated resolve.test.ts from the CLI command. That test
+remains required by local validation; the union remains eleven distinct files.
+Construction receipt 32eabc20e25ed0bbf65d3c44b7af5839ccf92bc9f2a43dbce5d23c3d95a775c7
+was published and independently verified before this carrier commit.
+
+Reprepared candidate
+4c481ab98ef1081701d8ee683e9bc5f9ccadef37acbff916f9fe677941659534
+has basis c3ff41008bfa4a982fbb2b3115edbbe2ba950d9bd9a5b5d7ab606e51b15ee1e8.
+Its CLI check launched and returned CHECK_FAILED, exit 1; preserve the retained
+attempt without blind replay or receipt repair. The independent local check
+passed with receipt digest
+2871a2cb0698eec2346cdf0ebbf54830f6c93f79fbc861f31d47d816b457c334.
+Native elapsed durations were not captured and remain unknown.
+
+The concrete fixture defect is in cli-transition-coverage.test.ts: its new
+module helpers resolve a development-only postimage URL outside the installed
+repository. Such ignored inputs must not become permanent test dependencies.
+Mendel owns a bounded test-only repair using self-contained semantic fixtures,
+preserving all assertions under both legacy and partitioned module layouts.
+Turing is extracting the existing composed-run failures, not rerunning them.
+Bohr and Euclid own disjoint semantic/source proposals for typed pre-effect
+command diagnostics and bounded failed-child diagnosis through supported CLI.
+No second telemetry or lifecycle ledger is admitted.
+
+Next executable transition: freeze the corrected test with the five unchanged
+source/test postimages; pass focused coverage and installed-path composition;
+use resolve prepare-local, resolve and apply to derive a new candidate, then
+run both graph-selected obligations. Integrate only after all receipts
+authenticate. Do not reuse either failed candidate as successful evidence.
+The partitioned fifteen-file graph/schema proposal remains unaccepted; its
+command-repair freeze preserves fourteen postimages and changes only the
+duplicated command token. No topology-only parallel-safety claim is permitted.
+
+Linear USF-1192 comments 9b34d3d7-3ced-4acf-bf17-5326b8f84ae1 and
+d89e4f58-9391-40d1-9c68-4461e1da5c10 retain exact checkpoints and nonclaims.
+USF-1189 remains independent cutover work after USF-1192 implementation closes.
+Development snapshots are temporal candidates, never runtime helpers. Freeze
+cross-lane bytes before validation; never bind mutable worker outputs into an
+acceptance run. A different confinement mode is not a reproduction of a failed
+native check and cannot justify changing its semantic test ownership.
+
 ## Bounded module implementation in progress - 2026-09-08 UTC
 
 Carrier ec769317b0fc7108d1fb161c0a5bcceaceaf7806 records the module
