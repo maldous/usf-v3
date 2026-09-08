@@ -1,5 +1,50 @@
 # USF V3 handover
 
+## Bounded module implementation in progress - 2026-09-08 UTC
+
+Carrier ec769317b0fc7108d1fb161c0a5bcceaceaf7806 records the module
+construction scope and receipt b60013103be330b77bbbe81af6d574b77a593e4133a41951a93c19ce30424bfc.
+Publication apply and independent verify agreed; CLI work was construction
+eligible on basis 21f3995d7b9b1b4abbcb5ff6a1b1957c39c572aacaf578bad2492b526d075306.
+Re-interrogate after further semantic changes; this is not a reusable grant.
+Installed frontier digest 32c7d909965eb724bf05ff54478116f6b40adb0d0e13069168331929df3e7e29
+has 86 diagnostics: 73 implementation-only leaves, 10 unresolved operational
+rules, one inventory gap and two terminal gaps. Complete is false; execution
+authority is none. Restored currentness is not net diagnostic-family reduction.
+Linear checkpoint 68796e4a-2fc2-4365-9f0f-cb9b0912783b records that boundary.
+
+Current implementation stays in USF-1192. Three independently generated schema
+modules must retain canonical interrogation references, module-qualified record
+lookup, source/schema currentness and every unresolved parallel-safety gap.
+The command loader candidate passes TypeScript and three legacy-path regression
+tests (4.093s); actual bin/usf transition schema passed (0.338s). These are
+diagnostic overlays, not governed integration or module acceptance. Do not run
+the full gate until the complete adapter/diagnostic bundle is acceptance-ready.
+
+The next prerequisite is optional admittedReadPaths enforcement inside the
+canonical graph loader's actual file-read boundary. Preflighting a manifest
+and subsequently loading it is insufficient: a changed manifest can otherwise
+introduce an unadmitted read before digest comparison. Keep default limits and
+legacy calls unchanged; replace the provisional manifest walker, do not ship a
+second parser. Then compose module semantics, source and generated schemas,
+prove bounded work derivation, and continue ordinary adapters and recovery.
+
+One integration owner remains responsible for all primary mutation. Disjoint
+candidate lanes own semantic modules, pure schema/kernel code, command/graph
+loader code, native ordinary check recovery and CLI integration fixtures.
+Ignored postimages are unaccepted candidates, never required runtime helpers.
+The healthy Hermes supervisor was observed live at 21:46:45Z, cycle 1054,
+with no provider activity or transactions. Preserve it; status is not autonomy.
+No new full gate, push, USF-1192 completion or USF-1189 cutover is claimed.
+
+Verified fixture lesson: candidateScope is not the complete construction/CLI
+bootstrap closure. The isolated prepare-local fixture passed 1/1 in 54.905s by
+also deriving the declared semantic bootstrap members' extant dependencies and
+the CLI's tracked relative-import closure. GOAL.md belongs to a bootstrap member
+read set, not the selected candidate read set. Omit future null-preimage outputs;
+do not copy an ambient repository or repair missing files one at a time. This
+guidance is operational only and does not enlarge any validation read authority.
+
 ## Canonical schema registry integrated - 2026-09-08 UTC
 
 Accepted source HEAD 9b9c12a85b0a007ee7e0029f334ec4f2502cc7ad integrates
