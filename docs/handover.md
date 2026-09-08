@@ -1,5 +1,93 @@
 # USF V3 handover
 
+## Publication V2 implementation active - 2026-09-08 UTC
+
+Primary boundary f5c523e, clean at readback, ten commits intentionally unpushed.
+This is semantic prerequisite publication, NOT native bundle acceptance.
+Last full-gate/pushed boundary remains e69759e72921cfe726835889965286b341390852.
+No new full gate has run.
+
+Current installed transition inspect refuses INTERNAL_ERROR. Direct no-effect
+handler trace identifies WORK_COMPLETION_PUBLICATIONRECEIPTSCHEMA_INVALID in
+completionSchemaBinding: the selected policy now admits V2 but the installed
+native reader remains V1-only. The previous 105-diagnostic digest
+4164a475088706466350402ee8532fd461230bb232f4d5af62e87726151e9ee3
+is historical, NOT current. Restore bounded interrogation in this bundle before
+any full gate.
+
+Semantic transaction 98c37f4971aedaaa8351e7cd824ee0d6258c42b8ded20aa090c89b14f873576b
+applied exactly graph/cli-transition-definition.nq, graph/profile-authority.nq,
+schemas/work-completion-publication-receipt-v2.schema.json.
+120 graph files, 65827 quads, 16 integrity invariants, zero violations.
+The new schema is tracked; ignored proposal postimages are temporary only.
+Five schema shape checks passed in55.009112ms using synthetic in-memory values;
+they do not authenticate a semantic receipt.
+
+Construction bundle 363c28e4ed54ed10a728f079e5f1cc30adc88672a8cce7638220d5baade4889d
+was applied and independently verified. Receipt:
+evidence/construction-authority/00784fd6015f27db9c8cb63e2edee54d6696b944b6eef2d38a0c455efc731937.json
+digest30f9fb81a7af56ba4b603f9c0f3f669f7dcf7313d6cf65f24a4f7980fc150c9a.
+Results are in .usf/inputs/usf1192-publication-receipt-v2-policy-migration/.
+Construction authority does not establish source implementation or completion.
+
+Runtime-proven defect: V1 publication uses the first member manifestDigest for
+every member; contract-selected manifest digests legitimately differ.
+V2 replaces the scalar with cohortManifestDigest and binds each ordered member's
+manifestPath/manifestDigest. Every member must authenticate, including when only
+one member is queried. A stale sibling invalidates the cohort. Preserve V1
+schema/intent bytes and historical receipts; changed tool/policy currentness
+must refuse, not be repaired by rewriting old receipts.
+
+Active disjoint candidate lanes, one Main integration owner:
+- Turing: src/realisation/work-completion.ts, versioned receipt/intent and
+  all-member evaluator, .usf/inputs/usf1192-publication-v2-native/postimages/.
+- Bohr: src/graph/work.ts, context-bound nonrecursive sibling packet/basis
+  derivation preserving TRANSITION_LIVE and REQUIRED_TRANSITION readbacks,
+  .usf/inputs/usf1192-publication-v2-graph/postimages/.
+- Maxwell: tests/integration/work-completion.test.ts and interruption helper;
+  prior b876068a/4e7ff239 postimages retained.
+- Main: commands/work-completion.ts, commands/transition.ts and selected
+  transition unit fixture, .usf/inputs/usf1192-publication-v2-command/postimages/.
+- Mendel: read-only review. No second controller, integrator or transaction owner.
+
+Shared native interface: CompletionMemberBasis {packet,basis};
+ReadCompletionMemberBasis(workIri) returns that current graph-owned pair.
+V2 cannot omit this callback. Graph wrapper evaluateCurrentNoChangeCompletion
+serves terminal command evaluation; it must not recursively derive sibling
+completion. Native evaluator remains responsible for all proof/receipt checks.
+Main command candidate adds a narrow unsupported-schema diagnostic fallback,
+with complete=false, executionAuthority=none and recomputed digest; not installed.
+
+The prior V1 canonical recovery run settled: all five SIGKILL boundaries passed,
+but the overall suite was5/7 because two legacy cohort tests failed before
+publication. No overall fixture acceptance. Log:
+.usf/inputs/proof-publication-cdc0daad-runtime-run1.log.
+Bootstrapped cohort diagnostic proved the actual manifest scalar defect;
+temporary debug source was removed. No provider qualification/contact was proven.
+
+Next executable delivery: finish and freeze the four disjoint candidate lanes,
+combine postimages in the existing owned bootstrapped diagnostic environment,
+run type/focused tests and fresh transition inspect, then resolve prepare-local
+for urn:usf:work:cli-transition-definition under
+graph/manifests/cli-transition-definition.json. Resolve/apply exact candidate,
+run both graph-selected obligations, integrate once, and run one full gate only
+after coherent frontier movement and a stable tree. Read current help and grant
+currentness before effects; never manufacture receipts or use private helpers.
+
+Hermes last readback live supervisor e2f6e23b399268910ef4311d9, cycle811,
+providerActivity=[], transactions=[]. Main controlling PID597933, idle shell
+PTY95741. Latest supported recovered claim45c278eef00f4421f9606ea6c6ac8915759a5b8240c9b2ed0366e81874c0919e,
+generation24fb32fe0edd1a757bcb8bd3fb9168b246471eea473780ffd830522f8f09843f.
+Inspect current stewardship before any effect; do not copy stale identity.
+No pending Main mutation after transaction/publication settled readback.
+Disk329G available,82% used; no unrelated cleanup performed.
+
+Linear USF-1192 comments527536ce-fa86-4f26-a00a-8267daff6a2f and
+e7660507-4a2c-49af-adda-6d7a6611cb1f record the exact boundary and regression.
+USF-1192 owns all missing implementation;1189 only independently proves/cuts over.
+Atlas remains suspended. No native V2 acceptance, full gate, push, completion,
+parallel safety, provider capacity, autonomous delivery or cutover claim.
+
 ## Native proof/publication integrated; bundle validation pending - 2026-09-08 UTC
 
 Current integrated carrier ef07fe16766f6ae6241e2b9c0eeec9c473fe7941,
