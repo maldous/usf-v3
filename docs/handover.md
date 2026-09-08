@@ -1,5 +1,71 @@
 # USF V3 handover
 
+## Integrated repair and staged-receipt gap - 2026-09-08 UTC
+
+This checkpoint supersedes earlier current-state claims below.
+Source integration: 0a1ddc0d5d0d6c6286fdfab7ba4b5c5d06a01d2e,
+tree4fbe06203a1c78811420b095cd926082caac1405.
+Candidate e478b8a2efe923245df38796e04e68b7f4b3bb1440a59a00c7fc07c2ddf5bffb,
+basis021fda6122c4ea1bff26e368990b37aaa5a75402c7c26448ac668e31bc3715eb.
+All five postimages were read back exactly: lazy resolve, schema-refusal
+projection, unit transition regression, integration fixture, tracked
+tests/fixtures/realisation/checked-completion.ts. No runtime-only implementation
+is needed for the fresh direct checked-receipt fixture. Historical receipt and
+provenance files remain unchanged and are not current completion evidence.
+
+Focused legacy regression sets: 3/3 in180.008s and remaining3/3 in45.186s.
+Focused repaired fixture set: 6/6,0skip/cancel,561042.975695ms,wall561.07s;
+composed typecheck passed8.03s. Restored missing/malformed/mode/digest and seven
+rehashed-receipt negatives remain present. Terminal lineage uses the selected
+graph schema, not a fixed V1 literal. Global throwing on initial unauthenticated
+permission remains rejected; affected work is blocked without stopping siblings.
+Log .usf/inputs/usf1192-publication-fixture-436276-focused6-run1.log.
+
+Candidate graph checks passed: CLI94.82s receipt63d5baabe836c1ae545383130354c16fa4f06744085aa16cf38531aa35d8cf2a;
+local39.45s receipt51fe47cc49f9b9d7bc1562185a7b34ceef811527f413102b7c93cf58546b85ec.
+Integration observation4e4578da200f442517d3fc020f7bc78774b329973118517e61a58ccb31628f3b
+reports success, two postimage validation results/no timeout, lockwait4.991ms,
+lockhold4478.215ms, rollbacknot-required-fast-forward.
+Exact preparation/check/integration logs: .usf/inputs/usf1192-gate-repair-bundle-*.
+
+The nested helper closure was admitted after source installation, then settled
+without weakening the staged boundary. Transactions4fda13f530bdfea965e89e4b925027259f21af1c3d14c1987ce82e09908e36c8
+and32307a5552530c57353ec53df94aab528431b86aeaf4f6218ae4f3ed677cfab5:
+120files,66027quads,16invariants,0violations. No nested construction grant was
+published. The current requirement still demands fresh outer generation and
+matching mode-2 production consumption; tests skipping consumption do not prove it.
+
+Remaining USF-1192 implementation gap: governed authenticated outer-to-mode-2
+checked-receipt seed handoff. Classify the absent operation as
+CLI_TRANSITION_UNIMPLEMENTED, not an external host blocker. The present runtime
+view accepts candidate-tree and graph-declared repository files, not arbitrary
+ignored state. Both receipt tests currently skip under isConfinedFixtureProcess.
+Do not remove confinement, allow nested Bubblewrap, invent an ambient .usf bridge,
+rewrite historical receipts, or weaken graph requirements195/316 to make this pass.
+Use the existing native candidate/validation path with a graph-bound read-only
+seed artifact, exact current basis/candidate/receipt/provenance and independent
+consumer readback. Define the minimum semantic boundary before source edits.
+This remains USF-1192 implementation; USF-1189 only independently proves cutover.
+
+Exact next interrogation:
+./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json
+Then implement the missing bounded handoff through admitted source scope; no CLI
+seed-preparation flags currently exist. Recheck current construction before
+prepare-local. No full gate until the coherent candidate, selected checks and
+frontier are stable. Last full gate remains9a150e7:983/995passed,12failed,3100.14s.
+No replacement full gate, push, USF-1192 completion or USF-1189 cutover is claimed.
+
+Linear evidence:7558f7b3-959f-4f5c-aa05-8ec37accd139 and
+a652b35d-9f4c-4ec0-a36b-8014d3fea4a8. All work remains coordinated on USF-1192;
+receipt-related issues were reconciled before choosing that existing owner.
+Hermes supervisor e2f6e23b399268910ef4311d9/PID2054583 preserved; no provider calls.
+Supported steward parent597933 recovered claim8b5d10d84791d87689884fdb991a37b90a82c57709a5e4699f27ffa0729b936f,
+generation8817a9ad5a99da5b3090075c0a121c5f145ad80b8484c9624616880aee7e2f8f.
+Re-read live lifecycle before reuse. Integration and focused processes settled.
+Ignored candidate worktrees/logs remain intentionally retained for exact diagnosis;
+no abandoned runtime state was promoted into authority or removed unsafely.
+
+
 ## Settled full gate and repair bundle - 2026-09-08 UTC
 
 This checkpoint supersedes current-state claims below; earlier sections remain
