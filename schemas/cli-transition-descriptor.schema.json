@@ -162,6 +162,12 @@
     "CliCompletionSnapshotFile": {
       "additionalProperties": false,
       "properties": {
+        "byteLength": {
+          "description": "Exact immutable snapshot file byte count, including zero-byte files; validate against bounded fd read and exact digest. File bytes and native bundle identity remain separate domains.",
+          "maximum": 16777216,
+          "minimum": 0,
+          "type": "integer"
+        },
         "digest": {
           "description": "digest: completion-snapshot-file typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
           "maxLength": 4096,
@@ -186,9 +192,22 @@
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
+        },
+        "sourceMode": {
+          "description": "Original source permission bits as an integer from 0 through 511, independently read and reauthenticated. Required only with sourcePath for authority-input, source-preimage and source-postimage; derived proof-bundle and expected-receipt bytes have no external source mode.",
+          "maximum": 511,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "sourcePath": {
+          "description": "Original repository-relative source identity, not the snapshot storage path. Use existing repository-path validation; refuse absolute paths, traversal, empty components and unsafe filesystem ancestry. Required only for authority-input, source-preimage and source-postimage roles.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
         }
       },
       "required": [
+        "byteLength",
         "digest",
         "path",
         "role"
@@ -1651,6 +1670,16 @@
     "terminalAssessment": {
       "additionalProperties": false,
       "properties": {
+        "authenticatedArtifacts": {
+          "description": "Native accepted artifact observations only. Generic graph projection must never populate runtime acceptance from asserted values; absent authentication returns an empty array and keeps global satisfaction unverified.",
+          "items": {
+            "$ref": "#/$defs/CliCompletionTerminalAccepted"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
         "declarations": {
           "description": "declarations: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
           "items": {
@@ -1751,6 +1780,7 @@
         }
       },
       "required": [
+        "authenticatedArtifacts",
         "declarations",
         "diagnostics",
         "edges",

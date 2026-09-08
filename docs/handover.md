@@ -1,5 +1,47 @@
 # USF V3 handover
 
+## Reader integrated; proof/publication bundle pending - 2026-09-08 UTC
+
+Current carrier 69a759c37b7dcbff02debce20a07c712222395e9,
+tree d105886d86e43e106eb328ae5d7093e4ca8c7b2d; clean before this transaction.
+Four local commits remain intentionally unpushed pending coherent bundle gate.
+Last full-gate/pushed acceptance remains e69759e; no new full gate has run.
+
+Reader candidate9b10c4796a35402e6dae314fa7fd9590b1bb0885d87e7ef06f0816a773c0de16
+passed both exact graph-selected obligations in CLI wall160.822s and33.740s.
+Receipts471fe36a308a496882f2d1b457c88b1d9e87e1759e622ea3b07eb1b5e7275d95
+and8004c6574df1f90bc0e5dac9ce5a3fbf212b36832f4d4cf6680b90725dba8963.
+Integration observationcd0bfc1132cfdcfb4a97106fdab734e4db5ac16b38314bacee2cfa3a8d0ac55a
+reports integration-success,49.779s CLI wall,3579.836ms lock hold,
+postimage checks passed, rollback not required. Results retain the
+.usf/inputs/proof-publication-partition-reader- prefix.
+validationWallTimeMilliseconds=120000 is a configured limit, not elapsed time.
+
+Correction: the original refused candidate already contained its large graph,
+so the external authority-file size limit did not cause that specific refusal.
+The missing declared fixture was the concrete missing input. The partition is
+an explicit provenance/read-closure amendment, not proof it repaired the refusal.
+Linear correction42ebd9c6-228d-4206-9029-3007279613ea preserves this distinction.
+
+This transaction adds the pending57 typed snapshot-file/provenance semantic
+rows and restores terminal authenticatedArtifacts attachment now supported by
+the installed reader. Next executable transition: generate transition schema
+with installed CLI, require successful typed output/digest, publish exact
+generated schema through transact, then refresh current construction grant.
+Do not interpret the temporary source/schema staging interval as accepted runtime.
+Then prepare the complete native/kernel/tests bundle and run focused recovery
+tests, graph-selected checks, fresh frontier reduction and one full gate on
+the frozen acceptance-bearing candidate before push/readback.
+
+Current full-bundle diagnostic overlay tests71/71 passed40761.31377ms; source
+candidates are not integrated. Main owns native implementation and integration;
+Turing owns kernel candidate, Maxwell recovery/adversarial fixtures.
+Native command candidate0188fd4752506af80768e7693edcccd623b113b0eef37d7925b39b3d51413e76,
+native realisation candidate7e2ae080e4b7c64e6962b93b57c6eba75e01eb6e93cb9f01e08f291b88e0423d.
+No new full gate, provider contact, terminal completion, autonomous delivery
+or USF-1189 cut-over is claimed. Hermes remains supported/live with one owner.
+
+
 ## Proof/publication validation prerequisite - 2026-09-08 UTC
 
 HEAD before this transaction: 07743cb40b295f423c612ae1ce1612c2ba5085d2.
