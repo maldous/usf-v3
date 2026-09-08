@@ -1,5 +1,303 @@
 {
   "$defs": {
+    "CliCompletionPublicationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "manifestPath": {
+          "description": "manifestPath: completion-publication-request typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "mode": {
+          "description": "mode: completion-publication-request typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "enum": [
+            "apply",
+            "verify"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "rootIdentity": {
+          "description": "rootIdentity: completion-publication-request typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "manifestPath",
+        "mode",
+        "rootIdentity"
+      ],
+      "type": "object"
+    },
+    "CliCompletionPublicationSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "authorityDependencyDigest": {
+          "description": "authorityDependencyDigest: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "files": {
+          "description": "files: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "items": {
+            "$ref": "#/$defs/CliCompletionSnapshotFile"
+          },
+          "maxItems": 1024,
+          "minItems": 4,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "manifestPath": {
+          "description": "manifestPath: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "originalBasisDigest": {
+          "description": "originalBasisDigest: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "profile": {
+          "description": "profile: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "publicationIntentDigest": {
+          "description": "publicationIntentDigest: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "receiptDigest": {
+          "description": "receiptDigest: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "receiptPath": {
+          "description": "receiptPath: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "schema": {
+          "const": "urn:usf:completion-publication-snapshot:1",
+          "description": "schema: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "sourcePath": {
+          "description": "sourcePath: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "work": {
+          "description": "work: completion-publication-snapshot typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authorityDependencyDigest",
+        "files",
+        "manifestPath",
+        "originalBasisDigest",
+        "profile",
+        "publicationIntentDigest",
+        "receiptDigest",
+        "receiptPath",
+        "schema",
+        "sourcePath",
+        "work"
+      ],
+      "type": "object"
+    },
+    "CliCompletionSnapshotFile": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "description": "digest: completion-snapshot-file typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "path": {
+          "description": "path: completion-snapshot-file typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "role": {
+          "description": "role: completion-snapshot-file typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "enum": [
+            "authority-input",
+            "expected-receipt",
+            "proof-bundle",
+            "source-postimage",
+            "source-preimage"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "digest",
+        "path",
+        "role"
+      ],
+      "type": "object"
+    },
+    "CliCompletionTerminalAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "description": "artifact: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "authorityDependencyDigest": {
+          "description": "authorityDependencyDigest: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "currentBasisDigest": {
+          "description": "currentBasisDigest: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "evaluator": {
+          "const": "urn:usf:rule:completion-terminal-native-evaluation:1",
+          "description": "evaluator: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "evaluatorDigest": {
+          "description": "evaluatorDigest: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "evidence": {
+          "description": "evidence: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "manifestPath": {
+          "description": "manifestPath: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "originalBasisDigest": {
+          "description": "originalBasisDigest: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "profile": {
+          "description": "profile: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "proofResult": {
+          "description": "proofResult: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "publicationIntentDigest": {
+          "description": "publicationIntentDigest: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "realisationReceipt": {
+          "description": "realisationReceipt: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "receiptDigest": {
+          "description": "receiptDigest: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "receiptPath": {
+          "description": "receiptPath: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceDigest": {
+          "description": "sourceDigest: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "state": {
+          "const": "accepted",
+          "description": "state: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "work": {
+          "description": "work: completion-terminal-accepted typed value bound by the native publication snapshot or accepted evaluator. Declaration, field shape and caller-supplied values are not authority; exact native authentication and currentness are required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact",
+        "authorityDependencyDigest",
+        "currentBasisDigest",
+        "evaluator",
+        "evaluatorDigest",
+        "evidence",
+        "manifestPath",
+        "originalBasisDigest",
+        "profile",
+        "proofResult",
+        "publicationIntentDigest",
+        "realisationReceipt",
+        "receiptDigest",
+        "receiptPath",
+        "sourceDigest",
+        "state",
+        "work"
+      ],
+      "type": "object"
+    },
     "artifact": {
       "additionalProperties": false,
       "properties": {
@@ -1485,7 +1783,7 @@
             "type": "string"
           },
           "maxItems": 1024,
-          "minItems": 0,
+          "minItems": 1,
           "type": "array",
           "uniqueItems": true
         },

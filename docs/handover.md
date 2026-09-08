@@ -1,5 +1,111 @@
 # USF V3 handover
 
+## Proof/publication lanes authorised - 2026-09-08 UTC
+
+Last fully checked/pushed HEAD remains e69759e72921cfe726835889965286b341390852.
+The current proof/publication semantic/schema bundle is authoring state, not
+accepted implementation. Fresh installed transition inspect returned bounded
+107 diagnostics, digest
+sha256:bb91a477335468c6f0392b0899b51868992b4ec0b5cf3ed78976b2d24e9d7aed,
+complete=false and executionAuthority=none. Proof/publication remain unmapped.
+No full gate has run on this new bundle.
+
+Schema staging temporarily detaches authenticatedArtifacts from terminal
+assessment while retaining its typed definition and a direct contract
+recordSpecification closure edge. Restore the exact attachment only after the
+kernel supports both attached and detached pure unauthenticated projections,
+then regenerate via installed transition schema and publish only successful
+generated descriptor bytes.
+
+An unchecked failed derivation accidentally published invalid undefined schema
+bytes through transaction
+sha256:7836a2c760013be3fb657d04c48d65be9fe879a39e4dd9fdffe2e26338e2ab97.
+Never committed/pushed. Successful generated correction applied/read back:
+sha256:66916cef0d7a39eaa677a537c2e290f68af26bc5140b0fb10e68c69d6627968c.
+Schema parses and installed interrogation is bounded again. USF-1192 comment
+c3384ea0 records the missing pre-effect schema-artifact validation/adversarial
+gate; graph integrity alone did not reject invalid JSON. Preserve both receipts.
+
+Current construction grant applied and independently verified:
+evidence/construction-authority/6b2e105fdf93fe48bcf3358d9045c94386db1f8af7c3f4509296d268ac511d75.json
+receipt sha256:851174f2656830e3822e5d78081a9e9148143339c373fda68d0eeb58e5550221.
+Proof bundle sha256:b92fa58861c794c724cce84e59228b6041184d09bda675a1f6c7aa9136633973.
+
+Main remains sole integration/stewardship owner. Candidate-only lanes released:
+Mendel: src/commands/work-completion.ts and src/realisation/work-completion.ts.
+Turing: src/commands/transition.ts, src/graph/cli-transitions.ts, src/cli.ts,
+src/commands/help.ts.
+Maxwell: tests/integration/work-completion.test.ts and
+tests/fixtures/realisation/completion-publication-interruption.ts.
+Bohr: tests/unit/commands/transition.test.ts and
+tests/contract/cli-transition-coverage.test.ts.
+No primary edits, publication, integration or lifecycle mutation by workers.
+check.ts and realisation/index.ts remain read-only.
+Next executable transition is bounded candidate preparation through resolve
+prepare-local after frozen candidates return; validate/integrate in dependency
+order, restore projection attachment/generate schema, then one full bundle gate.
+The acceptance target is both adapters plus real source-before-receipt SIGKILL
+recovery/replay and native terminal authentication, not proof-only delivery.
+
+Hermes live cycle738, supervisor e2f6e23b399268910ef4311d9 PID2054583;
+providerActivity and transactions empty. Existing stewardship renewed through
+the supported CLI under its same foreground process. Linear comment 1286c5ce
+records exact lane ownership and grant evidence. No remote mutation pending.
+Installed skill/context updates remain advisory and tracked provider-neutral
+guidance; no private helper becomes an execution dependency.
+
+## Check bundle accepted; proof/publication next - 2026-09-07 UTC
+
+Last fully checked, pushed and remote-read-back HEAD:
+e69759e72921cfe726835889965286b341390852
+tree 27345e7c1eb096a4e60f7b621d23d9494e51c488.
+Full authoritative check PASSED 971/971 ordinary tests, zero skipped/cancelled,
+523448.188714ms ordinary duration, plus all five graph-selected fixture gates.
+Log: .usf/inputs/check-adapter-bundle-full-check-retry.log.
+Fixture candidate:
+sha256:1d71f45d4f92ff8bbc36f157c8f45070da0424eef05b2345841399a80c0ff591.
+git ls-remote origin refs/heads/anqr-experience-realisation returned that exact HEAD.
+
+Accepted diagnostic movement is 113 -> 112. Check-receipts is mapped; only
+proof and publication remain adapter-unmapped. Fresh digest:
+sha256:c17fdfe0230d7c33f1043f257ea9a9fd32b912645c7ce5bb3843acd822fb685e.
+Complete=false, executionAuthority=none, parallel safety unproven.
+This is one accepted adapter bundle, not USF-1192 completion or USF-1189 cut-over.
+
+Provider-neutral context v2 and its exact allowlist are included in that commit.
+Skill validator and all 26 context/feedback tests pass. No installed private skill
+or ignored helper is a runtime dependency. Guidance is operator-directed, not an
+automatically learned ROI claim. USF-1190 records its bounded acceptance.
+
+The next semantic amendment is the combined proof/publication/recovery/terminal
+bundle, not a proof-only slice. Corrected semantic proposal dry-run passed 16
+invariants with zero owned violations. Its prior camelCase instance-IRI proposal
+is retained as refused; wire property names remain unchanged.
+After this semantic transaction, derive the canonical schema through:
+./bin/usf transition schema --root urn:usf:work:cli-transition-definition
+--manifest graph/manifests/cli-transition-definition.json
+Publish only those generated schema bytes via governed transaction; re-interrogate
+before current construction evidence/proof/grant and source candidate work.
+
+One integration owner remains Main. Disjoint source lanes after grant:
+Mendel owns commands/work-completion.ts and realisation/work-completion.ts.
+Turing owns commands/transition.ts, graph/cli-transitions.ts, cli.ts and help.ts.
+Maxwell owns integration/work-completion.test.ts and the tracked publication
+interruption fixture. A separate contract-test owner must own transition unit
+and coverage tests. check.ts and realisation/index.ts remain read-only.
+No new supervisor, scheduler, transaction writer or independent integrator.
+Native exports: prepareCanonicalCompletionProof and runCanonicalCompletionPublication.
+Recovery remains internal to the sole native publisher.
+
+Hermes fresh status: live supervisor e2f6e23b399268910ef4311d9, PID2054583,
+cycle733, providerActivity=[], transactions=[], ready=0. This is not autonomy or
+completion evidence. Existing stewardship remains with the persistent foreground
+owner; recover/release only through supported CLI. No remote mutation is pending.
+Linear USF-1192 comment 7d8bec2c records full-gate acceptance; USF-1190 comment
+8e0d25f3 records guidance publication. Preserve all exact earlier receipts below.
+Continue until1192 acceptance, then independently prove/cut over via1189; Atlas
+remains suspended.
+
 ## Check adapter mapped; final bundle verification - 2026-09-07 UTC
 
 USF-1192 remains primary; USF-1189 only independently proves/cuts over its
