@@ -1342,6 +1342,7 @@
 <urn:usf:command:prove-completion:1> <urn:usf:predicate:commandPath> "prove completion" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:command:publish-work-completion:1> <urn:usf:predicate:commandPath> "publish work-completion" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:command:realise-no-change:1> <urn:usf:predicate:commandPath> "realise no-change" <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "graph/cli-transition-record-specifications.nq" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/cli.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "src/commands/canonical-parser-contracts.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:contract:cli-transition-definition:1> <urn:usf:predicate:permitsWrite> "tests/unit/commands/canonical-parser-contracts.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
@@ -1368,6 +1369,7 @@
 <urn:usf:type:OperationalSupportMissing:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:type:OperationalSupportRefused:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:type:OperationalSupportUnavailableInput:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-transition-record-specifications> .
+<urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "graph/cli-transition-record-specifications.nq" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/cli.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "src/commands/canonical-parser-contracts.ts" <urn:usf:graph:cli-transition-record-specifications> .
 <urn:usf:work:cli-transition-definition> <urn:usf:predicate:writePath> "tests/unit/commands/canonical-parser-contracts.test.ts" <urn:usf:graph:cli-transition-record-specifications> .
