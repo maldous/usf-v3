@@ -1,5 +1,54 @@
 # USF V3 handover
 
+## Native ordinary recovery integrated - 2026-09-08 UTC
+
+This supersedes the ordinary-workspace safety finding below. Source commit
+213834d1f7acfb307356dee650caeb5a37aad3b0 integrates src/realisation/index.ts,
+src/commands/apply.ts, tests/unit/realisation/workspace.test.ts and the tracked
+tests/fixtures/realisation/workspace-interruption.ts fixture. The native apply
+path snapshots its input, holds one candidate lock, authenticates retained
+preimages or complete postimages, preserves unknown/partial/conflicting/stale
+state, and reuses complete results with the original delta. It does not infer
+acknowledgement history or promise multi-file atomicity or power-loss recovery.
+
+Candidate 526d68880e1feeef79c0485cb36b6c49bec8f3e26c61d6247a1e1adc7e7c706d;
+integration observation 059d4a1a2afec41aaf8de6bcfa1ee91c5911230280b53eb2332eb352cbbe2be2.
+Both graph-selected confined-fixture-process:2 checks and both independent
+postimage checks passed. Receipts: CLI 2d1676b85928af9d002d76b1a11edab27600414c4b5ca48c7ff90a71d07aa314;
+local c61abaa16304134d68024b04f32508623611aa9aa25cb01bb67b1ddc57e68116.
+Integration lock wait 4.516ms, hold 5090.269ms; total duration is unknown.
+Focused recovery family 3/3 (including installed CLI and four SIGKILL boundaries),
+affected existing workspace regressions 6/6, and composed TypeScript check passed.
+These are not a full repository gate or terminal acceptance.
+
+Construction proof over integrated basis
+c4b6675bc9d096752b48beb1a9c21ab544c3807f624858110a52861bbbd9761d passed.
+Publication was applied and verified using the supported CLI; retained receipt:
+evidence/construction-authority/207dda1887a289b93c206d00be21193e6e8397589f3109dd82764e630795cd2b.json,
+digest 550b0e980f0b6c478e393c6ac02bba4861ccaab0daf22cfb012014c1e775aabc.
+No full gate or push has run since the historical 995-test boundary below.
+Unrelated untracked artifacts/ remain preserved. Required recovery implementation
+is tracked; ignored postimages and logs are temporal provenance, not runtime code.
+
+Next executable interrogation:
+./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json
+
+USF-1192 still owns canonical ordinary resolve/apply/check/integrate adapters,
+typed schema composition, authenticated branch applicability and terminal closure,
+complete command ownership, parallel/recovery proof and the full Linear circuit.
+USF-1197 receipt regeneration waits for final producer bytes. USF-1189 remains
+independent acceptance/cutover, not deferred implementation. Atlas stays suspended.
+Topology is not parallel safety; declarations, successful checks and construction
+authority do not authenticate terminal completion.
+
+Operator guidance version 4 is tracked in docs/context/usf-operator-context.md
+and digest-pinned in config/hermes-feedback.json (commit 1e00722). It explains
+caller-created stewardship sessions without depending on a private skill install.
+Current ownership must be discovered through hermes steward status, never copied
+from historical process or claim identities in this document. Preserve the live
+Hermes supervisor and use supported claim/recover and handoff/release commands.
+
+
 ## Steward session correction - 2026-09-08 UTC
 
 The earlier STEWARD_SESSION_REQUIRED blocker was an operator interpretation
