@@ -1,5 +1,12 @@
 # USF V3 handover
 
+## Current boundary - terminal refusal classified, 2026-09-10
+
+- Retained canonical terminal run is conclusively classified: after approximately 60s it refused at `prepareCompletionChecks` with `CHECK_CONFINEMENT_UNAVAILABLE` for `urn:usf:validation:cli-transition-definition`; no completion evidence, proof, publication, semantic mutation or duplicate receipt was produced. The refusal is bounded and no associated child/process remains.
+- Native host readback confirms `/usr/bin/bwrap` exists and the AppArmor profile directory is readable, but no `usf-fixture-process-v1.*` profile is loaded. This is the governed host prerequisite checked by `authenticateFixtureProcessHostProfile`, not a repository-owned timeout or parent-settlement continuation defect. No host policy, production configuration or timeout was changed.
+- The validator-currentness regression remains green: schema tests 6/6, typecheck PASS, and `git diff --check` PASS. The installed semantic frontier remains the retained 44-diagnostic digest `sha256:cb6070abdbe17e8409ad4625211e5022af93ae3cbe00470e1af9c944f9cc1026`, with `complete=false`, `executionAuthority=none`, `parallelSafety=unproven`, and no unmapped adapter.
+- Exact blocker: an authorised operator must separately prepare/load/read back the graph-declared `usf-fixture-process-v1` host profile before confined positive validation can run. This cannot be manufactured by the repository or agent. Continue independent semantic/evaluator work; do not replay the unchanged terminal cohort until the host prerequisite changes.
+
 ## Current boundary - cache safety and current frontier readback, 2026-09-10
 
 - Fresh repository state: branch `anqr-experience-realisation`, HEAD `ce1519fe2119ba64226f41f977be1963841af7c6`, remote reads back the same commit, and the worktree contains the intentionally dirty accumulated USF-1192 candidate plus ignored runtime/candidate state. No temporary timing probe or active associated child remains.
