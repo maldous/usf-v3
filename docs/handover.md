@@ -4682,3 +4682,19 @@ repair the projection before further expensive validation retries.
   `e2f6e23b399268910ef4311d9` remains live/idle and untouched; stewardship is
   released. No provider, production, terminal-publication, USF-1192 or
   USF-1189 acceptance claim is made.
+
+# Current dependency readback - receipt authentication blocker, 2026-09-10
+
+- The exact USF-1195 integration-recovery test was rerun after the deferred
+  optimization probe. It failed in `11.770s` with the typed refusal
+  `INTEGRATION_CHECK_RECEIPT_INVALID`, before detached-carrier basis validation;
+  the fixture expected `INTEGRATION_DETACHED_BASIS_MISMATCH`.
+- This identifies a checked-receipt authority/currentness mismatch in the mixed
+  candidate, not evidence of a process-leak or timeout-settlement failure. No
+  integration, publication, primary mutation, or completion effect occurred.
+  The failed-check diagnostic reader independently passes `1/1` in `4.025s`,
+  including tamper and duplicate/conflict refusal.
+- The next executable transition is to reconcile the receipt authority/currentness
+  set against the composed graph and rerun the same recovery test. Do not alter
+  refusal semantics, rerun the terminal optimization, or spend the full gate
+  until this focused cohort passes and the composed frontier moves.
