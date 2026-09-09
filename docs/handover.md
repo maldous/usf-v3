@@ -4728,3 +4728,14 @@ repair the projection before further expensive validation retries.
   or completion claim. The next implementation cohort is the bounded native
   parent-settlement/recovery repair, shared by 1197 and the remaining 1192
   terminal path.
+
+# Correction - 240s probe did not reach the governed bound, 2026-09-10
+
+- The preceding USF-1197 note overstated the result. The wrapper was bounded at
+  240s, while current semantic authority permits 300000ms validation plus
+  5000ms settlement. Its interruption therefore cannot establish a parent
+  settlement defect or a shared recovery blocker.
+- The accurate classification is `inconclusive-outer-bound-too-short`; no
+  source, timeout or recovery change is justified by that probe. No effect was
+  observed and all owned processes were removed. Any future terminal result
+  must use an outer bound greater than 305000ms and retain the exact result.
