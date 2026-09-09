@@ -4714,3 +4714,17 @@ repair the projection before further expensive validation retries.
 - USF-1194 focused validation remains `16/16` in `0.385s`; the failed-check
   reader remains `1/1` in `4.025s`. No full gate, integration, publication,
   terminal completion, USF-1192 acceptance or USF-1189 cutover has occurred.
+
+# Current USF-1197 readback - nested validation bound, 2026-09-10
+
+- The genuine `root-derived completion checks derive no-effect identity and
+  reconcile a genuine retained set` test was run once with a 240-second outer
+  bound. It remained in the confined nested validation path at the bound and
+  produced no completion result, publication, accepted mutation, or new
+  receipt. The identified test, fixture and bwrap process chain was terminated
+  and every PID read back absent.
+- This confirms the known shared settlement/validation blocker for USF-1197;
+  it does not justify a wider timeout, skipped validation, fabricated receipt,
+  or completion claim. The next implementation cohort is the bounded native
+  parent-settlement/recovery repair, shared by 1197 and the remaining 1192
+  terminal path.
