@@ -1,5 +1,12 @@
 # USF V3 handover
 
+## Current boundary - validation parallelism rejected, 2026-09-10
+
+- A bounded performance experiment changed only the installed-frontier fixture's six read-only native observations from serial to `Promise.all`, preserving all assertions and coverage. Typecheck and `git diff --check` passed, but the changed candidate still timed out at the external 300s bound in the same installed-frontier test (`tests/unit/commands/transition.test.ts:219`). The first test completed in 51.441s; the installed test produced no result before interruption. The experiment is fully reverted.
+- Conclusion: those six observations are not the dominant delay. No 2x or 60-second critical-path reduction was demonstrated, so no validation sharding, timeout widening, skipped coverage, or new control plane is justified. The measured blocker remains the installed validation obligation itself and must be addressed only by a semantically equivalent obligation partition with retained aggregate coverage, or accepted as the current cost while dependency work proceeds.
+- Current source candidate is restored to the previous postimage. Existing checks from the prior boundary remain valid; this experiment produced no accepted semantic change, receipt, publication, or diagnostic reduction. No full gate was run.
+- Exact next action: reconcile current USF-1194 and USF-1195 acceptance evidence, then work the next dependency-ordered 1192 cohort. Re-run the retained producer-to-reader and canonical terminal cases only after their current source/authority basis is stable; run one full gate only at an acceptance-ready composed candidate.
+
 ## Current boundary - terminal validation cost classified, committed baseline published, 2026-09-10
 
 - Fresh repository readback: branch `anqr-experience-realisation`, HEAD `6123ad28686cd4341bf0b499d6afd816f154fe45`; `origin/anqr-experience-realisation` reads back at the same SHA after a non-force fast-forward push of the 30 existing committed checkpoints. The worktree remains intentionally dirty with the accumulated USF-1192 candidate; no dirty files were included in that push.
