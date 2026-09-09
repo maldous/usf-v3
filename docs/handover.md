@@ -4586,3 +4586,50 @@ repair the projection before further expensive validation retries.
   USF-1192, USF-1189, terminal publication, runtime parallel safety, autonomous
   Linear delivery, full-gate validation, and the dirty candidate are not
   accepted.
+
+# Current authoritative handover - fixture profile restored, nested validation still bounded out, 2026-09-10
+
+- External prerequisite changed after the preceding boundary: privileged host
+  readback now shows `usf-fixture-process-v1 (enforce)`, `unpriv_bwrap (enforce)`
+  and `bwrap (enforce)`. No host policy was modified by this repository.
+- The exact retained terminal test was rerun once with an explicit 480-second
+  outer bound:
+  `TMPDIR="$PWD/.usf/tmp" COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm exec node --test --test-isolation=none --test-name-pattern='canonical terminal evaluation refuses altered evaluator and artifact lineage' tests/integration/work-completion.test.ts`.
+  It exited `124` after 480 seconds without a test result. Output records the
+  test was still interrupted at
+  `tests/integration/work-completion.test.ts:1527:1`. No completion
+  publication, accepted mutation, or governed receipt was produced by this
+  attempt; process readback found no surviving test, bwrap or fixture child.
+- This supersedes the earlier host-profile classification for the next repair:
+  host confinement is available, but `prepareGenuineCanonicalPublicationRoot`
+  still enters the nested graph-selected
+  `urn:usf:validation:cli-transition-definition-adapter` path and does not
+  settle within eight minutes. Existing measurements show the fast contracts
+  cohort at approximately 19-22s and the installed transition validation at
+  approximately 454-487s. The next performance slice is therefore semantic
+  validation-obligation decomposition with retained coverage, not a wider
+  timeout, skipped check, or speculative cache.
+- The validator-cache regression remains `6/6` and proves dependency mutation
+  isolation/key separation only. The parent settlement implementation remains
+  bounded at 300000ms plus 5000ms grace with process-group cleanup and durable
+  intent/diagnostic handling; this rerun did not demonstrate a continuation
+  defect.
+- Current transition frontier remains the retained bounded readback:
+  `sha256:cb6070abdbe17e8409ad4625211e5022af93ae3cbe00470e1af9c944f9cc1026`,
+  44 diagnostics, `complete=false`, `executionAuthority=none`,
+  `parallelSafety=unproven`, and zero unmapped adapters.
+- Repository checkpoint remains
+  `7e199a241c615ae05dff8a21d2915cd127577755`, pushed and aligned with origin.
+  The mixed 1192 candidate and retained ignored worktrees/evidence remain
+  uncommitted and preserved. Hermes supervisor
+  `e2f6e23b399268910ef4311d9`, PID `2054583`, remains live/idle with no
+  provider activity or transactions. Stewardship remains released.
+- Exact next transition: freeze a coverage-preserving split of the nested
+  validation obligation, validate its graph-selected receipt union and
+  installed CLI path with bounded focused checks, then rerun the terminal case
+  once the expected cost family is removed. No full repository gate is due
+  until that composed candidate produces a bounded terminal result and fresh
+  frontier movement.
+- Nonclaims remain: USF-1192/1197 acceptance, terminal publication, runtime
+  parallel safety, provider qualification/contact, autonomous Linear delivery,
+  full-gate success, and USF-1189 cutover.
