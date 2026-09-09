@@ -4512,3 +4512,77 @@ repair the projection before further expensive validation retries.
 - Verification: `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm exec tsc --noEmit` passed as part of the focused run. The installed-frontier test passed 1/1 with `--test-name-pattern='installed transition inspect reduces native operational gaps'`; duration 486675.810191 ms. Its readback recorded 102 diagnostics before construction, 77 after accepted construction authority, and `executionAuthority=none`, `parallelSafety=unproven`.
 - Current installed transition frontier remains digest `sha256:48ab0e1b8cc43c4724e7922098487bff9a83cdc3bb10d5235e40165fda6a1b1b`, 77 diagnostics: 65 `TRANSITION_IMPLEMENTATION_ONLY_LEAF`, 10 `CLI_OPERATIONAL_RULE_UNRESOLVED` parallel-safety fields, 1 `TRANSITION_INVENTORY_INCOMPLETE`, and 1 `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`. No USF-1192 diagnostic family was removed by the timeout slice.
 - Nonclaims: this does not prove USF-1192/USF-1189 completion, runtime parallel safety, provider qualification, Hermes BAU delivery, terminal authentication, Linear completion, full-gate success, commit, or push. No full repository gate was run for this non-frontier operational change.
+
+# Current authoritative handover - bounded terminal classification, 2026-09-10
+
+- Fresh repository readback: branch `anqr-experience-realisation`, HEAD
+  `616c3aac2f67da3f9c3de384439e40c9d896de2a`, and
+  `origin/anqr-experience-realisation` are identical. The worktree is
+  intentionally dirty with the retained USF-1192 candidate: 52 modified
+  tracked paths plus untracked acceptance/evidence/schema/graph material.
+  No source candidate was staged or committed in this boundary because the
+  postimage is mixed and is not an acceptance-ready cohort.
+- The retained terminal run is classified as an external confinement refusal,
+  not a parent timeout-settlement defect. The canonical terminal evaluator
+  ran for `58986.878104ms` and refused with
+  `CHECK_CONFINEMENT_UNAVAILABLE` for
+  `urn:usf:validation:cli-transition-definition`; no completion publication,
+  accepted mutation, or unknown remote effect occurred. The child was bounded
+  and terminated; a fresh process readback found no associated USF child or
+  process group. Host evidence shows `/usr/bin/bwrap` and AppArmor support are
+  present, but no loaded `usf-fixture-process-v1.*` profile exists. Host policy
+  is outside this repository; it was not changed and the five-minute bound was
+  not widened.
+- The validator-cache question is settled for the implemented cache: the key
+  includes canonical root schema and dependency bytes, dependency documents
+  are read and cloned before compilation, and the regression
+  `compiled validators cannot become stale through dependency mutation` passed
+  6/6. This proves mutation isolation and key separation; it does not make
+  stale external authority current.
+- Retained timing evidence: graph load is approximately 156-179ms; the fast
+  contract/parser cohort is approximately 19-22s; the installed transition
+  validation remains approximately 454-487s when it reaches the native
+  installed-frontier behavior. This supports decomposition work, but no new
+  optimization is accepted here: the valid terminal result is still blocked
+  before a comparable end-to-end measurement can be obtained. The parent
+  settlement implementation already has a 300000ms bound, 5000ms grace,
+  process-group termination, single settlement, intent/diagnostic persistence,
+  and temporary-view cleanup; no demonstrated continuation defect was found.
+- Current installed transition inspection remains bounded and last read back as
+  frontier digest
+  `sha256:cb6070abdbe17e8409ad4625211e5022af93ae3cbe00470e1af9c944f9cc1026`:
+  44 diagnostics, comprising 23 `CLI_OPERATIONAL_RULE_UNRESOLVED`, 7
+  `TRANSITION_IMPLEMENTATION_ONLY_LEAF`, 1
+  `TRANSITION_INVENTORY_INCOMPLETE`, 5 `INVALID_REALISATION_BASIS`, 1
+  `LOCAL_CONSTRUCTION_REFUSED`, 6 `TRANSITION_EVALUATORS_UNAUTHENTICATED`,
+  and 1 `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`. It reports
+  `complete=false`, `executionAuthority=none`, and
+  `parallelSafety=unproven`; no adapter is unmapped. This digest is retained
+  evidence and was not regenerated unchanged merely for confidence.
+- Hermes remains healthy and untouched: supervisor
+  `e2f6e23b399268910ef4311d9`, pid `2054583`, manifest
+  `graph/manifests/anqr-application.json`, `running=true`, current cycle 1408,
+  `ready=0`, no provider activity, no transactions, and last reason
+  `no ready implementation work remains`. `ready=0` is not completion.
+  Stewardship is released. No provider qualification/contact or production
+  change is claimed.
+- Worktree retention classification: all registered ignored candidate,
+  evidence, input and workspace directories remain preserved because they are
+  referenced by retained candidate histories, recovery evidence, live branch
+  provenance, or may be needed to reconcile unaccepted work. The prior broken
+  worktree metadata was pruned through Git's supported lifecycle; no blanket
+  deletion or size-only cleanup was performed. `.usf/` is approximately 28GiB,
+  with workspaces 3.6GiB, inputs 8.4GiB and worktrees 847MiB. A per-path
+  liveness/ownership review remains USF-1193 work; size alone is insufficient
+  authority to delete it.
+- Exact next transition: obtain the missing governed host fixture-profile
+  prerequisite through the supported environment owner, then rerun the exact
+  retained terminal candidate only after current authority/readback. In
+  parallel, keep the graph-selected validation decomposition and failed-check
+  producer/readback repair bounded to their named diagnostics. Do not spend a
+  full repository gate until the composed candidate has native preflight,
+  installed-path, receipt/recovery, and frontier movement evidence.
+- Claims at this boundary are limited to the receipts and focused checks above.
+  USF-1192, USF-1189, terminal publication, runtime parallel safety, autonomous
+  Linear delivery, full-gate validation, and the dirty candidate are not
+  accepted.
