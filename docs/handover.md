@@ -1,13 +1,13 @@
 # USF V3 handover
 
-## Module candidate fixture repair - 2026-09-08 23:23 UTC
+## Module source integrated; semantic ownership repair - 2026-09-09 UTC
 
-Current accepted carrier is 868b731d0734c5c0ddd37dfbfa81a981cc1370c1,
-ahead 25 of origin. Tracked tree was clean; unrelated untracked artifacts/ is
+Current accepted source carrier is b7f1fc091981142fbc2a056fd76915849046604c,
+ahead 27 of origin before this handover. Tracked tree was clean; artifacts/ is
 preserved. No current full gate or push is claimed. Hermes supervisor
 e2f6e23b399268910ef4311d9 remains live; do not replace it.
 
-The six-file schema-module candidate is not integrated. Preserve candidate
+The six-file schema-module source candidate is integrated. Preserve predecessor
 8843d69983634738dff38624e0dca46d2f98441bc55ef173ee6f7b610e9aa388:
 its CLI validation refused before launch because nine test files exceeded the
 native eight-file grammar. Accepted transaction
@@ -17,7 +17,7 @@ remains required by local validation; the union remains eleven distinct files.
 Construction receipt 32eabc20e25ed0bbf65d3c44b7af5839ccf92bc9f2a43dbce5d23c3d95a775c7
 was published and independently verified before this carrier commit.
 
-Reprepared candidate
+Failed predecessor
 4c481ab98ef1081701d8ee683e9bc5f9ccadef37acbff916f9fe677941659534
 has basis c3ff41008bfa4a982fbb2b3115edbbe2ba950d9bd9a5b5d7ab606e51b15ee1e8.
 Its CLI check launched and returned CHECK_FAILED, exit 1; preserve the retained
@@ -26,32 +26,48 @@ passed with receipt digest
 2871a2cb0698eec2346cdf0ebbf54830f6c93f79fbc861f31d47d816b457c334.
 Native elapsed durations were not captured and remain unknown.
 
-The concrete fixture defect is in cli-transition-coverage.test.ts: its new
-module helpers resolve a development-only postimage URL outside the installed
-repository. Such ignored inputs must not become permanent test dependencies.
-Mendel owns a bounded test-only repair using self-contained semantic fixtures,
-preserving all assertions under both legacy and partitioned module layouts.
-Turing is extracting the existing composed-run failures, not rerunning them.
-Bohr and Euclid own disjoint semantic/source proposals for typed pre-effect
-command diagnostics and bounded failed-child diagnosis through supported CLI.
-No second telemetry or lifecycle ledger is admitted.
+The fixture defect is repaired in accepted candidate
+d0dac5d144acb247dc14faa85a23d41aaf32997143006c17c4944ce5ef58809f.
+All six installed bytes match frozen-v4/source-snapshot.json. Coverage test
+4e2baf76460c4adcc8ad2eee7601ec94dabc23001bd8632a25de77b6560ed6c1
+passes both current and prospective layouts, 67/67 each, zero skips; TypeScript
+passes. Both native graph-selected checks and both independent postimage
+validations passed. Receipt digests are
+099eed3cbfbb9f9af8514dede5162cd98d0072791cdecc5664a239733fe52f88
+and ae36a830baaa30004b6d68c93a5cea2a0ecbd134dc889b8ec926ec1c2fc858e2.
+Integration observation
+7e6cdfd22ef7212b1e5ceb0cb49589c8e0b934febb7ab297628c70750332dff0
+records success, lock wait 4.097ms and hold 5277.951ms. Total elapsed is unknown.
 
-Next executable transition: freeze the corrected test with the five unchanged
-source/test postimages; pass focused coverage and installed-path composition;
-use resolve prepare-local, resolve and apply to derive a new candidate, then
-run both graph-selected obligations. Integrate only after all receipts
-authenticate. Do not reuse either failed candidate as successful evidence.
-The partitioned fifteen-file graph/schema proposal remains unaccepted; its
-command-repair freeze preserves fourteen postimages and changes only the
-duplicated command token. No topology-only parallel-safety claim is permitted.
+The module graph/schema transaction remains unaccepted. Its dry-run refused
+TRANSACT_INTEGRITY_VIOLATION before writes: seven shared canonical kind/rule
+identities have duplicate named-graph type ownership, and native
+urn:usf:candidate:1 lacks a declaration. Bohr owns one repair cohort: singly
+owned graph/cli-schema-primitives.nq and its manifest, root/module imports,
+exact work/runtime read closure, the truthful candidate identity declaration,
+regenerated schemas and full-corpus transaction preflight. Never change the
+native wire identity or weaken the ownership invariant.
 
-Linear USF-1192 comments 9b34d3d7-3ced-4acf-bf17-5326b8f84ae1 and
-d89e4f58-9391-40d1-9c68-4461e1da5c10 retain exact checkpoints and nonclaims.
+Next executable transition: verify the complete module-owner-repair proposal
+through transact --dry-run, then apply only its validated current postimages
+and derive/publish current construction authority. Mendel then adapts both
+sparse coverage fixture source lists to include the admitted primitive source;
+no whole-root test read expansion is justified. Interrogate the installed
+ordinary-adapter frontier and continue the bounded adapter bundle. Diagnostic
+capture/reader proposals remain queued, not new telemetry or lifecycle ledgers.
+No topology-only parallel-safety claim is permitted.
+
+Linear USF-1192 comments ae069751-03e8-4394-bc88-e1a75acf9e6f and
+9f0cb41d-4930-4dfe-9361-a3ea41681bb5 retain current evidence and blockers.
 USF-1189 remains independent cutover work after USF-1192 implementation closes.
 Development snapshots are temporal candidates, never runtime helpers. Freeze
 cross-lane bytes before validation; never bind mutable worker outputs into an
 acceptance run. A different confinement mode is not a reproduction of a failed
 native check and cannot justify changing its semantic test ownership.
+The operator skill now makes these preflight requirements explicit, including
+same-byte current/prospective tests and full-corpus transaction dry-run before
+handoff. Reuse matching evidence; do not repeat confidence checks. Versioned
+provider-neutral context propagation remains recorded in USF-1190.
 
 ## Bounded module implementation in progress - 2026-09-08 UTC
 
