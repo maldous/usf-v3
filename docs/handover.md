@@ -4633,3 +4633,26 @@ repair the projection before further expensive validation retries.
 - Nonclaims remain: USF-1192/1197 acceptance, terminal publication, runtime
   parallel safety, provider qualification/contact, autonomous Linear delivery,
   full-gate success, and USF-1189 cutover.
+
+# Current candidate note - authenticated seed reuse requires bounded validation, 2026-09-10
+
+- A candidate-only test change now makes `canonical terminal evaluation refuses
+  altered evaluator and artifact lineage` consume the existing
+  `canonicalCheckedPrepublicationClone()` rather than creating a fresh root
+  and re-running `prepareCompletionChecks`. The clone is copied from the
+  genuine checked seed produced by the existing recovery cohort; its helper
+  reauthenticates the complete receipt set and asserts zero validation launches.
+  This is intended to remove duplicate nested validation, not to remove an
+  obligation or synthesize a receipt.
+- Cheap validation passed: `COREPACK_HOME="$PWD/.usf/cache/corepack"
+  corepack pnpm exec tsc --noEmit` and `git diff --check`. The combined
+  acceptance probe selected the preceding genuine `before-source` recovery
+  case plus the terminal lineage case, but exited `124` at 600 seconds while
+  still in the seed/recovery setup, before reaching the modified terminal
+  assertion. No terminal result, publication, mutation, or duplicate-launch
+  measurement was obtained from that probe; no child remains.
+- Therefore no performance improvement is accepted yet. The candidate remains
+  inside the mixed uncommitted USF-1192 postimage. The next bounded validation
+  must make the authenticated seed available without repeating the expensive
+  producer in the same observation, then prove the terminal test performs no
+  nested validation and preserves all current receipts, artifacts and lineage.
