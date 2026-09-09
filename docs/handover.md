@@ -4656,3 +4656,29 @@ repair the projection before further expensive validation retries.
   must make the authenticated seed available without repeating the expensive
   producer in the same observation, then prove the terminal test performs no
   nested validation and preserves all current receipts, artifacts and lineage.
+
+# Current continuation checkpoint - optimization deferred for Linear progression, 2026-09-10
+
+- The validation-obligation split candidate was checked with TypeScript,
+  91 contract/graph/parser tests, and `git diff --check`; all passed. A fresh
+  installed `transition inspect` readback remained bounded and unchanged at
+  44 diagnostics, `complete=false`, `executionAuthority=none`, and
+  `parallelSafety=unproven`. No adapter is unmapped.
+- The moved unit obligation still showed a 52.264-second native inspection
+  case. A single terminal-lineage probe against the split candidate was then
+  bounded at 180 seconds and interrupted while its genuine confined child was
+  still running the graph-selected `tests/unit/commands/transition.test.ts`;
+  it produced no terminal result, publication, accepted mutation, or new
+  receipt. The owned test/fixture process group was terminated and read back
+  absent. This is a measured non-acceptance, not a terminal performance claim.
+- Further optimization is intentionally deferred until later in the delivery
+  sequence. The split candidate remains uncommitted within the mixed USF-1192
+  postimage and must not be described as an accepted improvement or as reduced
+  completion-check obligations. The next action is Linear-linked diagnostic
+  progression through the active USF-1194/1195 dependency evidence and the
+  current 1192 frontier, with one integration owner.
+- Current pushed checkpoint remains `82128c22e39ede39168c78678218fefa6c5e41a9`
+  on `anqr-experience-realisation`, aligned with its remote. Hermes supervisor
+  `e2f6e23b399268910ef4311d9` remains live/idle and untouched; stewardship is
+  released. No provider, production, terminal-publication, USF-1192 or
+  USF-1189 acceptance claim is made.
