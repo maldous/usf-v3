@@ -1,5 +1,13 @@
 # USF V3 handover
 
+## Current boundary - USF-1191 rename-neutral postimage repair, 2026-09-10
+
+- `src/realisation/transition.ts` now applies `--no-renames` to both cached and working-tree postimage `name-only` checks, matching the authoritative staged diff path enumeration and preserving both sides of a rename alongside additions, deletions and modifications.
+- Verification: `tests/unit/realisation/integration-git-diagnostics.test.ts` passed 10/10 in 7.525s; typecheck PASS; `git diff --check` PASS. Linear USF-1191 comment `d8307690-1ad4-478e-b2dc-03c7bb033bde` records the evidence and nonclaims.
+- This source edit remains in the shared dirty USF-1192 candidate because `src/realisation/transition.ts` is already modified by that candidate; it was not independently committed or pushed. Do not stage the whole file into a separate issue checkpoint.
+- Current blockers remain unchanged: the retained canonical terminal run refuses `CHECK_CONFINEMENT_UNAVAILABLE` because no `usf-fixture-process-v1.*` AppArmor profile is loaded; the installed semantic frontier remains 44 diagnostics, `complete=false`, `executionAuthority=none`, `parallelSafety=unproven`. Hermes remains live/idle and no provider qualification is claimed.
+- Exact next transition: continue the shared operational-rule/evaluator cohort and reconcile USF-1194/1195; later assemble this 1191 repair into a coherent validated checkpoint only when its overlapping source postimage is accepted. No full gate is justified yet.
+
 ## Current boundary - terminal refusal classified, 2026-09-10
 
 - Retained canonical terminal run is conclusively classified: after approximately 60s it refused at `prepareCompletionChecks` with `CHECK_CONFINEMENT_UNAVAILABLE` for `urn:usf:validation:cli-transition-definition`; no completion evidence, proof, publication, semantic mutation or duplicate receipt was produced. The refusal is bounded and no associated child/process remains.
