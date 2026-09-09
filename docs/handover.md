@@ -4698,3 +4698,19 @@ repair the projection before further expensive validation retries.
   set against the composed graph and rerun the same recovery test. Do not alter
   refusal semantics, rerun the terminal optimization, or spend the full gate
   until this focused cohort passes and the composed frontier moves.
+
+# Current dependency repair readback - 2026-09-10
+
+- The receipt authority/currentness repair is now verified by the exact
+  USF-1195 integration-recovery test: `1/1` pass in `39.614s`, with
+  `tsc --noEmit` and `git diff --check` passing. The repaired rule retains the
+  complete graph-declared authority dependency set, including paths also
+  present in the candidate tree.
+- A fresh installed `transition inspect` completed with valid bounded JSON and
+  remained at 44 diagnostics, digest
+  `sha256:257b06c310ce16a2a43742d77fa804c768542a372b3d86cc9dd7e36cdb70bb97`,
+  `complete=false`, `executionAuthority=none`, and `parallelSafety=unproven`.
+  No adapter-family reduction is claimed from this child repair.
+- USF-1194 focused validation remains `16/16` in `0.385s`; the failed-check
+  reader remains `1/1` in `4.025s`. No full gate, integration, publication,
+  terminal completion, USF-1192 acceptance or USF-1189 cutover has occurred.
