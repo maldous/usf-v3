@@ -4739,3 +4739,15 @@ repair the projection before further expensive validation retries.
   source, timeout or recovery change is justified by that probe. No effect was
   observed and all owned processes were removed. Any future terminal result
   must use an outer bound greater than 305000ms and retain the exact result.
+
+# Correction - 360s probe did not reach a result, 2026-09-10
+
+- The subsequent 360s outer run also produced no test result. It spent setup
+  time before entering a nested validation governed at 300000ms, so the outer
+  bound was still insufficient to prove pass or failure. The wrapper did not
+  automatically reap the detached child; the identified process chain was
+  terminated and read back absent.
+- This remains an operational observation, not evidence that the semantic
+  validator failed. No source or timeout change is justified and optimization
+  remains deferred. A future bounded result must account for setup time plus
+  the full 305000ms governed validation/settlement ceiling.
