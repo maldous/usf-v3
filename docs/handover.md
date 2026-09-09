@@ -1,5 +1,13 @@
 # USF V3 handover
 
+## Current boundary - operational-support profiling complete, 2026-09-10
+
+- Narrow CLI profiling established that graph loading is not the frontier bottleneck: four repeated `loadSemanticGraph` calls over the selected closure took `179.314ms`, `156.959ms`, `160.027ms` and `160.894ms`, with identical 19,407-quad and semantic digest results.
+- One current-root native inspector probe measured basis/context refusal paths at approximately 3.0-8.3s each. The installed authorised fixture measured operational-support preflights concurrently: ordinary resolve 50.512s, ordinary apply 47.568s, ordinary check 44.637s, ordinary integrate 41.602s, completion evidence 59.795s, no-change 44.430s, completion check 39.432s, proof 34.437s, publication 31.423s, local contribution 76.613s; aggregate operational-support completion was 80.064s. These are observation timings, not semantic evidence.
+- The temporary CLI timing probe was removed. Typecheck and diff check pass; no source semantics, receipt, authority, publication or diagnostic count changed. The earlier read-only fixture parallelism experiment remains rejected because it still exceeded 300s.
+- Performance decision: do not add a cache, new service, scheduler, timeout widening or validation shard. A future optimization must introduce one explicit shared authenticated context contract with post-observation reauthentication, then demonstrate the required material reduction without weakening per-transition currentness.
+- Exact next action: continue the dependency-ordered USF-1194/1195 acceptance reconciliation and the remaining evaluator/terminal obligations for USF-1192. Preserve these measurements as the baseline; run no unchanged long cohort or full gate until a coherent acceptance-bearing candidate exists.
+
 ## Current boundary - graph integrity fixture reconciled, 2026-09-10
 
 - The attempted exact-byte graph parse cache was rejected and fully removed. Its focused failure reproduced without the cache, so it was not the cause. The actual failure was a stale test assumption: operational-support field records are now supplied by their separately declared schema module, while the selected production manifest owns the canonical field-specification population.
