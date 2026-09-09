@@ -4751,3 +4751,38 @@ repair the projection before further expensive validation retries.
   validator failed. No source or timeout change is justified and optimization
   remains deferred. A future bounded result must account for setup time plus
   the full 305000ms governed validation/settlement ceiling.
+
+# Current installed-frontier and gate checkpoint - 2026-09-10
+
+- The installed composed acceptance fixture
+  `tests/integration/transition-installed-frontier.test.ts` passed `1/1` in
+  `498696.883ms` under a 600-second outer bound. It reduced the observed
+  frontier from 44 diagnostics before construction to 19 after construction.
+  The remaining post-construction families are 10
+  `CLI_OPERATIONAL_RULE_UNRESOLVED`, 7
+  `TRANSITION_IMPLEMENTATION_ONLY_LEAF`, 1
+  `TRANSITION_INVENTORY_INCOMPLETE`, and 1
+  `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`. This is installed-path
+  evidence only; it does not establish `complete=true`, execution authority,
+  parallel safety, publication, or issue completion.
+- The acceptance-bound full-gate attempt
+  `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check` refused
+  before ordinary tests or mutation with
+  `FIXTURE_PROCESS_CONSTRUCTION_AUTHORITY_INACTIVE`. The exact basis is
+  `sha256:fb6e859530806fac5c6ab1a0bd8bca5ea77775df096806cf676ab1cc1b8c29e4`.
+  Reasons were `BOOTSTRAP_EXCEPTION_NOT_DECLARED`, missing construction
+  evidence, missing construction proof result, and inactive realization
+  permission. No full-gate pass or completion effect occurred.
+- The existing digest-bound fixture evidence/proof bundle was read back, but
+  supported publication was refused with `STEWARD_CLAIM_STALE`. A transient
+  claim made during this session is owned by the current controller and its
+  raw session is unavailable to later subprocesses; direct record editing or
+  bypass is prohibited. After this controller exits, the successor must use
+  `./bin/usf hermes steward recover --agent usf1192-checkpoint --seconds 300`
+  with a fresh `USF_STEWARD_SESSION_ID`, publish the exact existing proof
+  bundle, read back construction authority, and run the full gate once. Do
+  not rerun the unchanged 498.697-second fixture.
+- Branch `anqr-experience-realisation` remains at pushed HEAD
+  `fc390edec8afecc5aab3cc7b93762088d1a8a4b2`; the mixed USF-1192 candidate
+  remains uncommitted. Hermes supervisor `e2f6e23b399268910ef4311d9` remains
+  live/idle and untouched. Linear USF-1192 was updated with this checkpoint.
