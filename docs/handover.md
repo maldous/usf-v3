@@ -1,5 +1,12 @@
 # USF V3 handover
 
+## Current boundary - graph integrity fixture reconciled, 2026-09-10
+
+- The attempted exact-byte graph parse cache was rejected and fully removed. Its focused failure reproduced without the cache, so it was not the cause. The actual failure was a stale test assumption: operational-support field records are now supplied by their separately declared schema module, while the selected production manifest owns the canonical field-specification population.
+- `tests/unit/graph/integrity.test.ts` now selects the manifest's declared `CliFieldSpecification` records mechanically and retains the same integrity, malformed-identity, source-type and violation assertions. Focused graph/generic/schema validation passes `45/45`; typecheck and diff check pass. This repairs a candidate validation defect but removes no current `transition inspect` diagnostic.
+- No semantic authority, receipt, publication, runtime state or full-gate result changed. The candidate remains dirty and unaccepted. Pushed HEAD remains `a12e78071833cea3ce623872f84206aee9ad5dff`.
+- Exact next action: continue from the measured installed operational-support interrogation bottleneck and the live USF-1194/1195 dependency order; do not promote this test repair or the prior timing evidence into USF-1192 completion.
+
 ## Current boundary - installed frontier phase timing classified, 2026-09-10
 
 - A temporary timing probe around the installed-frontier test recorded `transition inspect` before construction at `111.201s` and after construction at `187.119s` (the second measurement ended at `298.321s` elapsed from test start). The test reached neither the replay inspection nor the native reader phase before the external `300s` bound. The probe was removed; no semantic or runtime code remains changed by the experiment.
