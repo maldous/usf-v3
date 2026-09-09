@@ -36,9 +36,33 @@ test("every repository JSON schema compiles deterministically through the narrow
 
   const compile = () => files.map((path) => ({
     path: relative(repositoryRoot, path),
-    schemaId: createJsonSchemaValidator(readSchema(path), relative(repositoryRoot, path) === "schemas/cli-transition-interrogation.schema.json"
-      ? { dependencySchemas: [readSchema(join(repositoryRoot, "schemas/cli-transition-descriptor.schema.json"))] }
-      : {}).schemaId,
+    schemaId: createJsonSchemaValidator(readSchema(path), (() => {
+      const relativePath = relative(repositoryRoot, path);
+      if (relativePath === "schemas/cli-transition-interrogation.schema.json") {
+        return {
+          dependencySchemas: [
+            "schemas/cli-transition-descriptor.schema.json",
+            "schemas/cli-operational-support.schema.json",
+            "schemas/local-contribution.schema.json",
+            "schemas/call-result.schema.json",
+            "schemas/cli-parallel-safety.schema.json",
+            "schemas/cli-parser-coverage.schema.json",
+          ].map((dependency) => readSchema(join(repositoryRoot, dependency))),
+        };
+      }
+      if (relativePath === "schemas/cli-transition-descriptor.schema.json") {
+        return {
+          dependencySchemas: [
+            "schemas/cli-operational-support.schema.json",
+            "schemas/local-contribution.schema.json",
+            "schemas/call-result.schema.json",
+            "schemas/cli-parallel-safety.schema.json",
+            "schemas/cli-parser-coverage.schema.json",
+          ].map((dependency) => readSchema(join(repositoryRoot, dependency))),
+        };
+      }
+      return {};
+    })()).schemaId,
   }));
   assert.deepEqual(compile(), compile());
 });
@@ -53,6 +77,33 @@ test("external references and unapproved schema capabilities fail before compila
     () => createJsonSchemaValidator({ $schema: dialect, type: "object", unevaluatedProperties: false }),
     (error: unknown) => error instanceof SchemaPolicyError && error.reasonCode === "SCHEMA_KEYWORD_UNSUPPORTED",
   );
+});
+
+test("compiled validators cannot become stale through dependency mutation", () => {
+  const dependency = {
+    $schema: dialect,
+    $id: "urn:test:validator-dependency:1",
+    $defs: { value: { type: "string", const: "before" } },
+  };
+  const root = {
+    $schema: dialect,
+    $id: "urn:test:validator-root:1",
+    $ref: "urn:test:validator-dependency:1#/$defs/value",
+  };
+  const validator = createJsonSchemaValidator(root, { dependencySchemas: [dependency] });
+  dependency.$defs.value.const = "after";
+
+  assert.equal(validator.validate("before").valid, true);
+  assert.equal(validator.validate("after").valid, false);
+
+  const changed = createJsonSchemaValidator(root, {
+    dependencySchemas: [{
+      ...dependency,
+      $defs: { value: { type: "string", const: "after" } },
+    }],
+  });
+  assert.equal(changed.validate("before").valid, false);
+  assert.equal(changed.validate("after").valid, true);
 });
 
 test("array cardinality bounds are admitted and report stable failures", () => {
