@@ -1,5 +1,12 @@
 # USF V3 handover
 
+## Current boundary - installed frontier phase timing classified, 2026-09-10
+
+- A temporary timing probe around the installed-frontier test recorded `transition inspect` before construction at `111.201s` and after construction at `187.119s` (the second measurement ended at `298.321s` elapsed from test start). The test reached neither the replay inspection nor the native reader phase before the external `300s` bound. The probe was removed; no semantic or runtime code remains changed by the experiment.
+- This narrows the delay to installed CLI interrogation, especially authenticated post-construction operational-support evaluation, rather than the six native readers or parent check settlement. The prior source-level concurrent-reader experiment remains rejected. A worthwhile optimization now requires profiling or a semantically safe shared/batched interrogation path that preserves currentness and all per-transition authentication; no cache or skipped inspection is admitted by timing alone.
+- Current source candidate has no temporary instrumentation. `git diff --check` passes; no full gate was run. The last pushed accepted checkpoint remains `0f227783aee23d9f85238ba4bdbb74dfb40ee225`.
+- Exact next action: inspect the authenticated operational-support path for redundant graph/schema reloads, then implement only a measured, exact-currentness-preserving optimization if it can materially reduce the installed frontier. Otherwise proceed with the live USF-1194/1195 dependency reconciliation and retain this timing as the performance baseline.
+
 ## Current boundary - validation parallelism rejected, 2026-09-10
 
 - A bounded performance experiment changed only the installed-frontier fixture's six read-only native observations from serial to `Promise.all`, preserving all assertions and coverage. Typecheck and `git diff --check` passed, but the changed candidate still timed out at the external 300s bound in the same installed-frontier test (`tests/unit/commands/transition.test.ts:219`). The first test completed in 51.441s; the installed test produced no result before interruption. The experiment is fully reverted.
