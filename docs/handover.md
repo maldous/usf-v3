@@ -1,5 +1,50 @@
 # USF V3 handover
 
+## Module semantics applied; ordinary adapter bundle active - 2026-09-09 UTC
+
+HEAD is 8446a1a8a8ff97c8012985367e5aa01bacb1e929, ahead 28 of origin.
+The module semantic/schema changes and construction receipt below are applied
+but not yet committed. Unrelated artifacts/ remains preserved. No full gate,
+push, terminal completion or USF-1189 cutover is claimed.
+
+The prior ownership refusal is resolved by governed transaction
+b8213ca97dcc65c11f5681ef5c724a9b51d97e197f3bbbf28e91e4d3c17bbd7a:
+17 files, 124 graph files, 69786 quads, 16 invariants, zero violations.
+Seven canonical primitive identities now have one shared graph owner; the
+existing native candidate identity is declared without changing its wire format.
+Schemas are tracked; runtime snapshots are not implementation dependencies.
+
+Fresh construction evidence/proof and publication apply plus independent verify
+agree on evidence/construction-authority/0cdf97155631f8ae83f1e443768c763b62365af68de8873706b9c3a2a388e2db.json,
+receipt digest 1aab0b98350428e2b18d9ac2aa6660c032d198380467681585bb9d27029fa6b6.
+Current work reports construction eligible through integrate, active permission,
+no refusal reasons. This grants bounded construction, not completion.
+
+Installed transition inspect returned complete bounded JSON, exit 1, digest
+6f0054a4ce61a6c712f8627e22cc008dd0f8bac8107bbc2a66eb4d8c606ae48b.
+There are 110 diagnostics: four ordinary adapter mappings, 23 operational rules,
+73 implementation-only leaves, one inventory gap, four evaluator gaps, four
+parser-source gaps and one terminal-obligation authentication gap. Complete is
+false and execution authority is none. Structural terminal equality is not
+authenticated terminal satisfaction or parallel-safety proof.
+
+Next executable implementation: finish the coherent ordinary resolve/apply/check/
+integrate adapter bundle against the current eligible work. Mendel owns only
+the sparse coverage fixture primitive-source repair and transition.ts maps;
+Euclid owns native ordinary source postimages; Main owns CLI/help/parser and
+all primary mutation/integration; Turing owns the tracked-only CLI fixture.
+Reuse matching frozen tests. Freeze all contributing bytes before composed
+validation. Do not replay retained unknown failed checks to obtain missing logs.
+Do not broaden fixture reads to the whole root manifest or use ignored helpers.
+
+Current observations are retained under .usf/inputs/usf1192-module-owner-*.
+Linear USF-1192 comment 1d2f60ca-1601-4d01-b9d3-d1a5c6f4c1cf was independently
+read back. Existing stewardship and Hermes supervisor remain live; primary
+mutation was observed idle after publication. Preserve the current owner and
+supervisor. The operator-skill preflight is advisory; provider-neutral context
+publication remains owned by USF-1190, not silently claimed here.
+
+
 ## Module source integrated; semantic ownership repair - 2026-09-09 UTC
 
 Current accepted source carrier is b7f1fc091981142fbc2a056fd76915849046604c,

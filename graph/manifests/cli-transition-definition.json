@@ -6,7 +6,8 @@
     "graph/manifests/profile-authority.json",
     "graph/manifests/v3-execution.json",
     "graph/manifests/v3-convention.json",
-    "graph/manifests/check-execution-intent.json"
+    "graph/manifests/check-execution-intent.json",
+    "graph/manifests/cli-schema-primitives.json"
   ],
   "sources": [
     {

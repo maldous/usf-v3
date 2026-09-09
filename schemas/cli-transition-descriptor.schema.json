@@ -921,60 +921,58 @@
       "type": "object"
     },
     "operationalSupport": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/operationalSupportCurrent"
-        },
-        {
-          "$ref": "#/$defs/operationalSupportMissing"
-        },
-        {
-          "$ref": "#/$defs/operationalSupportRefused"
-        }
-      ]
+      "$ref": "urn:usf:cli-operational-support:1"
     },
-    "operationalSupportCurrent": {
+    "ordinaryAppliedWorkspaceReference": {
       "additionalProperties": false,
       "properties": {
-        "derivations": {
-          "description": "Generated native operational-support derivations.",
-          "items": {
-            "$ref": "#/$defs/operationalSupportDerivation"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "implementation": {
-          "const": "authenticated",
-          "description": "Generated native operational-support implementation.",
+        "candidateDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         },
-        "lockAvailability": {
-          "const": "not-observed",
-          "description": "Native inspection does not observe idle or busy state and does not acquire locks.",
-          "maxLength": 64,
-          "minLength": 1,
-          "type": "string"
-        },
-        "outcome": {
-          "const": "current",
-          "description": "Generated native operational-support outcome.",
+        "currentBasisDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         },
-        "sourceBasis": {
-          "description": "Generated native operational-support sourceBasis.",
+        "inventoryDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         },
-        "transitionIdentity": {
-          "description": "Generated native operational-support transitionIdentity.",
+        "manifestDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "originalBasisDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "profile": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "schema": {
+          "const": "urn:usf:ordinary-applied-workspace-reference:1",
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "work": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-apply:1; schema shape is not authentication.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
@@ -982,569 +980,234 @@
         }
       },
       "required": [
-        "derivations",
-        "implementation",
-        "lockAvailability",
-        "outcome",
-        "sourceBasis",
-        "transitionIdentity"
+        "candidateDigest",
+        "currentBasisDigest",
+        "inventoryDigest",
+        "manifestDigest",
+        "originalBasisDigest",
+        "profile",
+        "schema",
+        "work"
       ],
       "type": "object"
     },
-    "operationalSupportDerivation": {
+    "ordinaryArtifactReference": {
       "additionalProperties": false,
       "properties": {
-        "authenticatedFacts": {
-          "description": "Generated native operational-support authenticatedFacts.",
-          "items": {
-            "$ref": "#/$defs/operationalSupportFact"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "fieldIdentity": {
-          "description": "Generated native operational-support fieldIdentity.",
+        "authenticationRule": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         },
-        "outputPath": {
-          "description": "Exact ordered native trace output path.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "type": "string"
-          },
-          "maxItems": 32,
-          "minItems": 1,
-          "type": "array"
-        },
-        "sourceDigest": {
-          "description": "Generated native operational-support sourceDigest.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        }
-      },
-      "required": [
-        "authenticatedFacts",
-        "fieldIdentity",
-        "outputPath",
-        "sourceDigest"
-      ],
-      "type": "object"
-    },
-    "operationalSupportFact": {
-      "additionalProperties": false,
-      "properties": {
         "digest": {
-          "description": "Generated native operational-support digest.",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         },
-        "factKind": {
-          "description": "Closed native preflight fact kind. candidate-identity binds the declared candidate digest only and does not prove a workspace exists.",
-          "enum": [
-            "authority",
-            "basis",
-            "candidate-identity",
-            "candidate-workspace",
-            "check-receipt",
-            "check-recovery",
-            "context",
-            "evidence",
-            "local-preimage",
-            "proof-bundle",
-            "publication-receipt",
-            "publication-snapshot",
-            "scope",
-            "tool-source"
-          ],
-          "maxLength": 128,
+        "identity": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "path": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         },
-        "identity": {
-          "description": "Bounded native fact identity. The authenticated native validator owns its IRI, digest or repository-relative-path domain.",
+        "schema": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "sourceBasis": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         }
       },
       "required": [
+        "authenticationRule",
         "digest",
-        "factKind",
-        "identity"
+        "identity",
+        "schema",
+        "sourceBasis"
       ],
       "type": "object"
     },
-    "operationalSupportMissing": {
+    "ordinaryBranchContract": {
       "additionalProperties": false,
       "properties": {
-        "derivations": {
-          "description": "Generated native operational-support derivations.",
-          "items": {
-            "$ref": "#/$defs/operationalSupportDerivation"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "implementation": {
-          "const": "authenticated",
-          "description": "Generated native operational-support implementation.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "lockAvailability": {
-          "const": "not-observed",
-          "description": "Native inspection does not observe idle or busy state and does not acquire locks.",
-          "maxLength": 64,
-          "minLength": 1,
-          "type": "string"
-        },
-        "outcome": {
-          "const": "missing-prerequisite",
-          "description": "Generated native operational-support outcome.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "sourceBasis": {
-          "description": "Generated native operational-support sourceBasis.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "transitionIdentity": {
-          "description": "Generated native operational-support transitionIdentity.",
+        "applicabilityRule": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "unavailableInputs": {
-          "description": "Generated native operational-support unavailableInputs.",
-          "items": {
-            "$ref": "#/$defs/operationalSupportUnavailableInput"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "derivations",
-        "implementation",
-        "lockAvailability",
-        "outcome",
-        "sourceBasis",
-        "transitionIdentity",
-        "unavailableInputs"
-      ],
-      "type": "object"
-    },
-    "operationalSupportRefused": {
-      "additionalProperties": false,
-      "properties": {
-        "derivations": {
-          "description": "Generated native operational-support derivations.",
-          "items": {
-            "$ref": "#/$defs/operationalSupportDerivation"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "implementation": {
-          "const": "authenticated",
-          "description": "Generated native operational-support implementation.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "lockAvailability": {
-          "const": "not-observed",
-          "description": "Native inspection does not observe idle or busy state and does not acquire locks.",
-          "maxLength": 64,
-          "minLength": 1,
-          "type": "string"
-        },
-        "outcome": {
-          "const": "refused",
-          "description": "Generated native operational-support outcome.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "refusalClass": {
-          "description": "Typed refusal class; exact native refusal code is carried separately.",
-          "enum": [
-            "mixed",
-            "stale",
-            "unclassified",
-            "unsafe"
-          ],
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "refusalCode": {
-          "description": "Exact native refusal code, including CLI_TRANSITION_STALE where applicable.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "sourceBasis": {
-          "description": "Generated native operational-support sourceBasis.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "transitionIdentity": {
-          "description": "Generated native operational-support transitionIdentity.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "derivations",
-        "implementation",
-        "lockAvailability",
-        "outcome",
-        "refusalClass",
-        "refusalCode",
-        "sourceBasis",
-        "transitionIdentity"
-      ],
-      "type": "object"
-    },
-    "operationalSupportUnavailableInput": {
-      "additionalProperties": false,
-      "properties": {
-        "factKind": {
-          "description": "Closed unavailable native fact kind. candidate-identity binds the declared candidate digest only and does not prove a workspace exists.",
-          "enum": [
-            "authority",
-            "basis",
-            "candidate-identity",
-            "candidate-workspace",
-            "check-receipt",
-            "check-recovery",
-            "context",
-            "evidence",
-            "local-preimage",
-            "proof-bundle",
-            "publication-receipt",
-            "publication-snapshot",
-            "scope",
-            "tool-source"
-          ],
-          "maxLength": 128,
-          "minLength": 1,
           "type": "string"
         },
         "identity": {
-          "description": "Bounded missing native prerequisite identity. The authenticated native validator owns its IRI, digest, repository-relative-path or proposed-operation name domain.",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         },
-        "reasonCode": {
-          "description": "Generated native operational-support reasonCode.",
+        "profile": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         },
-        "state": {
-          "const": "missing",
-          "description": "Closed unavailable native fact state.",
-          "maxLength": 128,
+        "proofObligation": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
           "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "terminalArtifacts": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "terminalAssessmentRule": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "transitions": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "work": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         }
       },
       "required": [
-        "factKind",
+        "applicabilityRule",
         "identity",
-        "reasonCode",
-        "state"
+        "profile",
+        "proofObligation",
+        "terminalArtifacts",
+        "terminalAssessmentRule",
+        "transitions",
+        "work"
       ],
       "type": "object"
     },
-    "parallelSafety": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/parallelSafetyBlocked"
-        },
-        {
-          "$ref": "#/$defs/parallelSafetyProved"
-        },
-        {
-          "$ref": "#/$defs/parallelSafetyUnproven"
-        }
-      ]
-    },
-    "parallelSafetyBasis": {
+    "ordinaryBranchObservation": {
       "additionalProperties": false,
       "properties": {
-        "assessedPairCount": {
-          "description": "Count of distinct authenticated pair assessments; compare with exact required pair identities.",
-          "maximum": 1048576,
-          "minimum": 0,
-          "type": "integer"
-        },
-        "currentnessRule": {
-          "description": "Admitted evaluator of semantic/runtime currentness and evidence scope.",
+        "derivationRule": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         },
-        "obligations": {
-          "description": "Complete semantic safety obligations, including evidence and interruption/recovery dependencies.",
+        "identity": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "nativeFactDigests": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "items": {
             "maxLength": 4096,
             "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
             "type": "string"
           },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "realisationBasis": {
-          "description": "Exact immutable RealisationBasis authenticated independently against current selected work.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "requiredPairCount": {
-          "description": "Required concurrent-pair denominator derived from current cohort and admitted dependency rules.",
-          "maximum": 1048576,
-          "minimum": 0,
-          "type": "integer"
-        },
-        "resourceDigest": {
-          "description": "Digest of shared authority, integration, provider/account and Linear concurrency resources.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "scopeDigest": {
-          "description": "Digest of normalized cohort read/write scopes; no path-name inference.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "semanticDigest": {
-          "description": "Exact current semantic closure digest and declared digest domain.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "verificationEvidence": {
-          "description": "Current independent verification evidence with original lineage and scope.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "verifier": {
-          "description": "Independent admitted verifier identity; a declared identity alone does not establish independence.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "assessedPairCount",
-        "currentnessRule",
-        "obligations",
-        "realisationBasis",
-        "requiredPairCount",
-        "resourceDigest",
-        "scopeDigest",
-        "semanticDigest",
-        "verificationEvidence",
-        "verifier"
-      ],
-      "type": "object"
-    },
-    "parallelSafetyBlocked": {
-      "additionalProperties": false,
-      "properties": {
-        "assessmentRule": {
-          "description": "Graph-owned assessment and currentness rule, not a caller-selected workflow.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "conflicts": {
-          "description": "Observed resource or semantic conflicts; an empty list is not proof of compatibility.",
-          "items": {
-            "$ref": "#/$defs/parallelSafetyConflict"
-          },
-          "maxItems": 1024,
+          "maxItems": 64,
           "minItems": 0,
           "type": "array",
           "uniqueItems": true
         },
-        "evidence": {
-          "description": "Original observed evidence identities, preserved even when stale or rejected.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
+        "profile": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
         },
-        "members": {
-          "description": "Exact transition cohort assessed; completeness requires the current semantic member denominator.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "missingObligations": {
-          "description": "Unfulfilled or stale assessment obligations remain explicit.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
+        "proofObligation": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
         },
         "reasonCodes": {
-          "description": "Explicit conflict, stale evidence, or verification failure reasons.",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "items": {
             "maxLength": 4096,
             "minLength": 1,
             "type": "string"
           },
-          "maxItems": 1024,
-          "minItems": 1,
+          "maxItems": 64,
+          "minItems": 0,
           "type": "array",
           "uniqueItems": true
         },
-        "semanticBasis": {
-          "description": "Exact observed semantic closure digest in its SHA-256 domain; structural validity does not authenticate currentness.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "state": {
-          "const": "blocked",
-          "description": "Assessment classification only; the proved tag never authenticates its own claim.",
+        "ruleDigest": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
-        }
-      },
-      "required": [
-        "assessmentRule",
-        "conflicts",
-        "evidence",
-        "members",
-        "missingObligations",
-        "reasonCodes",
-        "semanticBasis",
-        "state"
-      ],
-      "type": "object"
-    },
-    "parallelSafetyConflict": {
-      "additionalProperties": false,
-      "properties": {
-        "evidence": {
-          "description": "Original observation/evidence identities supporting the conflict.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
         },
-        "kind": {
-          "description": "Typed conflict domain, not a free-form operational fields map.",
+        "sourceBasis": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "enum": [
-            "evidence-dependency",
-            "integration-ownership",
-            "linear-serialization",
-            "path-overlap",
-            "provider-capacity",
-            "recovery-constraint",
-            "shared-authority",
+            "applicable",
+            "inapplicable",
+            "refused",
             "unknown"
           ],
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         },
-        "left": {
-          "description": "Exact left member involved in this conflict.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "resource": {
-          "description": "Exact canonical resource identity or repository path implicated by the conflict rule.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "right": {
-          "description": "Exact right member involved in this conflict.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "rule": {
-          "description": "Semantic rule establishing the conflict and its admissible resolution boundary.",
+        "work": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
@@ -1552,507 +1215,273 @@
         }
       },
       "required": [
-        "evidence",
-        "kind",
-        "left",
-        "resource",
-        "right",
-        "rule"
-      ],
-      "type": "object"
-    },
-    "parallelSafetyPair": {
-      "additionalProperties": false,
-      "properties": {
-        "conflicts": {
-          "description": "Typed conflicts with their semantic basis; zero entries does not authenticate compatibility.",
-          "items": {
-            "$ref": "#/$defs/parallelSafetyConflict"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "evidence": {
-          "description": "Original current evidence authenticating this pair's scope/resource analysis.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "left": {
-          "description": "Exact left transition member, distinct and within the assessed cohort.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "leftRead": {
-          "description": "Canonical repository-relative leftRead scope; overlap interpreted only by the admitted scope evaluator.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "leftResources": {
-          "description": "Exact shared authority, integration ownership, provider/account, external mutation, evidence and recovery resources.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "leftWrite": {
-          "description": "Canonical repository-relative leftWrite scope; overlap interpreted only by the admitted scope evaluator.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "outcome": {
-          "description": "Pair classification from authenticated conflict analysis, never topology alone.",
-          "enum": [
-            "compatible",
-            "conflict"
-          ],
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "right": {
-          "description": "Exact right transition member, distinct and within the assessed cohort.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "rightRead": {
-          "description": "Canonical repository-relative rightRead scope; overlap interpreted only by the admitted scope evaluator.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "rightResources": {
-          "description": "Exact shared authority, integration ownership, provider/account, external mutation, evidence and recovery resources.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "rightWrite": {
-          "description": "Canonical repository-relative rightWrite scope; overlap interpreted only by the admitted scope evaluator.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "rule": {
-          "description": "Exact admitted conflict-analysis rule covering file and non-file resources.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "conflicts",
-        "evidence",
-        "left",
-        "leftRead",
-        "leftResources",
-        "leftWrite",
-        "outcome",
-        "right",
-        "rightRead",
-        "rightResources",
-        "rightWrite",
-        "rule"
-      ],
-      "type": "object"
-    },
-    "parallelSafetyProved": {
-      "additionalProperties": false,
-      "properties": {
-        "assessmentRule": {
-          "description": "Graph-owned assessment and currentness rule, not a caller-selected workflow.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "basis": {
-          "$ref": "#/$defs/parallelSafetyBasis",
-          "description": "Independent currentness and verification basis; all domain digests and evidence require authenticated evaluation."
-        },
-        "conflicts": {
-          "description": "A proved assessment has no remaining conflicts; absence alone never establishes proof.",
-          "items": {
-            "$ref": "#/$defs/parallelSafetyConflict"
-          },
-          "maxItems": 0,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "members": {
-          "description": "Exact transition cohort assessed; completeness requires the current semantic member denominator.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "pairs": {
-          "description": "Explicit pair assessments must cover the required concurrent-pair denominator without duplicates.",
-          "items": {
-            "$ref": "#/$defs/parallelSafetyPair"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "semanticBasis": {
-          "description": "Exact observed semantic closure digest in its SHA-256 domain; structural validity does not authenticate currentness.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "state": {
-          "const": "proved",
-          "description": "Assessment classification only; the proved tag never authenticates its own claim.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        }
-      },
-      "required": [
-        "assessmentRule",
-        "basis",
-        "conflicts",
-        "members",
-        "pairs",
-        "semanticBasis",
-        "state"
-      ],
-      "type": "object"
-    },
-    "parallelSafetyUnproven": {
-      "additionalProperties": false,
-      "properties": {
-        "assessmentRule": {
-          "description": "Graph-owned assessment and currentness rule, not a caller-selected workflow.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "members": {
-          "description": "Exact transition cohort assessed; completeness requires the current semantic member denominator.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "missingObligations": {
-          "description": "Exact missing assessment/evidence obligations; topology and empty conflicts cannot satisfy them.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "reasonCodes": {
-          "description": "Bounded machine-readable refusal reasons, not execution instructions.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 1,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "semanticBasis": {
-          "description": "Exact observed semantic closure digest in its SHA-256 domain; structural validity does not authenticate currentness.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "state": {
-          "const": "unproven",
-          "description": "Assessment classification only; the proved tag never authenticates its own claim.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        }
-      },
-      "required": [
-        "assessmentRule",
-        "members",
-        "missingObligations",
+        "derivationRule",
+        "identity",
+        "nativeFactDigests",
+        "profile",
+        "proofObligation",
         "reasonCodes",
-        "semanticBasis",
-        "state"
-      ],
-      "type": "object"
-    },
-    "parserCoverage": {
-      "additionalProperties": false,
-      "properties": {
-        "diagnostics": {
-          "description": "Bounded parser coverage diagnostics.",
-          "items": {
-            "$ref": "#/$defs/parserCoverageDiagnostic"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "matchedSelectors": {
-          "description": "Exact matched canonical selectors.",
-          "items": {
-            "$ref": "#/$defs/parserCoverageSelector"
-          },
-          "maxItems": 32,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        },
-        "sourceBasis": {
-          "description": "Selected graph digest.",
-          "maxLength": 71,
-          "minLength": 71,
-          "type": "string"
-        },
-        "status": {
-          "description": "Coverage remains partial or unavailable.",
-          "enum": [
-            "partial",
-            "unavailable"
-          ],
-          "maxLength": 11,
-          "minLength": 7,
-          "type": "string"
-        },
-        "unresolvedRegions": {
-          "description": "Unresolved top-level fallback regions.",
-          "items": {
-            "maxLength": 4096,
-            "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-            "type": "string"
-          },
-          "maxItems": 1024,
-          "minItems": 0,
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "diagnostics",
-        "matchedSelectors",
+        "ruleDigest",
         "sourceBasis",
         "status",
-        "unresolvedRegions"
+        "work"
       ],
       "type": "object"
     },
-    "parserCoverageDiagnostic": {
+    "ordinaryCheckedSetReference": {
       "additionalProperties": false,
       "properties": {
-        "field": {
-          "description": "Affected field identity.",
+        "candidateDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
           "maxLength": 4096,
           "minLength": 1,
+          "type": "string"
+        },
+        "currentBasisDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "originalBasisDigest": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "profile": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "receipts": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
+          "items": {
+            "$ref": "#/$defs/ordinaryArtifactReference"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "schema": {
+          "const": "urn:usf:ordinary-checked-set-reference:1",
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "validationIdentities": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "work": {
+          "description": "Reference field must be independently rederived by urn:usf:rule:ordinary-boundary-check:1; schema shape is not authentication.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidateDigest",
+        "currentBasisDigest",
+        "originalBasisDigest",
+        "profile",
+        "receipts",
+        "schema",
+        "validationIdentities",
+        "work"
+      ],
+      "type": "object"
+    },
+    "ordinaryEffectRefused": {
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         },
         "reasonCode": {
-          "description": "Machine-readable refusal reason.",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
         },
-        "subject": {
-          "description": "Affected source or graph identity.",
+        "schema": {
+          "const": "urn:usf:ordinary-effect-result:1",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "const": "refused",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "work": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         }
       },
       "required": [
-        "field",
+        "profile",
         "reasonCode",
-        "subject"
+        "schema",
+        "status",
+        "work"
       ],
       "type": "object"
     },
-    "parserCoverageFallbackRegion": {
+    "ordinaryEffectResult": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ordinaryEffectRefused"
+        },
+        {
+          "$ref": "#/$defs/ordinaryEffectSuccess"
+        }
+      ]
+    },
+    "ordinaryEffectSuccess": {
       "additionalProperties": false,
       "properties": {
-        "complementOf": {
-          "description": "Canonical selector complement.",
+        "artifacts": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "items": {
+            "$ref": "#/$defs/ordinaryArtifactReference"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "candidateDigest": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "currentBasisDigest": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "originalBasisDigest": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "profile": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
           "type": "string"
         },
-        "identity": {
-          "description": "Fallback region identity.",
+        "schema": {
+          "const": "urn:usf:ordinary-effect-result:1",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "const": "ok",
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "work": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "sourceDispatchSurfaceToken": {
-          "description": "Top-level dispatch surface token.",
-          "maxLength": 512,
-          "minLength": 1,
           "type": "string"
         }
       },
       "required": [
-        "complementOf",
-        "identity",
-        "sourceDispatchSurfaceToken"
+        "artifacts",
+        "candidateDigest",
+        "currentBasisDigest",
+        "originalBasisDigest",
+        "profile",
+        "schema",
+        "status",
+        "work"
       ],
       "type": "object"
     },
-    "parserCoverageSelector": {
+    "ordinaryRequest": {
       "additionalProperties": false,
       "properties": {
-        "adapterIdentity": {
-          "description": "Exact admitted adapter identity.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "canonicalSelectorTokens": {
-          "description": "Ordered canonical selector tokens.",
+        "contributions": {
+          "description": "External immutable nonempty local/provider contribution sequence, at most 32; exact original wire provenance and bases validated by shared native parser. Never a candidate or authority override.",
           "items": {
-            "maxLength": 512,
-            "minLength": 1,
-            "type": "string"
+            "oneOf": [
+              {
+                "$ref": "urn:usf:local-contribution:1"
+              },
+              {
+                "$ref": "urn:usf:call-result:1#/$defs/contribution"
+              }
+            ]
           },
           "maxItems": 32,
           "minItems": 1,
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
-        "fallbackRegion": {
-          "$ref": "#/$defs/parserCoverageFallbackRegion",
-          "description": "Exact unresolved fallback region."
+        "manifestPath": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
         },
-        "forwardedArgumentOffset": {
-          "description": "Exact forwarded argument offset.",
-          "maximum": 1,
-          "minimum": 0,
-          "type": "integer"
-        },
-        "identity": {
-          "description": "Canonical selector identity.",
+        "rootIdentity": {
+          "description": "Typed structural field; authenticating the native rule remains separately required.",
           "maxLength": 4096,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "namedCommand": {
-          "description": "Exact registered command identity.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
-          "type": "string"
-        },
-        "parserExport": {
-          "description": "Shared parser export identity.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "sourcePath": {
-          "description": "Selector dispatch source path.",
-          "maxLength": 4096,
-          "minLength": 1,
-          "type": "string"
-        },
-        "version": {
-          "description": "Selector contract revision.",
-          "maxLength": 20,
-          "minLength": 1,
           "type": "string"
         }
       },
       "required": [
-        "adapterIdentity",
-        "canonicalSelectorTokens",
-        "fallbackRegion",
-        "forwardedArgumentOffset",
-        "identity",
-        "namedCommand",
-        "parserExport",
-        "sourcePath",
-        "version"
+        "contributions",
+        "manifestPath",
+        "rootIdentity"
       ],
       "type": "object"
+    },
+    "parallelSafety": {
+      "$ref": "urn:usf:cli-parallel-safety:1"
+    },
+    "parserCoverage": {
+      "$ref": "urn:usf:cli-parser-coverage:1"
     },
     "recovery": {
       "additionalProperties": false,
@@ -2241,6 +1670,16 @@
           "type": "array",
           "uniqueItems": true
         },
+        "branchAssessments": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "items": {
+            "$ref": "#/$defs/terminalBranchAssessment"
+          },
+          "maxItems": 16,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
         "declarations": {
           "description": "declarations: typed terminalAssessment value; declaration and structural observation do not authenticate satisfaction or grant execution.",
           "items": {
@@ -2342,6 +1781,7 @@
       },
       "required": [
         "authenticatedArtifacts",
+        "branchAssessments",
         "declarations",
         "diagnostics",
         "edges",
@@ -2355,9 +1795,218 @@
       ],
       "type": "object"
     },
+    "terminalBranchAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "applicability": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "enum": [
+            "applicable",
+            "inapplicable",
+            "refused",
+            "unknown"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "branchIdentity": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "branchSourceDigest": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "derivationRule": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "evaluatorDigest": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "nativeFactDigests": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 1024,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "obligations": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "items": {
+            "$ref": "#/$defs/terminalBranchObligation"
+          },
+          "maxItems": 1024,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "outcome": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "enum": [
+            "accepted",
+            "missing",
+            "refused",
+            "stale",
+            "unknown"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "profile": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "reasonCodes": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "semanticBasis": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "work": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "applicability",
+        "branchIdentity",
+        "branchSourceDigest",
+        "derivationRule",
+        "evaluatorDigest",
+        "nativeFactDigests",
+        "obligations",
+        "outcome",
+        "profile",
+        "reasonCodes",
+        "semanticBasis",
+        "work"
+      ],
+      "type": "object"
+    },
+    "terminalBranchObligation": {
+      "additionalProperties": false,
+      "properties": {
+        "artifactDigest": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "artifactIdentity": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "obligationIdentity": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "obligationKind": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "enum": [
+            "artifact",
+            "proof",
+            "recovery"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "outcome": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "enum": [
+            "accepted",
+            "missing",
+            "refused",
+            "stale",
+            "unknown"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "reasonCodes": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "sourceDigest": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "obligationIdentity",
+        "obligationKind",
+        "outcome",
+        "reasonCodes"
+      ],
+      "type": "object"
+    },
     "terminalDeclaration": {
       "additionalProperties": false,
       "properties": {
+        "branches": {
+          "description": "Native evaluator observation only; graph projection or valid schema does not authenticate this value.",
+          "items": {
+            "$ref": "#/$defs/ordinaryBranchContract"
+          },
+          "maxItems": 16,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
         "closureRule": {
           "description": "closureRule: typed terminalDeclaration value; declaration and structural observation do not authenticate satisfaction or grant execution.",
           "maxLength": 4096,
@@ -2440,6 +2089,7 @@
         }
       },
       "required": [
+        "branches",
         "closureRule",
         "explanation",
         "identity",

@@ -1,0 +1,203 @@
+{
+  "$defs": {
+    "parserCoverageDiagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "description": "Affected field identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "reasonCode": {
+          "description": "Machine-readable refusal reason.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "subject": {
+          "description": "Affected source or graph identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "reasonCode",
+        "subject"
+      ],
+      "type": "object"
+    },
+    "parserCoverageFallbackRegion": {
+      "additionalProperties": false,
+      "properties": {
+        "complementOf": {
+          "description": "Canonical selector complement.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "identity": {
+          "description": "Fallback region identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "sourceDispatchSurfaceToken": {
+          "description": "Top-level dispatch surface token.",
+          "maxLength": 512,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "complementOf",
+        "identity",
+        "sourceDispatchSurfaceToken"
+      ],
+      "type": "object"
+    },
+    "parserCoverageSelector": {
+      "additionalProperties": false,
+      "properties": {
+        "adapterIdentity": {
+          "description": "Exact admitted adapter identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "canonicalSelectorTokens": {
+          "description": "Ordered canonical selector tokens.",
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array"
+        },
+        "fallbackRegion": {
+          "$ref": "#/$defs/parserCoverageFallbackRegion",
+          "description": "Exact unresolved fallback region."
+        },
+        "forwardedArgumentOffset": {
+          "description": "Exact forwarded argument offset.",
+          "maximum": 1,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "identity": {
+          "description": "Canonical selector identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "namedCommand": {
+          "description": "Exact registered command identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "parserExport": {
+          "description": "Shared parser export identity.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourcePath": {
+          "description": "Selector dispatch source path.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "version": {
+          "description": "Selector contract revision.",
+          "maxLength": 20,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapterIdentity",
+        "canonicalSelectorTokens",
+        "fallbackRegion",
+        "forwardedArgumentOffset",
+        "identity",
+        "namedCommand",
+        "parserExport",
+        "sourcePath",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:usf:cli-parser-coverage:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "diagnostics": {
+      "description": "Bounded parser coverage diagnostics.",
+      "items": {
+        "$ref": "#/$defs/parserCoverageDiagnostic"
+      },
+      "maxItems": 1024,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "matchedSelectors": {
+      "description": "Exact matched canonical selectors.",
+      "items": {
+        "$ref": "#/$defs/parserCoverageSelector"
+      },
+      "maxItems": 32,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "sourceBasis": {
+      "description": "Selected graph digest.",
+      "maxLength": 71,
+      "minLength": 71,
+      "type": "string"
+    },
+    "status": {
+      "description": "Coverage remains partial or unavailable.",
+      "enum": [
+        "partial",
+        "unavailable"
+      ],
+      "maxLength": 11,
+      "minLength": 7,
+      "type": "string"
+    },
+    "unresolvedRegions": {
+      "description": "Unresolved top-level fallback regions.",
+      "items": {
+        "maxLength": 4096,
+        "minLength": 1,
+        "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+        "type": "string"
+      },
+      "maxItems": 1024,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "diagnostics",
+    "matchedSelectors",
+    "sourceBasis",
+    "status",
+    "unresolvedRegions"
+  ],
+  "type": "object"
+}

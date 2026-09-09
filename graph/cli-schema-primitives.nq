@@ -1,0 +1,134 @@
+<urn:usf:cli-field-specification:kind-integer:1> <urn:usf:predicate:text> "Canonical nonnegative decimal literal, parsed as a safe integer; reject signs, leading zeroes except zero, fractions and overflow." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-integer:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldValueKind> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-integer:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-iri:1> <urn:usf:predicate:text> "IRI object, nonempty, never a blank node or an executable module location." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-iri:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldValueKind> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-iri:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-record:1> <urn:usf:predicate:text> "IRI object referencing a subject validated against the linked recordSpecification." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-record:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldValueKind> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-record:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-text:1> <urn:usf:predicate:text> "Literal Unicode string within declared length bounds." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-text:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldValueKind> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:kind-text:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-allowed-values:1> <urn:usf:predicate:text> "Optional allowedValue declarations form a bounded nonempty set of literal string values for text or IRI fields only. Values must satisfy the declared lexical bounds and IRI syntax where applicable. Refuse unsupported value kinds, empty or oversized sets and incompatible bounds. A singleton derives const; larger sets derive enum. The generic record reader checks the same set before projection, including subject-derived values. No declaration establishes operational proof." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-allowed-values:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-allowed-values:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:predicate:text> "A collection-valued property is always present in the canonical projection, including an explicit empty array when minimumCardinality is zero. Minimum collection cardinality constrains array entries, not property presence. Generated required sets include every collection field; optional scalar fields remain absent when minimumCardinality is zero and no source value exists. Missing pair, scope, resource or conflict collections must not be confused with an observed empty collection." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:predicate:text> "Derive closed JSON Schema object properties and required sets from record-field relationships. Scalar cardinality maximum one maps to a scalar; collection fields map to bounded unique arrays. Record-valued fields reference the canonical schema identity and definition selected by recordSpecification. Sort property names and set-valued constraints deterministically; preserve declared ordered data only when an ordering rule exists. Compare generated schema canonical JSON with checked-in schema; mismatch refuses. No embedded JSON schema literals or parallel TypeScript field roster." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-generate-schema:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-native-ordered-sequence:1> <urn:usf:predicate:text> "Preserve observed bounded sequence order; refuse an unordered source." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-native-ordered-sequence:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-native-ordered-sequence:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-native-trace-sequence:1> <urn:usf:predicate:text> "Preserve the exact ordered native trace sequence. The producer must refuse unless the selected native reader supplies the complete sequence under its authenticated context; graph-value readers may not synthesize, lexically sort or infer this ordering." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-native-trace-sequence:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-native-trace-sequence:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-operational-rule-required:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-operational-rule-required:1> <urn:usf:predicate:text> "A rule IRI is a required reference, not evidence of an implemented rule. Derive its selected graph closure, applicability, dependencies, explanation and owning admission/proof semantics; require a separately admitted allowlisted implementation for operational assessment. Missing rule resources or implementation return explicit gaps. This amendment does not supply domain proof/recovery rules." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-operational-rule-required:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-operational-rule-required:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:predicate:text> "Read only the exact source subject and predicate, verify object kind, unique semantic values, declared cardinality, lexical bounds and dependencies. Missing/conflicting data returns a field gap with source identities. Do not follow undeclared property aliases or reinterpret prose." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-record-alternatives:1> <urn:usf:predicate:text> "A record may declare two to sixteen recordAlternative identities instead of ordinary fields. Alternatives must be distinct declared non-union records in the same schema, with distinct source types. The union declares exactly one discriminatorProperty. Every alternative requires that scalar text property with one unique allowedValue tag; all tags must be distinct. Refuse mixed fields and alternatives, missing or recursive references, nested unions, ambiguous tags and source types, or absent discriminator semantics. Derive oneOf references to the closed alternative records. Record projection requires the union source type and exactly one alternative source type on the subject, then uses that alternative's ordinary reader and field derivations. Source typing selects a structural variant, never operational authority." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-record-alternatives:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-record-alternatives:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-operational-support:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-parallel-safety:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-parser-coverage:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordSchema> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportAuthenticatedFacts> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportDerivations> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportFactDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportFactIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportFactKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportFieldIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportImplementation> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportLockAvailability> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportOutputPath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportRefusalClass> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportRefusalCode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportSourceBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportSourceDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportTransitionIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportUnavailableIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportUnavailableInputs> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportUnavailableKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportUnavailableReasonCode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:operationalSupportUnavailableState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageDiagnostic> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageDiagnosticField> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageDiagnosticReasonCode> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageDiagnosticSubject> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageFallbackComplementOf> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageFallbackIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageFallbackSurfaceToken> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageMatchedSelector> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorAdapterIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorFallbackRegion> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorNamedCommand> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorOffset> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorParserExport> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorSourcePath> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorTokens> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSelectorVersion> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageSourceBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageStatus> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:parserCoverageUnresolvedRegion> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyAssessedPairCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyAssessmentRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyConflicts> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyCurrentnessRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyEvidence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyKind> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyLeft> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyLeftRead> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyLeftResources> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyLeftWrite> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyMembers> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyMissingObligations> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyObligations> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyOutcome> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyPairs> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyRealisationBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyReasonCodes> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyRequiredPairCount> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyResource> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyResourceDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyRight> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyRightRead> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyRightResources> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyRightWrite> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyRule> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyScopeDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetySemanticBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetySemanticDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyState> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyVerificationEvidence> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:safetyVerifier> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliFieldDerivationRule> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliFieldSpecification> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliFieldValueKind> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParallelSafetyAssessment> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParallelSafetyBasis> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParallelSafetyBlocked> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParallelSafetyConflict> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParallelSafetyPair> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParallelSafetyProved> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParallelSafetyUnproven> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParserCoverage:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParserCoverageDiagnostic:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParserCoverageFallbackRegion:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliParserCoverageSelector:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:CliRecordSpecification> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:OperationalSupport:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:OperationalSupportCurrent:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:OperationalSupportDerivation:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:OperationalSupportFact:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:OperationalSupportMissing:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:OperationalSupportRefused:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:type:OperationalSupportUnavailableInput:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
