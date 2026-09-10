@@ -4911,3 +4911,23 @@ repair the projection before further expensive validation retries.
   check setup remains the active USF-1197/USF-1192 dependency.
 - No timeout widening, validation skip, adapter closure, USF-1192 or
   USF-1197 acceptance, terminal publication, or USF-1189 cutover is claimed.
+
+# Validation-scope experiment classification - 2026-09-10
+
+- A bounded experiment temporarily replaced the broad adapter completion
+  obligation with an explicit `--test-name-pattern=completion` validation
+  resource while retaining the broad adapter test as a work validation. The
+  scoped command itself passed `3/3` in `16618.265ms` and graph integrity
+  remained gate-conforming.
+- The exact root-derived completion-check test was then run with a 600-second
+  wrapper and still timed out before producing a result. The remaining setup
+  cost is the completion denominator's `cli-transition-definition-runtime`
+  obligation, which includes the installed-frontier behavior. Therefore the
+  experiment did not materially reduce the active critical path and was
+  reverted; the original completion denominator is restored.
+- Post-revert deterministic readback: `./node_modules/.bin/tsc --noEmit`,
+  `git diff --check`, and `./bin/usf graph integrity` passed, with
+  `gateConforming=true`, `ownedGraphViolationCount=0`, and `quadCount=71615`.
+  No full gate was run. Do not repeat this scope experiment; defer the final
+  optimization until later progression unless a new acceptance-bearing
+  decomposition of the runtime obligation is prepared.
