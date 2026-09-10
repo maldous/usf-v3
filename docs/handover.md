@@ -4931,3 +4931,33 @@ repair the projection before further expensive validation retries.
   No full gate was run. Do not repeat this scope experiment; defer the final
   optimization until later progression unless a new acceptance-bearing
   decomposition of the runtime obligation is prepared.
+
+# Inventory-family checkpoint - 2026-09-10
+
+- The installed `transition inspect` was rerun after the inventory cohort and
+  returned valid JSON with exit `1`. Basis digest is
+  `sha256:a47dfb4d149eb9459bd1db7945f7c016ab1e9425014d2c1eca864abcb67dc1dc`.
+- The diagnostic frontier moved from 44 to 37. The seven
+  `TRANSITION_IMPLEMENTATION_ONLY_LEAF` diagnostics and the aggregate
+  `TRANSITION_INVENTORY_INCOMPLETE` diagnostic are absent. Remaining counts
+  are 23 `CLI_OPERATIONAL_RULE_UNRESOLVED`, 5 `INVALID_REALISATION_BASIS`, 1
+  `LOCAL_CONSTRUCTION_REFUSED`, 6 `TRANSITION_EVALUATORS_UNAUTHENTICATED`,
+  and 1 `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`. No adapter-unmapped
+  diagnostic is present; `complete=false`, `executionAuthority=none`, and
+  `parallelSafety=unproven` remain authoritative.
+- The cohort added graph-authenticated classifications for all mechanically
+  enumerated registry leaves. Ignored-observation commands use the existing
+  generic observation basis; bootstrap and construction publication leaves
+  use explicit disjoint-scope evidence. No CLI implementation, runtime state,
+  provider route, semantic completion, publication, or Linear completion is
+  claimed.
+- Verification: inventory/parser/coverage focused tests passed `10/10` in
+  `4263.601ms`; `./node_modules/.bin/tsc --noEmit` and `git diff --check`
+  passed; strict graph integrity returned `gateConforming=true`,
+  `ownedGraphViolationCount=0`, `quadCount=71651`, within `24` accepted legacy
+  violations. A full repository gate was intentionally not run because this
+  cohort is not the final acceptance boundary.
+- Next executable cohort is the shared evaluator/currentness lane: authenticate
+  the operational rule descriptors and basis resolution without changing
+  execution authority or parallel-safety claims, then re-interrogate the
+  same selected root.
