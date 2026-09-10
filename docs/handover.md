@@ -5009,3 +5009,37 @@ frontier; do not reopen timeout tuning or repeat the unchanged full gate.
   execution authority, parallel-safety proof, provider, Git or Linear closure
   is claimed. Stewardship is `dead` with `primaryMutation=idle`; Hermes
   supervisor `e2f6e23b399268910ef4311d9` remains live/idle.
+
+# Inventory denominator and currentness checkpoint - 2026-09-10
+
+- The inventory review found a typed `CLI_INVENTORY_DENOMINATOR_MISMATCH` in
+  the composed handler: graph authority declares 78 paths (73 registry/help
+  paths plus five canonical parser modes), while the handler supplied only the
+  registry set. The five omitted modes were `apply ordinary`, `check diagnose`,
+  `check ordinary`, `integrate ordinary`, and `resolve ordinary`.
+- The handler now adds all `canonicalParserContracts` paths through the shared
+  `canonicalParserCommandPath` projection before inventory derivation. It does
+  not delete graph classifications or infer ownership.
+- Typecheck and the 68-test `cli-transition-coverage` contract suite passed.
+  Fresh authority had to be regenerated because the source dependency changed:
+  evidence/proof verify passed, and governed apply created receipt
+  `evidence/construction-authority/79500ffc83d1533b22b75f6544d94470c1a557c0a25b8b8471c50aeb6c229dd6.json`
+  with receipt digest
+  `sha256:69f1a2ba391526d0afd00b968f5fb63bb54a124ecde06c682306e9106c7534ff`.
+- Fresh installed interrogation returned valid JSON with exit `1`, frontier
+  digest `sha256:188f64b48464faad802803527259c77eba3dc20464f7800b9bc39acc08df91b4`,
+  and 11 diagnostics: 10 `CLI_OPERATIONAL_RULE_UNRESOLVED` fields in the
+  parallel-safety module and 1 `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`.
+  The inventory family is removed. `complete=false`,
+  `executionAuthority=none`, and `parallelSafety=unproven` remain current.
+- A candidate parallel-safety shortcut was rejected: validating an unproven
+  schema shape would not authenticate pair evidence, scope/resource digests,
+  currentness, conflict analysis or recovery obligations. The terminal review
+  likewise identified missing native branch evaluation for both ordinary
+  integration and completion-publication recovery lineage. No diagnostic is
+  cleared by declaration or topology.
+- Focused validation after the source change: typecheck passed; coverage passed
+  68/68 in `21272.8ms`; integration/recovery passed 6/6 in `78622.1ms` from
+  the preceding parallel run. One broad transition-unit run was stopped after
+  its installed-frontier child ignored the wrapper; owned test processes were
+  terminated and no test process remains. No full repository gate was run.
