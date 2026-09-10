@@ -4877,3 +4877,24 @@ repair the projection before further expensive validation retries.
 - Final deterministic readback after removing temporary tracing: `./node_modules/.bin/tsc --noEmit` passed and `git diff --check` passed. No full gate was
   rerun. Hermes remains live/idle; the current frontier and all completion
   nonclaims above remain unchanged.
+
+# Fresh frontier basis - 2026-09-10
+
+- A fresh installed readback used
+  `timeout 300s ./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json`.
+  It returned valid JSON after approximately two minutes with exit `1` and
+  `147610` output bytes.
+- Current graph digest is
+  `sha256:20912091512cbb7ea2bfcbe8965cb2d8d0eaf2e21a83b974e6ec84b21ef9d419`.
+  The result reports `complete=false`, `executionAuthority=none`,
+  `parallelSafety=unproven`, and 44 diagnostics: 23
+  `CLI_OPERATIONAL_RULE_UNRESOLVED`, 7 `TRANSITION_IMPLEMENTATION_ONLY_LEAF`,
+  1 `TRANSITION_INVENTORY_INCOMPLETE`, 5 `INVALID_REALISATION_BASIS`, 1
+  `LOCAL_CONSTRUCTION_REFUSED`, 6 `TRANSITION_EVALUATORS_UNAUTHENTICATED`,
+  and 1 `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`. No
+  `TRANSITION_ADAPTER_UNMAPPED` diagnostic remains.
+- The prior frontier digest is stale because the dirty semantic candidate has
+  changed the graph basis. The unchanged count is not diagnostic reduction.
+  Freeze this basis before the next cohort; repair inspect latency as a
+  bounded operational concern, then proceed through evaluator, terminal and
+  operational-rule closure.
