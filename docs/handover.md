@@ -5043,3 +5043,31 @@ frontier; do not reopen timeout tuning or repeat the unchanged full gate.
   the preceding parallel run. One broad transition-unit run was stopped after
   its installed-frontier child ignored the wrapper; owned test processes were
   terminated and no test process remains. No full repository gate was run.
+
+# Exact next transition - 2026-09-10
+
+- Preserve the current frontier basis
+  `sha256:188f64b48464faad802803527259c77eba3dc20464f7800b9bc39acc08df91b4`
+  until the next source candidate is complete. Do not reuse the construction
+  receipt after any source/graph/schema change; regenerate evidence/proof and
+  publish a fresh current grant first.
+- Implement two genuine native observation boundaries in disjoint cohorts:
+  (1) a parallel-safety observation producer that authenticates exact member
+  pairs, read/write scopes, semantic and RealisationBasis digests, resource
+  digests, verifier/evidence identities and recovery obligations while leaving
+  state `unproven` unless all pair proofs are independently present; and
+  (2) an ordinary-integration terminal evaluator that authenticates candidate,
+  checked-receipt, integration-intent, postimage and restart/replay lineage
+  alongside the existing completion-publication evaluator. Neither may clear a
+  diagnostic from graph shape alone.
+- Focused acceptance must include current/stale/conflict/partial/unknown and
+  interruption/replay refusal cases, then run the 68-test coverage suite,
+  typecheck, graph integrity and one fresh installed `transition inspect`.
+  Only if the composed candidate removes both diagnostic families should the
+  full repository gate run. After the gate, publish/integrate, push, and read
+  back Linear USF-1192/1194/1195.
+- Current nonclaims: USF-1192 and USF-1189 are not accepted; execution
+  authority and parallel safety are not proven; terminal completion/publication,
+  ANQR semantic realisation, provider resilience and production/staging effects
+  are not claimed. The next owner is the CLI integration owner, not Hermes
+  liveness or an external supervisory agent.
