@@ -4852,3 +4852,28 @@ repair the projection before further expensive validation retries.
   read `sha256:257b06c310ce16a2a43742d77fa804c768542a372b3d86cc9dd7e36cdb70bb97`
   with 44 diagnostics, `complete=false`, `executionAuthority=none`, and
   `parallelSafety=unproven`.
+
+# Publication setup bottleneck classification - 2026-09-10
+
+- A temporary environment-gated phase trace was used only for diagnosis and
+  removed before this checkpoint. On the retained clone, publication context
+  took about `18.9s`, initial candidate validation `13.5s`, and locked
+  validation `8.6s`; the clone copy itself measured `0.08s` for `96M` and
+  `1315` non-runtime files. These phases were not the five-minute boundary.
+- The exact interruption test's `before-source` child is launched only after
+  `canonicalCheckedPrepublicationSeed()` completes
+  `prepareGenuineCanonicalPublicationRoot()`, which calls the complete
+  `prepareCompletionChecks` obligation. The 360-second wrapper expired before
+  the child reached its boundary. This explains the apparent publication
+  slowness as repeated full checked-seed setup, not a proven source-write or
+  parent-settlement defect.
+- The receipt-fact cache experiment was removed because it did not reduce the
+  measured critical path. No timeout, validation skip, or obligation narrowing
+  was accepted. The remaining optimization, if revisited, must decompose the
+  complete validation obligation with equivalent mandatory coverage and then
+  obtain one bounded terminal recovery result. Until then, treat the existing
+  300000ms validation bound and the full `prepareCompletionChecks` requirement
+  as authoritative.
+- Final deterministic readback after removing temporary tracing: `./node_modules/.bin/tsc --noEmit` passed and `git diff --check` passed. No full gate was
+  rerun. Hermes remains live/idle; the current frontier and all completion
+  nonclaims above remain unchanged.
