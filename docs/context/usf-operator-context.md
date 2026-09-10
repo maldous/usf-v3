@@ -49,6 +49,13 @@ installation. The adaptation is limited to these operating rules:
   test cost against the admitted runtime budget. Use supported compatible
   contribution composition when necessary, without widening limits. Unknown
   timings remain unknown; a small passing subset does not establish full cost.
+- Treat fixed limits as safety ceilings, not workload estimates. Where the
+  semantic contract exposes workload size or complexity, derive a bounded
+  operational budget from that current context and evidence, never above the
+  fixed ceiling. A timeout or size refusal is not evidence that the ceiling
+  should be widened; first verify the selected work, validation denominator and
+  currentness basis. Report wall, queue, active and validation time separately
+  when they are observable.
 - Require a genuine producer-to-reader round trip before freezing persistence
   changes. Typechecking and schema-only checks do not prove intermediate
   filesystem states, durable publication or restart/readback compatibility.
@@ -78,8 +85,8 @@ installation. The adaptation is limited to these operating rules:
   superseding binding, prepare/run that exact binding, and read its settled
   attempt/result. Do not replay the stale binding or manufacture closure.
 
-Version 5 retains the authorized stewardship setup correction and adds explicit
-full-context freeze, dispatch-budget and producer/readback preflights following
+Version 6 retains the authorized stewardship setup correction and adds explicit
+full-context freeze, dispatch-budget, dynamic-within-ceiling budget and producer/readback preflights following
 the repeated USF-1192 candidate and diagnostic-boundary failures. These are
 operator-requested discipline corrections, not inferred semantic requirements.
 Their scope is repository validation and bounded persistence work, not provider

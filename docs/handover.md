@@ -5264,3 +5264,34 @@ frontier; do not reopen timeout tuning or repeat the unchanged full gate.
   installed `transition inspect`, updating this record and USF-1192 with the
   resulting diagnostic movement. Recover stewardship only immediately before a
   governed mutation and release it after settled readback.
+
+# Terminal authentication reduction - 2026-09-10
+
+- The bounded source change in `src/commands/transition.ts` now removes
+  `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED` only after the native
+  canonical terminal evaluator, generated artifact schema, exact artifact
+  lineage, graph currentness and selected context all authenticate. Refusal and
+  stale paths remain unchanged; this does not grant execution authority or
+  parallel safety.
+- After current construction evidence/proof reauthentication and governed
+  apply, the installed command
+  `./bin/usf transition inspect --root urn:usf:work:cli-transition-definition
+  --manifest graph/manifests/cli-transition-definition.json` returned valid JSON,
+  exit 1, in 133.08s. Frontier digest is
+  `sha256:4d08d791aca5fd8cc6b1ddf534a440ca3933bc9ea66536295a2a2d39578cdb28`;
+  diagnostics reduced `11 -> 10`, removing the terminal-obligation family.
+  Remaining diagnostics are exactly ten
+  `CLI_OPERATIONAL_RULE_UNRESOLVED` parallel-safety proved-field records.
+  `complete=false`, `executionAuthority=none`, and
+  `parallelSafety=unproven` remain authoritative.
+- Verification: `tsc --noEmit` passed in 7.98s; `git diff --check` passed;
+  the unit/graph suite passed 48/48 in 236.868s. A broader contract plus
+  work-completion run hit its 180s wrapper in the known slow retained-receipt
+  fixture and is not a pass. No full gate was run. Construction apply receipt
+  is `evidence/construction-authority/85fbc5c7ea781c852df712392042a4eaa5d083795fcd7c7f986727b153eacd0a.json`,
+  digest `sha256:6f8352d4eeb79547e83a2a7aae2bc554d8314ba42e0ffb00afd58f5fdb106fca`.
+- Stewardship was recovered for the apply and explicitly released; Hermes
+  remains live/healthy. The implementation source remains in the mixed dirty
+  USF-1192 candidate and is not independently committed. The next accepted
+  cohort is shared authenticated parallel-safety support; do not infer it from
+  topology or merely remove its diagnostics.
