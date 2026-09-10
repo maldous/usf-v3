@@ -4818,3 +4818,37 @@ repair the projection before further expensive validation retries.
   is dead after the gate controller exited, with `activeActivity=false` and
   `primaryMutation=idle`; the next mutation owner must recover it through the
   supported CLI before publishing or editing governed state.
+
+# Publication-boundary optimization readback - 2026-09-10
+
+- The candidate source change keeps completion-evidence receipt reads inside
+  the authenticated no-change workspace lock and reuses that exact
+  authenticated `{workspace,basis}` for receipt currentness checks. This is
+  bounded reuse under the native lock, not a mutable status cache. It also
+  adds digest-bound failure diagnostics and validator caching keyed by the
+  complete graph-selected schema closure; no semantic authority or completion
+  claim is derived from these metrics.
+- Deterministic validation passed: `./node_modules/.bin/tsc --noEmit` and
+  `git diff --check`. The parser/transition unit cohort reached `31/31` passed
+  before its 180-second wrapper expired while a later fixture remained active;
+  the command therefore is not recorded as a clean suite exit. The passed
+  cases include parser/help agreement, native inspection, receipt-set schema,
+  and derived check-input coverage.
+- The retained-clone proof preparation now resolves in `19003.233ms` with
+  status `resolved`, compared with the prior 30-second diagnostic timeout.
+  This validates reduced repeated currentness work but does not establish a
+  material end-to-end publication improvement.
+- The exact `before-source` interruption/replay case was rerun once with a
+  360-second outer bound. It still failed to reach its boundary before the
+  governed child timeout; no publication, accepted mutation, or new receipt
+  was produced, and no child/process group remained. The remaining cost is
+  the candidate validation launched by `publishCompletion`/`preparePublication`
+  rather than proof preparation alone.
+- Do not rerun the unchanged full gate. The next acceptance-bearing cohort
+  must either decompose that graph-selected validation obligation while
+  retaining equivalent coverage, or prove exact checked-candidate reuse for
+  this publication boundary. No timeout widening, validation skip, or
+  fabricated receipt is permitted. Current frontier remains the previously
+  read `sha256:257b06c310ce16a2a43742d77fa804c768542a372b3d86cc9dd7e36cdb70bb97`
+  with 44 diagnostics, `complete=false`, `executionAuthority=none`, and
+  `parallelSafety=unproven`.
