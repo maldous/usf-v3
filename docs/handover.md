@@ -5094,3 +5094,173 @@ frontier; do not reopen timeout tuning or repeat the unchanged full gate.
   terminal branch evaluator and parallel-safety evidence producer against one
   stable current support basis. Do not filter diagnostics, widen timeouts, or
   reuse the 11-diagnostic construction evidence until that basis is stable.
+
+# Native recovery observation checkpoint - 2026-09-10
+
+- Added a read-only `inspectCandidateIntegrationRecovery` boundary in
+  `src/realisation/transition.ts`. It authenticates the existing integration
+  intent, request authority, postimage readback and retained observation when
+  available, and returns typed `absent`, `prepared-commit`,
+  `primary-advanced`, `quarantined`, `stale` or `unknown` state.
+- The boundary performs no lock acquisition, persistence, repair, check
+  execution, Git mutation or completion inference. Unknown and stale states
+  remain non-accepting and retain native reason codes.
+- Focused tests passed 2/2 in
+  `tests/unit/realisation/integration-recovery-inspection.test.ts`; TypeScript
+  typecheck and `git diff --check` passed. No full gate, publication,
+  integration or completion claim was made.
+- This checkpoint is part of the existing dirty USF-1192 candidate and is not
+  independently committed because `src/realisation/transition.ts` also
+  contains earlier uncommitted candidate changes. The last pushed commit
+  remains `d8ab9d9`.
+- Exact next transition: wire this native boundary and the existing completion
+  evaluator into one immutable `evaluateCanonicalTerminalBranches` result,
+  validate it through `attachAuthenticatedTerminalArtifacts`, then rerun
+  focused coverage and a settled installed frontier readback.
+
+# Terminal branch evaluator wiring checkpoint - 2026-09-10
+
+- Added the native `evaluateCanonicalTerminalBranches` projection in
+  `src/commands/work-completion.ts` and asynchronous attachment through the
+  existing `attachAuthenticatedTerminalArtifacts` path in
+  `src/commands/transition.ts`.
+- Completion delegates to the unchanged native completion evaluator.
+  Construction accepts only genuine external contributions, derives the
+  resolver candidate identity, and consumes the read-only integration recovery
+  observer. Missing contributions, scope conflicts, stale postimages,
+  quarantined recovery and unknown states remain explicit non-accepting branch
+  outcomes.
+- Branch output is checked against the generated descriptor record and the
+  graph/descriptor are reauthenticated before return. No effect, lock,
+  persistence, check execution or completion authority is added.
+- TypeScript typecheck, `git diff --check`, and the focused terminal/schema
+  cohort passed 4/4. A settled installed `transition inspect` completed with
+  exit 1 and valid JSON after approximately 95 seconds. Current readback is
+  digest `sha256:a3919a7883aac79be5e9bf341c3a43ab5a5bb31ab1c7794a913ed20c811f9590`,
+  36 diagnostics: 23 `CLI_OPERATIONAL_RULE_UNRESOLVED`, 5
+  `INVALID_REALISATION_BASIS`, 1 `LOCAL_CONSTRUCTION_REFUSED`, 6
+  `TRANSITION_EVALUATORS_UNAUTHENTICATED`, and 1
+  `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`. The historical
+  11-diagnostic readback is retained as provenance only and is not current
+  authority for this dirty source/semantic basis.
+- No full gate, publication, integration, commit or push was performed. The
+  terminal branch attachment experiment did not reduce the frontier and is
+  disabled. The exact next action is repair of the current evaluator/basis
+  cohort through its governed native support boundary, then re-interrogation.
+
+# Dynamic-bound correction - 2026-09-10
+
+- A direct `deriveWork` probe initially appeared to hit the native
+  `workDependencyResourceIris` 1,000-resource ceiling, but the probe used the
+  obsolete positional call shape rather than the supported options object.
+  Re-running with the installed API shape and an explicit selector derived the
+  selected work successfully; no dependency-limit refusal is current evidence.
+- The selected packet currently derives `effectiveAuthority: none` with
+  `permissionState: urn:usf:contract-state:proofblocked` and reasons
+  `CONSTRUCTION_EVIDENCE_MISSING`, `CONSTRUCTION_PROOF_RESULT_MISSING`, and
+  `REALISATION_PERMISSION_NOT_ACTIVE`. Retained active grants in
+  `graph/cli-transition-definition-grants.nq` are historical and cannot
+  authorize the dirty candidate without governed currentness reauthentication.
+- Bound policy remains: dynamic operational budgets may be derived from
+  authenticated workload size, but never silently exceed fixed safety ceilings.
+  No limit was widened and no completion or construction-authority claim was
+  made. Exact next transition is current construction evidence/proof
+  reauthentication, followed by a settled frontier readback.
+
+# Construction reauthentication checkpoint - 2026-09-10
+
+- Through the supported CLI, regenerated current construction evidence at
+  `.usf/candidates/construction-authority/usf1192-reauthenticated-evidence.json`
+  and proof at
+  `.usf/candidates/construction-authority/usf1192-reauthenticated-proof.json`.
+  The proof is bound to semantic digest
+  `sha256:9b513fb342adc986f574fc31451d1688c789fd0a5f809349f2616f184333fd65`,
+  basis `sha256:400e8a7aa3a6b31867f553384e0152a7935198ef19cfa2284da7bd44f8ddd47f`,
+  and bundle digest
+  `sha256:6694e3f1f34027b1374693d27f47c5aa90768c195e4452a27d97c9ca018eff87`.
+- `publish construction-authority --verify` passed without mutation and
+  produced receipt candidate `evidence/construction-authority/8731ae8ed504fed165f0ad8ebe7bb86b5fad3443d40c67317e2e0fa39e158fc2.json`
+  with receipt digest
+  `sha256:b2bb9fa51b869c912369a81c1c30db98c1de5be8a25af9b2823c3e2519cf249d`.
+- Apply was refused with `STEWARD_OWNERSHIP_CONFLICT`: the supported status
+  reports live idle stewardship claim `sha256:0252e67ed98ec844d44ac1dbcd929e686b7536c0d895d16c0bc6ca1b0c8b548e`,
+  generation `sha256:f5cfdcec719bfa6513e2333e263173c40778efe68833eb36f7f34963710eb6ad`,
+  process PID `2238762`, supervisor PID `2054583`. No authority mutation
+  occurred. Do not overwrite it; after expiry, recover and apply the exact
+  preserved proof in one session, then read back the frontier.
+
+# Current authority frontier - 2026-09-10
+
+- After the stale claim expired, recovery was performed with the stable
+  controller parent and the recovered claim/generation were supplied to the
+  governed apply. `publish construction-authority --apply` returned
+  `publicationState: created`, receipt
+  `evidence/construction-authority/8731ae8ed504fed165f0ad8ebe7bb86b5fad3443d40c67317e2e0fa39e158fc2.json`,
+  receipt digest
+  `sha256:b2bb9fa51b869c912369a81c1c30db98c1de5be8a25af9b2823c3e2519cf249d`,
+  and resulting semantic digest
+  `sha256:bd6678eec83c44bb92309e6af94e1c96d628c8de59e92ae6a5864fc9ca9cbf5b`.
+- Packet readback is now `effectiveAuthority: active-permission`,
+  `maximumThrough: integrate`, with basis
+  `sha256:0265758a4ce1223968b004a37a24fc9f88df841936c3c97eba6068920e09dadc`.
+- Fresh installed readback:
+  `timeout 180s ./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json`
+  settled with exit 1, valid JSON, and elapsed `134.74s`. Diagnostics reduced
+  `36 -> 11`; removed all 5 `INVALID_REALISATION_BASIS`, the 1
+  `LOCAL_CONSTRUCTION_REFUSED`, and all 6
+  `TRANSITION_EVALUATORS_UNAUTHENTICATED`. Current digest is
+  `sha256:caa232bac6b3fcc9b7ef4794f13c9c235a6fdf245b765b12956e56f390ed5ef4`.
+  Remaining families are 10 `CLI_OPERATIONAL_RULE_UNRESOLVED` parallel-safety
+  records and 1 `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`.
+- TypeScript and `git diff --check` pass. No full repository gate, terminal
+  publication, integration, Git commit/push, Linear completion or USF-1189
+  cutover claim. Next dependency-order cohort is authenticated parallel-safety
+  evidence, then terminal-obligation authentication.
+- Stewardship was subsequently recovered with the stable controller parent and
+  explicitly released; no claim or mutation lock remains held. The accepted
+  grant/receipt cannot be isolated into a clean commit in this handover because
+  `graph/cli-transition-definition-grants.nq` is already part of a larger
+  uncommitted USF-1192 candidate containing historical grant additions. Do not
+  stage that file alone; the next integration owner must compose and validate
+  the complete candidate before committing.
+
+# Current successor checkpoint - 2026-09-10
+
+- Fresh readback confirms branch `anqr-experience-realisation` and
+  `origin/anqr-experience-realisation` both point to
+  `d8ab9d90479e3e3001fd7029bc54a57fc9eceb46`. The working tree remains a
+  mixed, intentionally uncommitted USF-1192 candidate: 54 tracked files are
+  modified and retained untracked evidence/tests are present. Do not commit a
+  partial subset without composing the candidate and revalidating its basis.
+- The installed `transition inspect` readback remains the current frontier:
+  digest `sha256:caa232bac6b3fcc9b7ef4794f13c9c235a6fdf245b765b12956e56f390ed5ef4`,
+  exit 1 with valid JSON, `complete=false`, `executionAuthority=none`, and
+  `parallelSafety.state=unproven`. It has 11 diagnostics: ten shared
+  authenticated parallel-safety field obligations and one terminal-obligation
+  authentication obligation. No full gate, terminal publication, integration,
+  commit, push, USF-1192 acceptance, or USF-1189 cutover is claimed.
+- Hermes supervisor `e2f6e23b399268910ef4311d9`, PID `2054583`, is live and
+  healthy on `graph/manifests/anqr-application.json`, cycle 1500, idle with
+  `ready=0`; this is runtime liveness/queue evidence only. Stewardship is
+  explicitly released (`activeActivity=false`, `primaryMutation=idle`). No
+  transition, provider, publication, or full-gate child process remains.
+- The next executable cohort is one shared parallel-safety authentication
+  implementation, followed by terminal-obligation authentication. It must
+  derive authenticated read/write scopes, semantic and RealisationBasis
+  digests, resource/recovery obligations, verifier identity, and current
+  evidence; topology alone must remain `unproven`. Run focused checks and
+  installed frontier readback before considering a full gate. Do not widen the
+  fixed five-minute child safety bound or dependency ceiling without
+  authenticated semantic budget evidence; workload-sensitive budgets may vary
+  only inside those fixed ceilings.
+- `artifacts/` is 177 MB of untracked generated image output with no references
+  from source, tests, graph or handover semantics found in this checkpoint. It
+  is retained because ownership and disposability are not proven. Registered
+  `.usf/` worktrees and ignored runtime state are likewise retained unless
+  individually proven orphaned through supported lifecycle readback.
+- Exact next transition for a successor: inspect the current parallel-safety
+  descriptor/evaluator contract and implement the shared authenticated support
+  boundary; then run typecheck, focused contract tests, `git diff --check`, and
+  installed `transition inspect`, updating this record and USF-1192 with the
+  resulting diagnostic movement. Recover stewardship only immediately before a
+  governed mutation and release it after settled readback.
