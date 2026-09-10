@@ -5071,3 +5071,26 @@ frontier; do not reopen timeout tuning or repeat the unchanged full gate.
   ANQR semantic realisation, provider resilience and production/staging effects
   are not claimed. The next owner is the CLI integration owner, not Hermes
   liveness or an external supervisory agent.
+
+# Variant-frontier investigation - 2026-09-10
+
+- A fresh installed readback before the investigation returned the retained
+  11-diagnostic frontier and digest
+  `sha256:188f64b48464faad802803527259c77eba3dc20464f7800b9bc39acc08df91b4`.
+- A candidate change was tested to suppress operational-rule diagnostics for
+  inactive `parallelSafety` discriminator alternatives while retaining the
+  typed `unproven` state. The idea was not accepted: a subsequent installed
+  readback exposed 26 diagnostics, including real basis, evaluator and
+  operational-support refusals. The same command after reverting the hunk
+  returned to the 11-diagnostic frontier. This proves the runtime support
+  observation is not stable enough to use discriminator filtering as a
+  standalone acceptance slice; no diagnostic was cleared and the experiment
+  was removed.
+- Regression verification after removal: `./node_modules/.bin/tsc --noEmit`,
+  `git diff --check`, and the focused transition/schema/terminal cohort passed
+  4/4 in `5276.998ms`. No full gate, receipt publication, integration,
+  stewardship mutation or completion claim occurred.
+- Exact next executable transition remains native reauthentication of the
+  terminal branch evaluator and parallel-safety evidence producer against one
+  stable current support basis. Do not filter diagnostics, widen timeouts, or
+  reuse the 11-diagnostic construction evidence until that basis is stable.
