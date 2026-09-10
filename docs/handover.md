@@ -4975,4 +4975,37 @@ repair the projection before further expensive validation retries.
 - No source mutation, publication, provider call, completion claim, or runtime
   lifecycle change resulted from these checks. Continue with the evaluator /
   basis cohort on the frozen `sha256:a47dfb4d149eb9459bd1db7945f7c016ab1e9425014d2c1eca864abcb67dc1dc`
-  frontier; do not reopen timeout tuning or repeat the unchanged full gate.
+frontier; do not reopen timeout tuning or repeat the unchanged full gate.
+
+# Construction-authority checkpoint - 2026-09-10
+
+- Retained construction candidates were stale against the current authority
+  basis and were refused by `publish construction-authority --verify` with
+  `CONSTRUCTION_EVIDENCE_NOT_CURRENT`. They were not reused.
+- Fresh evidence and proof were derived through the CLI for
+  `urn:usf:work:cli-transition-definition` using profile
+  `urn:usf:profile:cli-transition-definition:1` and manifest
+  `graph/manifests/cli-transition-definition.json`. The fresh bundle verified
+  successfully with observed semantic digest
+  `sha256:a47dfb4d149eb9459bd1db7945f7c016ab1e9425014d2c1eca864abcb67dc1dc`
+  and realisation-basis digest
+  `sha256:c3c54f1d76451651b04297991663f47451a408c0ac3dd1ce4f0654c5ee4b53a3`.
+- Governed apply created tracked receipt
+  `evidence/construction-authority/1d686f9aa2c8809db89ed2b8459c4e407e051c2ac64eb820c4f814c313e1eba9.json`
+  with receipt digest
+  `sha256:ec376ac81e27486c4986d96e5bb6539f15e157a11f227e92d36306d5ca2f0fd3`
+  and resulting semantic digest
+  `sha256:41923c6af774bc851d76eab6972632d29aea81a88f44aa9a77f74b0be4062cdf`.
+- Fresh installed interrogation returned valid JSON with exit `1` after the
+  accepted source transition. The frontier moved from 37 to 12 diagnostics:
+  10 `CLI_OPERATIONAL_RULE_UNRESOLVED`, 1
+  `TRANSITION_INVENTORY_INCOMPLETE`, and 1
+  `TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED`. The five invalid-basis
+  and six evaluator-authentication diagnostics are gone. `complete=false`,
+  `executionAuthority=none`, and `parallelSafety=unproven` remain current.
+- The next batch is split by diagnostic family: parallel-safety operational
+  rule authentication; inventory closure for the newly exposed root; and
+  terminal artifact/recovery authentication. No timeout widening, completion,
+  execution authority, parallel-safety proof, provider, Git or Linear closure
+  is claimed. Stewardship is `dead` with `primaryMutation=idle`; Hermes
+  supervisor `e2f6e23b399268910ef4311d9` remains live/idle.
