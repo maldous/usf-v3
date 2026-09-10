@@ -4786,3 +4786,35 @@ repair the projection before further expensive validation retries.
   `fc390edec8afecc5aab3cc7b93762088d1a8a4b2`; the mixed USF-1192 candidate
   remains uncommitted. Hermes supervisor `e2f6e23b399268910ef4311d9` remains
   live/idle and untouched. Linear USF-1192 was updated with this checkpoint.
+
+# Full-gate result - publication recovery cohort, 2026-09-10
+
+- After supported recovery and construction-authority publication, the single
+  acceptance-bound command
+  `COREPACK_HOME="$PWD/.usf/cache/corepack" timeout 3600s corepack pnpm run check`
+  entered the full repository suite. It passed typecheck and the preceding
+  deterministic suites, including installed frontier, receipt reuse,
+  interruption/restart, authority, and publication cases. The installed
+  frontier case passed in `572731.435669ms`; work-completion cases passed in
+  `1282202.070788ms`, `95252.369123ms`, `84687.256793ms`, and
+  `67605.786578ms`.
+- The first concrete failure was
+  `canonical completion publication resumes the exact retained intent at
+  before-source`, which failed after `1568645.351626ms`. The outer 3600-second
+  bound then interrupted the remaining parameterized publication recovery
+  matrix and the unstarted remainder of the suite. No full-gate pass is
+  claimed. All owned gate processes and descendants were absent on readback.
+- The failure indicates that the canonical publication interruption fixture did
+  not reach its `before-source` boundary within its 300-second child bound
+  after the checked seed was cloned. The next repair must explain and remove
+  that repeated pre-publication validation cost or make exact checked-receipt
+  reuse admissible at this boundary, while preserving currentness and recovery
+  semantics. Do not widen the governed five-minute validation bound, skip the
+  case, or rerun the full gate unchanged.
+- Current frontier readback remains digest
+  `sha256:257b06c310ce16a2a43742d77fa804c768542a372b3d86cc9dd7e36cdb70bb97`,
+  44 diagnostics, `complete=false`, `executionAuthority=none`, and
+  `parallelSafety=unproven`. Hermes remains live/idle. The stewardship record
+  is dead after the gate controller exited, with `activeActivity=false` and
+  `primaryMutation=idle`; the next mutation owner must recover it through the
+  supported CLI before publishing or editing governed state.
