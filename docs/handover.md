@@ -4898,3 +4898,16 @@ repair the projection before further expensive validation retries.
   Freeze this basis before the next cohort; repair inspect latency as a
   bounded operational concern, then proceed through evaluator, terminal and
   operational-rule closure.
+
+# Dependency readback - 2026-09-10
+
+- The focused integration-recovery cohort passed `3/3` in `63360.518ms`:
+  `timeout 120s env TMPDIR="$PWD/.usf/tmp" COREPACK_HOME="$PWD/.usf/cache/corepack" node --test --test-isolation=none --test-name-pattern='integration' tests/unit/realisation/workspace.test.ts`.
+  This does not establish the parent USF-1192 completion circuit.
+- The exact root-derived completion-check test was run with a 180-second
+  wrapper and interrupted before producing a result:
+  `timeout 180s env TMPDIR="$PWD/.usf/tmp" COREPACK_HOME="$PWD/.usf/cache/corepack" node --test --test-isolation=none --test-name-pattern='root-derived completion checks derive no-effect identity and reconcile a genuine retained set' tests/integration/work-completion.test.ts`.
+  No publication, accepted mutation, or new receipt was observed. Complete
+  check setup remains the active USF-1197/USF-1192 dependency.
+- No timeout widening, validation skip, adapter closure, USF-1192 or
+  USF-1197 acceptance, terminal publication, or USF-1189 cutover is claimed.
