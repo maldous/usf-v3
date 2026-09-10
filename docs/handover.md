@@ -5295,3 +5295,22 @@ frontier; do not reopen timeout tuning or repeat the unchanged full gate.
   USF-1192 candidate and is not independently committed. The next accepted
   cohort is shared authenticated parallel-safety support; do not infer it from
   topology or merely remove its diagnostics.
+
+# Validation handover - 2026-09-10
+
+- The acceptance-bound command
+  `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check` was
+  started against the composed candidate, then cleanly terminated after
+  13m21s while the ordinary installed-frontier suite was still active. It is
+  inconclusive, not a pass or failure; no gate result, publication, or
+  completion claim may use it as evidence. The process group was verified
+  absent afterwards.
+- Workload size and semantic complexity may derive bounded scheduling and
+  operation budgets only from the authenticated descriptor and current
+  authority. Absolute wall-clock, output-size, dependency, concurrency, and
+  resource ceilings remain fixed safety limits. No timeout or size increase is
+  justified by this interrupted run.
+- The candidate remains mixed and uncommitted. Hermes supervisor
+  `e2f6e23b399268910ef4311d9` remains the live/healthy controller and no
+  stewardship, provider, validation, publication, or integration child is
+  active. Do not restart the unchanged full gate merely for confidence.

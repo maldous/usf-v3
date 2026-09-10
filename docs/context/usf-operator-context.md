@@ -85,13 +85,21 @@ installation. The adaptation is limited to these operating rules:
   superseding binding, prepare/run that exact binding, and read its settled
   attempt/result. Do not replay the stale binding or manufacture closure.
 
-Version 6 retains the authorized stewardship setup correction and adds explicit
+Version 7 retains the authorized stewardship setup correction and adds explicit
 full-context freeze, dispatch-budget, dynamic-within-ceiling budget and producer/readback preflights following
 the repeated USF-1192 candidate and diagnostic-boundary failures. These are
 operator-requested discipline corrections, not inferred semantic requirements.
 Their scope is repository validation and bounded persistence work, not provider
 qualification, semantic acceptance or host admission.
 It is not an automatically learned skill proposal or a measured ROI claim.
+
+Workload-sensitive budgets are derived inputs, not replacements for safety
+ceilings. A descriptor may account for scope size, dependency count, artifact
+volume, expected validation cost, and configured concurrency when choosing a
+budget within the fixed ceiling. It must refuse an out-of-ceiling request and
+preserve the original reason code. Never increase a timeout or payload limit
+merely because a job is large, slow, or important; require an authenticated
+authority change and evidence from comparable settled runs.
 
 These imported rules are provider-neutral. They are advisory context for this
 helper and never activate runtime behavior or update a host skill.
