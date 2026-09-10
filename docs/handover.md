@@ -4961,3 +4961,18 @@ repair the projection before further expensive validation retries.
   the operational rule descriptors and basis resolution without changing
   execution authority or parallel-safety claims, then re-interrogate the
   same selected root.
+
+# Parallel verification readback - 2026-09-10
+
+- Ordinary parser/adapter verification passed `5/5` in `3204.505ms`.
+- Integration process and workspace recovery verification passed `6/6` in
+  `69219.102ms`, including leader-exits-first descendant cleanup and canonical
+  validation ordering.
+- Failed-check verification produced one genuine interruption/reconciliation
+  pass in `113171.440ms`; the following adversarial receipt case was
+  interrupted by its `120000ms` outer wrapper before completion. This is not a
+  clean suite result and does not authenticate the remaining receipt cohort.
+- No source mutation, publication, provider call, completion claim, or runtime
+  lifecycle change resulted from these checks. Continue with the evaluator /
+  basis cohort on the frozen `sha256:a47dfb4d149eb9459bd1db7945f7c016ab1e9425014d2c1eca864abcb67dc1dc`
+  frontier; do not reopen timeout tuning or repeat the unchanged full gate.
