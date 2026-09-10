@@ -4,7 +4,7 @@ import { chmod, cp, link, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, s
 import { join, resolve } from "node:path";
 import test, { type TestContext } from "node:test";
 import { candidateArtifactDigest } from "../../../src/providers/types.ts";
-import { canonicalDigest, canonicalJson } from "../../../src/core/canonical.ts";
+import { canonicalDigest, canonicalJson, sha256 } from "../../../src/core/canonical.ts";
 import {
   RegistrationFeatureError,
   registrationFeatureDigestsEqual,
@@ -13,7 +13,7 @@ import {
   registrationFeaturePostimageSet,
   registrationFeaturePostimageSetDigest,
 } from "../../../src/collaboration/resolve.ts";
-import { authenticateGraphDerivedCheckIntent, runGraphDerivedCheck } from "../../../src/commands/check.ts";
+import { authenticateGraphDerivedCheckIntent, readGraphDerivedCheckFailureDiagnostic, runGraphDerivedCheck } from "../../../src/commands/check.ts";
 import { apply } from "../../../src/commands/apply.ts";
 import { loadSemanticGraph, objectValues } from "../../../src/graph/index.ts";
 import { deriveWork, type WorkPacket } from "../../../src/graph/work.ts";
@@ -167,7 +167,7 @@ async function interruptResolvedCandidate(root: string, spec: CandidateSpec, bou
       child.kill("SIGKILL");
     }
   });
-  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 300_000);
   try {
     const ended = await new Promise<{ readonly signal: NodeJS.Signals | null }>((accept, reject) => {
       child.once("error", reject);
@@ -218,7 +218,7 @@ async function driftPrimaryDuringDeltaReadback(root: string, spec: CandidateSpec
       failure = message as { readonly reasonCode?: unknown };
     }
   });
-  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 300_000);
   try {
     const ended = await new Promise<{ readonly code: number | null; readonly signal: NodeJS.Signals | null }>((accept, reject) => {
       child.once("error", reject);
@@ -696,6 +696,55 @@ test("preflights an oversized no-change workspace manifest before changing an ex
   assert.deepEqual((await readdir(workspace)).sort(), ["preserved-before-preflight"]);
 });
 
+test("reads only the current digest-bound failed-check diagnostic and refuses tamper or conflict", async (context) => {
+  if (lockProcessUnavailable(context)) return;
+  const root = await fixture(context);
+  const basis = packet(root).realisationBasis;
+  const spec = candidate(basis, "diagnostic-reader-candidate\n", "diagnostic-reader");
+  await materialiseCandidate(root, spec);
+  await applyCandidateOperations(root, spec.digest, candidateOperations(spec));
+  const validationId = basis.trace.validation[0]!.id;
+  const candidateHash = spec.digest.slice("sha256:".length);
+  const validationHash = canonicalDigest(validationId).slice("sha256:".length);
+  const stdout = Buffer.from("failed child output\n");
+  const stderr = Buffer.from("failed child error\n");
+  const intentDigest = canonicalDigest("diagnostic-intent");
+  const executionInputDigest = canonicalDigest("diagnostic-input");
+  const base = {
+    intentDigest, executionInputDigest, candidateDigest: spec.digest, validationObligationIri: validationId,
+    workIri: basis.work.id, explicitProfileIri: basis.selection.profile,
+    originalConstructionBasisDigest: basis.basisDigest, scopedDependencyDigest: basis.work.scopedDependencyDigest,
+    validationResourceDigest: canonicalDigest("resource"), validationCommandDigest: canonicalDigest("command"),
+    validationEnvironmentDigest: canonicalDigest("environment"), validationExecutionModeDigest: canonicalDigest("mode"),
+    validationExecutionAuthorityResourceDigest: canonicalDigest("authority"), exitCode: 1, timedOut: false,
+    timeoutTerminationSignal: "none" as const, outputLimitBytes: 262144, outputWithinLimit: true,
+    stdoutObservedBytes: stdout.byteLength, stderrObservedBytes: stderr.byteLength,
+    stdoutCapturedBase64: stdout.toString("base64"), stderrCapturedBase64: stderr.toString("base64"),
+    outputTruncated: false,
+  };
+  const name = canonicalDigest({ intentDigest, executionInputDigest, exitCode: 1, timedOut: false,
+    stdout: sha256(stdout), stderr: sha256(stderr) }).slice("sha256:".length) + ".json";
+  const diagnosticPath = `.usf/diagnostics/check/${candidateHash}/${validationHash}/${name}`;
+  const record = { ...base, diagnosticPath };
+  const diagnostic = { diagnosticDigest: canonicalDigest(record, { rejectAbsolutePaths: true }), ...record };
+  const path = join(root, diagnosticPath);
+  await mkdir(join(root, ".usf/diagnostics/check", candidateHash, validationHash), { recursive: true, mode: 0o700 });
+  await writeFile(path, canonicalJson(diagnostic, { rejectAbsolutePaths: true }), { mode: 0o600 });
+  const available = await readGraphDerivedCheckFailureDiagnostic(root, spec.digest, validationId);
+  assert.equal(available.status, "available");
+  if (available.status === "available") assert.deepEqual(available.diagnostic, diagnostic);
+  const before = await readFile(path);
+  const tampered = JSON.parse(before.toString("utf8")) as Record<string, unknown>;
+  tampered.exitCode = 2;
+  await writeFile(path, canonicalJson(tampered, { rejectAbsolutePaths: true }));
+  const stale = await readGraphDerivedCheckFailureDiagnostic(root, spec.digest, validationId);
+  assert.deepEqual(stale, { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" });
+  await writeFile(path, before);
+  await writeFile(join(root, ".usf/diagnostics/check", candidateHash, validationHash, "f".repeat(64) + ".json"), before, { mode: 0o600 });
+  const conflict = await readGraphDerivedCheckFailureDiagnostic(root, spec.digest, validationId);
+  assert.deepEqual(conflict, { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" });
+});
+
 test("authenticates candidate lineage, actual bytes, modes and scoped tree without caller identity", async (context) => {
   if (lockProcessUnavailable(context)) return;
   const root = await fixture(context);
@@ -822,8 +871,8 @@ test("prepares, fast-forwards and recovers one observed local Git integration wi
   assert.equal(git(root, ["rev-parse", "HEAD"]), startingCommit, "dry-run preparation does not move the primary branch");
   assert.equal(await readFile(join(root, targetPath), "utf8"), before);
   assert.equal(prepared.request.candidateCount, 1);
-  assert.equal(prepared.request.candidateValidationWallTimeMilliseconds, 120_000);
-  assert.equal(prepared.request.postimageValidationWallTimeMilliseconds, 120_000);
+  assert.equal(prepared.request.candidateValidationWallTimeMilliseconds, 300_000);
+  assert.equal(prepared.request.postimageValidationWallTimeMilliseconds, 300_000);
   assert.equal(prepared.request.validationTerminationGraceMilliseconds, 5_000);
   assert.equal(prepared.cohortMembers[0]?.originalConstructionBasisDigest, basis.basisDigest);
   assert.equal(prepared.cohortMembers[0]?.validationObligationCount, 1);

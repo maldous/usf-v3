@@ -1867,7 +1867,7 @@ function validationAuthorities(root: string, basis: RealisationBasis, phase: "ca
   ));
   const terminationGraceMilliseconds = Number(integrationOne(integrationGraph, executionAuthorityIri, "validationTerminationGraceMilliseconds", "literal"));
   const maximumSettlementWallTimeMilliseconds = Number(integrationOne(integrationGraph, executionAuthorityIri, "validationMaximumSettlementWallTimeMilliseconds", "literal"));
-  if (wallTimeMilliseconds !== 120_000 || terminationGraceMilliseconds !== 5_000 || maximumSettlementWallTimeMilliseconds !== 125_000
+  if (wallTimeMilliseconds !== 300_000 || terminationGraceMilliseconds !== 5_000 || maximumSettlementWallTimeMilliseconds !== 305_000
     || integrationOne(integrationGraph, executionAuthorityIri, "validationTerminationSignal", "literal") !== "SIGTERM"
     || integrationOne(integrationGraph, executionAuthorityIri, "validationForcedTerminationSignal", "literal") !== "SIGKILL") {
     throw new IntegrationError("INTEGRATION_VALIDATION_INVALID");
@@ -2213,10 +2213,10 @@ async function authenticatedCheckedReceipt(
     const receiptPaths = currentnessValues.length === 0
       ? []
       : [safeRepositoryPath(integrationOne(currentGraph, currentnessValues[0]!.object, "receiptPath", "literal"))];
-    const candidatePaths = new Set(authenticated.scopedTree.map((entry) => entry.path));
-    expectedAuthorityPaths = [...new Set([...closurePaths, ...receiptPaths])]
-      .filter((path) => !candidatePaths.has(path))
-      .sort();
+    // Receipt authority dependencies remain authoritative even when a path is
+    // also present in the candidate tree; the receipt binds the exact source
+    // bytes that the check authenticated.
+    expectedAuthorityPaths = [...new Set([...closurePaths, ...receiptPaths])].sort();
   } catch {
     throw new IntegrationError("INTEGRATION_CHECK_RECEIPT_INVALID");
   }
@@ -2291,11 +2291,11 @@ function integrationAuthority(root: string, explicitProfileIri: string): { graph
   const candidateValidationWallTimeMilliseconds = Number(integrationOne(graph, integrationAlgorithmIri, "candidateValidationWallTimeMilliseconds", "literal"));
   const postimageValidationWallTimeMilliseconds = Number(integrationOne(graph, integrationAlgorithmIri, "postimageValidationWallTimeMilliseconds", "literal"));
   const validationTerminationGraceMilliseconds = Number(integrationOne(graph, integrationAlgorithmIri, "validationTerminationGraceMilliseconds", "literal"));
-  if (candidateValidationWallTimeMilliseconds !== 120_000 || postimageValidationWallTimeMilliseconds !== 120_000
+  if (candidateValidationWallTimeMilliseconds !== 300_000 || postimageValidationWallTimeMilliseconds !== 300_000
     || validationTerminationGraceMilliseconds !== 5_000
     || integrationOne(graph, integrationAlgorithmIri, "validationTerminationSignal", "literal") !== "SIGTERM"
     || integrationOne(graph, integrationAlgorithmIri, "validationForcedTerminationSignal", "literal") !== "SIGKILL"
-    || integrationOne(graph, integrationAlgorithmIri, "validationMaximumSettlementWallTimeMilliseconds", "literal") !== "125000"
+    || integrationOne(graph, integrationAlgorithmIri, "validationMaximumSettlementWallTimeMilliseconds", "literal") !== "305000"
     || integrationOne(graph, integrationAlgorithmIri, "postimageValidationTimeoutReasonCode", "literal") !== "INTEGRATION_VALIDATION_TIMEOUT") {
     throw new IntegrationError("INTEGRATION_AUTHORITY_INVALID");
   }
@@ -2892,8 +2892,8 @@ async function assertPrimaryPostimageCurrent(root: string, prepared: PreparedCan
   const paths = prepared.authoritativeGitDiff.map((effect) => effect.path);
   assertTouchedPrimaryClean(root, paths);
   assertNoFilterAttributes(root, paths);
-  if (git(root, "diff", ["--cached", "--name-only", "-z", "HEAD", "--", ...paths]).byteLength !== 0
-    || git(root, "diff", ["--name-only", "-z", "HEAD", "--", ...paths]).byteLength !== 0) {
+  if (git(root, "diff", ["--cached", "--name-only", "--no-renames", "-z", "HEAD", "--", ...paths]).byteLength !== 0
+    || git(root, "diff", ["--name-only", "--no-renames", "-z", "HEAD", "--", ...paths]).byteLength !== 0) {
     throw new IntegrationError("INTEGRATION_POSTIMAGE_MOVED");
   }
   for (const effect of prepared.authoritativeGitDiff) {
@@ -2910,6 +2910,89 @@ async function assertPrimaryPostimageCurrent(root: string, prepared: PreparedCan
     throw new IntegrationError("INTEGRATION_POSTIMAGE_MOVED", "Primary scoped postimage basis is no longer current");
   }
   return { commit: current, tree: gitTree(root, current) };
+}
+
+/**
+ * Read-only native observation of an integration intent and its recovery
+ * boundary. This deliberately does not acquire the mutation lock, persist a
+ * marker, repair an intent, or manufacture an observation for an unknown
+ * state; callers use the result to keep terminal branch evaluation fail-closed.
+ */
+export interface CandidateIntegrationRecoveryInspection {
+  readonly state: "absent" | "prepared-commit" | "primary-advanced" | "quarantined" | "stale" | "unknown";
+  readonly request: IntegrationRequest | null;
+  readonly prepared: PreparedCandidateIntegration | null;
+  readonly observation: IntegrationObservation | null;
+  readonly observedCarrier: { readonly commit: string; readonly tree: string } | null;
+  readonly factDigests: readonly string[];
+  readonly reasonCode?: IntegrationReasonCode;
+  readonly nonClaims: readonly string[];
+}
+
+export async function inspectCandidateIntegrationRecovery(
+  root: string,
+  options: { readonly candidateDigests: readonly string[] },
+): Promise<CandidateIntegrationRecoveryInspection> {
+  const canonicalRoot = realpathSync(root);
+  if (!Array.isArray(options.candidateDigests) || options.candidateDigests.length < 1 || options.candidateDigests.length > 32
+    || options.candidateDigests.some((digest) => !digestPattern.test(digest))) {
+    throw new IntegrationError("INTEGRATION_CANDIDATE_COUNT_INVALID");
+  }
+  if (new Set(options.candidateDigests).size !== options.candidateDigests.length) {
+    throw new IntegrationError("INTEGRATION_DUPLICATE_CANDIDATE");
+  }
+  const empty = (state: CandidateIntegrationRecoveryInspection["state"], reasonCode?: IntegrationReasonCode): CandidateIntegrationRecoveryInspection =>
+    deepFreeze({ state, request: null, prepared: null, observation: null, observedCarrier: null,
+      factDigests: Object.freeze([]), ...(reasonCode === undefined ? {} : { reasonCode }), nonClaims: integrationNonClaims });
+  let intent: PreparedIntent | null;
+  try { intent = readIntent(canonicalRoot, options.candidateDigests); }
+  catch (error) {
+    if (error instanceof IntegrationError) return empty("unknown", error.reasonCode);
+    return empty("unknown", "INTEGRATION_INTENT_MISMATCH");
+  }
+  if (intent === null) return empty("absent");
+  const prepared = intent.prepared;
+  const request = prepared.request;
+  const factDigests = [request.requestDigest, prepared.integratedTreeDigest, prepared.independentlyDerivedPostimageBasisDigest]
+    .filter((digest): digest is string => typeof digest === "string");
+  if (intent.state === "quarantined") {
+    return deepFreeze({ state: "quarantined", request, prepared, observation: null, observedCarrier: null,
+      factDigests: Object.freeze([...new Set(factDigests)].sort()), reasonCode: "INTEGRATION_RECOVERY_QUARANTINED", nonClaims: integrationNonClaims });
+  }
+  let authority: ReturnType<typeof integrationAuthority>;
+  try {
+    authority = integrationAuthority(canonicalRoot, request.explicitProfileIri);
+    assertRequestAuthorityCurrent(authority, request);
+  } catch (error) {
+    const reasonCode = error instanceof IntegrationError ? error.reasonCode : "INTEGRATION_AUTHORITY_INVALID";
+    return deepFreeze({ state: "unknown", request, prepared, observation: null, observedCarrier: null,
+      factDigests: Object.freeze([...new Set(factDigests)].sort()), reasonCode, nonClaims: integrationNonClaims });
+  }
+  const canObservePostimage = intent.state === "primary-advanced"
+    || (intent.state === "prepared-commit" && commitIsAncestor(canonicalRoot, prepared.preparedCarrierCommit, gitHead(canonicalRoot)));
+  if (!canObservePostimage) {
+    return deepFreeze({ state: "prepared-commit", request, prepared, observation: null, observedCarrier: null,
+      factDigests: Object.freeze([...new Set(factDigests)].sort()), nonClaims: integrationNonClaims });
+  }
+  let observedCarrier: { commit: string; tree: string };
+  try { observedCarrier = await assertPrimaryPostimageCurrent(canonicalRoot, prepared); }
+  catch (error) {
+    const reasonCode = error instanceof IntegrationError ? error.reasonCode : "INTEGRATION_POSTIMAGE_MOVED";
+    return deepFreeze({ state: "stale", request, prepared, observation: null, observedCarrier: null,
+      factDigests: Object.freeze([...new Set(factDigests)].sort()), reasonCode, nonClaims: integrationNonClaims });
+  }
+  let observation: IntegrationObservation | null = null;
+  if (intent.observationPath !== null) {
+    try { observation = await readIntegrationObservation(canonicalRoot, intent.observationPath, authority, prepared); }
+    catch (error) {
+      const reasonCode = error instanceof IntegrationError ? error.reasonCode : "INTEGRATION_RECOVERY_QUARANTINED";
+      return deepFreeze({ state: "unknown", request, prepared, observation: null, observedCarrier,
+        factDigests: Object.freeze([...new Set(factDigests)].sort()), reasonCode, nonClaims: integrationNonClaims });
+    }
+  }
+  const observedFacts = observation === null ? factDigests : [...factDigests, observation.observationDigest];
+  return deepFreeze({ state: "primary-advanced", request, prepared, observation, observedCarrier,
+    factDigests: Object.freeze([...new Set(observedFacts)].sort()), nonClaims: integrationNonClaims });
 }
 
 interface PrimaryDryRunSnapshot {
