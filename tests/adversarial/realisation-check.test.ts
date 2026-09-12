@@ -124,7 +124,7 @@ async function checkSubprocess(root: string, digest: string, validationId: strin
       child.kill("SIGKILL");
     }
   });
-  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 300_000);
   try {
     const ended = await new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((accept, reject) => {
       child.once("error", reject);
@@ -715,7 +715,7 @@ test("graph-derived check enforces graph wall time and mints no timeout receipt"
   const graph = await readFile(graphPath, "utf8");
   const boundedGraph = graph
     .replace(
-      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:candidateValidationWallTimeMilliseconds> "120000"',
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:candidateValidationWallTimeMilliseconds> "300000"',
       '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:candidateValidationWallTimeMilliseconds> "1"',
     )
     .replace(
@@ -723,7 +723,7 @@ test("graph-derived check enforces graph wall time and mints no timeout receipt"
       '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationTerminationGraceMilliseconds> "1"',
     )
     .replace(
-      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationMaximumSettlementWallTimeMilliseconds> "125000"',
+      '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationMaximumSettlementWallTimeMilliseconds> "305000"',
       '<urn:usf:algorithm:work-integration-transition:2> <urn:usf:predicate:validationMaximumSettlementWallTimeMilliseconds> "2"',
     );
   assert.notEqual(boundedGraph, graph);

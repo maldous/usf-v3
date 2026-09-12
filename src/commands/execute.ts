@@ -23,7 +23,9 @@ import { readTrackedJson } from "./probe.ts";
 const maximumPromptBytes = 64 * 1024;
 const defaultMaximumOutputTokens = 1024;
 const hardMaximumOutputTokens = 8192;
-const defaultTimeoutMs = 60_000;
+// Local model execution gets the platform-wide five-minute minimum. Provider
+// and network-specific policy bounds remain graph/transport controlled.
+const defaultTimeoutMs = 300_000;
 const maximumAttempts = 4;
 
 function invalid(message: string): never {

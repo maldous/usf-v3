@@ -36,7 +36,7 @@ function stopAtBoundary(): never {
 async function pauseForReadbackMutation(): Promise<void> {
   process.send!({ kind: "boundary", boundary, workspace, manifest, completedOperations });
   await new Promise<void>((accept, reject) => {
-    const timeout = setTimeout(() => reject(new Error("Timed out awaiting primary-drift mutation")), 120_000);
+    const timeout = setTimeout(() => reject(new Error("Timed out awaiting primary-drift mutation")), 300_000);
     process.once("message", message => {
       clearTimeout(timeout);
       if (message !== null && typeof message === "object" && (message as { kind?: unknown }).kind === "continue") accept();

@@ -13,7 +13,13 @@ import {
   registrationFeaturePostimageSet,
   registrationFeaturePostimageSetDigest,
 } from "../../../src/collaboration/resolve.ts";
-import { authenticateGraphDerivedCheckIntent, readGraphDerivedCheckFailureDiagnostic, runGraphDerivedCheck } from "../../../src/commands/check.ts";
+import {
+  authenticateGraphDerivedCheckIntent,
+  authenticateGraphDerivedCheckIntentAtAuthenticatedWorkspace,
+  readGraphDerivedCheckFailureDiagnostic,
+  readGraphDerivedCheckReceiptForRecoveryAtAuthenticatedWorkspace,
+  runGraphDerivedCheck,
+} from "../../../src/commands/check.ts";
 import { apply } from "../../../src/commands/apply.ts";
 import { loadSemanticGraph, objectValues } from "../../../src/graph/index.ts";
 import { deriveWork, type WorkPacket } from "../../../src/graph/work.ts";
@@ -624,6 +630,11 @@ test("roundtrips a workspace manifest above the old bound through native and che
     const before = await stat(manifestFile);
     assert.equal(await authenticateGraphDerivedCheckIntent(root, spec.digest, basis.trace.validation[0]!.id), "ABSENT",
       "the real check-intent preflight must read the large manifest without running or fabricating a check");
+    const current = await currentCandidateWorkspace(root, spec.digest);
+    assert.equal(await authenticateGraphDerivedCheckIntentAtAuthenticatedWorkspace(root, spec.digest, basis.trace.validation[0]!.id, current), "ABSENT",
+      "a caller-bracketed intent preflight must reuse the exact authenticated workspace");
+    assert.equal(await readGraphDerivedCheckReceiptForRecoveryAtAuthenticatedWorkspace(root, spec.digest, basis.trace.validation[0]!.id, current), null,
+      "a caller-bracketed recovery read must preserve the absent receipt disposition");
     assert.deepEqual(await readFile(manifestFile), manifestBytes);
     const after = await stat(manifestFile);
     assert.equal(after.ino, before.ino);

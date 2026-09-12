@@ -1,0 +1,436 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:usf:check-result:1",
+  "description": "Extension-only envelope: ordinary check metadata or explicit diagnosis. Does not replace full native receipt/basis authentication.",
+  "oneOf": [
+    {
+      "description": "Extension-only ordinary check refusal fragments and explicit read-only diagnosis result under the existing check-result identity. Native full result, receipt and currentness validation remain required.",
+      "type": "object",
+      "required": [
+        "schema",
+        "status"
+      ],
+      "properties": {
+        "schema": {
+          "const": "urn:usf:check-result:1"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "refused"
+          ]
+        },
+        "failureDiagnostic": {
+          "$ref": "#/$defs/failureDiagnosticReference"
+        },
+        "launchDiagnostic": {
+          "$ref": "#/$defs/launchDiagnostic"
+        },
+        "topic": false
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "pass"
+            },
+            "failureDiagnostic": false,
+            "launchDiagnostic": false
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "refused"
+            },
+            "launchDiagnostic": false
+          }
+        },
+        {
+          "required": [
+            "launchDiagnostic",
+            "reasonCode"
+          ],
+          "properties": {
+            "status": {
+              "const": "refused"
+            },
+            "failureDiagnostic": false,
+            "reasonCode": {
+              "const": "CHECK_COMMAND_UNSUPPORTED"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "$ref": "#/$defs/diagnosisResult"
+    }
+  ],
+  "$defs": {
+    "failureDiagnosticRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diagnosticDigest",
+        "intentDigest",
+        "executionInputDigest",
+        "candidateDigest",
+        "validationObligationIri",
+        "workIri",
+        "explicitProfileIri",
+        "originalConstructionBasisDigest",
+        "scopedDependencyDigest",
+        "validationResourceDigest",
+        "validationCommandDigest",
+        "validationEnvironmentDigest",
+        "validationExecutionModeDigest",
+        "validationExecutionAuthorityResourceDigest",
+        "exitCode",
+        "timedOut",
+        "timeoutTerminationSignal",
+        "outputLimitBytes",
+        "outputWithinLimit",
+        "stdoutObservedBytes",
+        "stderrObservedBytes",
+        "stdoutCapturedBase64",
+        "stderrCapturedBase64",
+        "outputTruncated",
+        "diagnosticPath"
+      ],
+      "properties": {
+        "diagnosticDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "intentDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "executionInputDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "candidateDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "validationObligationIri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "workIri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "explicitProfileIri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "originalConstructionBasisDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "scopedDependencyDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "validationResourceDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "validationCommandDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "validationEnvironmentDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "validationExecutionModeDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "validationExecutionAuthorityResourceDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "exitCode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "timedOut": {
+          "type": "boolean"
+        },
+        "timeoutTerminationSignal": {
+          "enum": [
+            "none",
+            "SIGTERM",
+            "SIGKILL"
+          ]
+        },
+        "outputLimitBytes": {
+          "const": 262144
+        },
+        "outputWithinLimit": {
+          "type": "boolean"
+        },
+        "stdoutObservedBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "stderrObservedBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "stdoutCapturedBase64": {
+          "type": "string",
+          "maxLength": 349528,
+          "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+        },
+        "stderrCapturedBase64": {
+          "type": "string",
+          "maxLength": 349528,
+          "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+        },
+        "outputTruncated": {
+          "type": "boolean"
+        },
+        "diagnosticPath": {
+          "type": "string",
+          "pattern": "^\\.usf/diagnostics/check/[0-9a-f]{64}/[0-9a-f]{64}/[0-9a-f]{64}\\.json$",
+          "maxLength": 224
+        }
+      }
+    },
+    "failureDiagnosticReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diagnosticPath",
+        "diagnosticDigest",
+        "exitCode",
+        "timedOut",
+        "timeoutTerminationSignal",
+        "outputWithinLimit",
+        "stdoutObservedBytes",
+        "stderrObservedBytes",
+        "outputTruncated"
+      ],
+      "properties": {
+        "diagnosticPath": {
+          "type": "string",
+          "pattern": "^\\.usf/diagnostics/check/[0-9a-f]{64}/[0-9a-f]{64}/[0-9a-f]{64}\\.json$",
+          "maxLength": 224
+        },
+        "diagnosticDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "exitCode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "timedOut": {
+          "type": "boolean"
+        },
+        "timeoutTerminationSignal": {
+          "enum": [
+            "none",
+            "SIGTERM",
+            "SIGKILL"
+          ]
+        },
+        "outputWithinLimit": {
+          "type": "boolean"
+        },
+        "stdoutObservedBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "stderrObservedBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "outputTruncated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "launchDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reason",
+        "observedTestPaths",
+        "maximumTestPaths"
+      ],
+      "properties": {
+        "kind": {
+          "const": "strict-node-test-paths"
+        },
+        "reason": {
+          "const": "test-path-count-exceeded"
+        },
+        "observedTestPaths": {
+          "type": "integer",
+          "minimum": 9,
+          "maximum": 9007199254740991
+        },
+        "maximumTestPaths": {
+          "const": 8
+        }
+      }
+    },
+    "diagnosisMember": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "validationObligationIri",
+            "outcomeState",
+            "diagnosticAvailability",
+            "diagnostic"
+          ],
+          "properties": {
+            "validationObligationIri": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "outcomeState": {
+              "enum": [
+                "current-receipt",
+                "unknown",
+                "absent"
+              ]
+            },
+            "diagnosticAvailability": {
+              "const": "available"
+            },
+            "diagnostic": {
+              "$ref": "#/$defs/failureDiagnosticRecord"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "validationObligationIri",
+            "outcomeState",
+            "diagnosticAvailability"
+          ],
+          "properties": {
+            "validationObligationIri": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "outcomeState": {
+              "enum": [
+                "current-receipt",
+                "unknown",
+                "absent"
+              ]
+            },
+            "diagnosticAvailability": {
+              "const": "unavailable"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "validationObligationIri",
+            "outcomeState",
+            "diagnosticAvailability",
+            "reasonCode"
+          ],
+          "properties": {
+            "validationObligationIri": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "outcomeState": {
+              "enum": [
+                "current-receipt",
+                "unknown",
+                "absent"
+              ]
+            },
+            "diagnosticAvailability": {
+              "const": "refused"
+            },
+            "reasonCode": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "diagnosisResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "topic",
+        "workIri",
+        "explicitProfileIri",
+        "candidateDigest",
+        "executionAuthority",
+        "complete",
+        "members"
+      ],
+      "properties": {
+        "schema": {
+          "const": "urn:usf:check-result:1"
+        },
+        "topic": {
+          "const": "diagnose"
+        },
+        "workIri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "explicitProfileIri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "candidateDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "executionAuthority": {
+          "const": "none"
+        },
+        "complete": {
+          "const": false
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnosisMember"
+          }
+        }
+      }
+    }
+  }
+}

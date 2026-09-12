@@ -9,6 +9,11 @@ import {
 } from "../../../src/commands/canonical-parser-contracts.ts";
 
 const cases = [
+  ["resolve", ["ordinary", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:ordinary-resolve:1", ["--input", "request.json"], "resolve ordinary"],
+  ["apply", ["ordinary", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:ordinary-apply:1", ["--input", "request.json"], "apply ordinary"],
+  ["check", ["ordinary", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:ordinary-check:1", ["--input", "request.json"], "check ordinary"],
+  ["check", ["diagnose", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:check-diagnose:1", ["--input", "request.json"], "check diagnose"],
+  ["integrate", ["ordinary", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:ordinary-integrate:1", ["--input", "request.json"], "integrate ordinary"],
   ["realise", ["no-change", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:realise-no-change:1", ["--input", "request.json"], "realise no-change"],
   ["check", ["--input", "request.json"], "urn:usf:cli-canonical-parser-contract:check-input:1", ["--input", "request.json"], "check"],
   ["evidence", ["completion", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:completion-evidence:1", ["--input", "request.json"], "evidence completion"],
@@ -16,8 +21,8 @@ const cases = [
   ["publish", ["work-completion", "--input", "request.json"], "urn:usf:cli-canonical-parser-contract:completion-publication:1", ["--input", "request.json"], "publish work-completion"],
 ] as const;
 
-test("five versioned parser contracts bind exact selectors, fallback identities, commands, and adapters", () => {
-  assert.equal(canonicalParserContracts.contracts.length, 5);
+test("ten versioned parser contracts bind exact selectors, fallback identities, commands, and adapters", () => {
+  assert.equal(canonicalParserContracts.contracts.length, 10);
   assert.ok(Object.isFrozen(canonicalParserContracts));
   assert.ok(Object.isFrozen(canonicalParserContracts.contracts));
   for (const [command, args, identity, forwarded, commandPath] of cases) {
@@ -47,8 +52,8 @@ test("selector mismatch remains in the typed fallback region", () => {
 test("CLI handlers consume the shared parser matcher and preserve the publication exclusion", async () => {
   const source = await readFile(new URL("../../../src/cli.ts", import.meta.url), "utf8");
   assert.match(source, /from "\.\/commands\/canonical-parser-contracts\.ts"/u);
-  assert.equal((source.match(/matchCanonicalParserContract\(context\.command, context\.args\)/gu) ?? []).length, 5);
-  assert.equal((source.match(/forwardedCanonicalParserArgs\(parserContract, context\.args\)/gu) ?? []).length, 5);
-  assert.equal((source.match(/canonicalParserCommandPath\(parserContract\)/gu) ?? []).length, 5);
+  assert.equal((source.match(/matchCanonicalParserContract\(context\.command, context\.args\)/gu) ?? []).length, 8);
+  assert.equal((source.match(/forwardedCanonicalParserArgs\(parserContract, context\.args\)/gu) ?? []).length, 10);
+  assert.equal((source.match(/canonicalParserCommandPath\(parserContract\)/gu) ?? []).length, 9);
   assert.match(source, /operationalMutation\(context\.repositoryRoot, \(\) => executeTransitionCommand\(/u);
 });

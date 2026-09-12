@@ -6,6 +6,7 @@ const digestPattern = /^sha256:[0-9a-f]{64}$/;
 const canonicalInstant = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
 const labelPattern = /^[A-Za-z0-9][A-Za-z0-9._:/+-]{0,191}$/;
 const maximumTimeoutMs = 30_000;
+const maximumRunAuthorizationTimeoutMs = 300_000;
 const maximumOutputTokens = 8;
 const probePrompt = "Return exactly USF_PROBE_OK.";
 const probePromptDigest = canonicalDigest({ purpose: "provider-capability-probe", prompt: probePrompt }, { rejectAbsolutePaths: true });
@@ -678,7 +679,7 @@ export function parseRunAuthorization(value: unknown): RunAuthorization {
     promptOnlyProjectionDigest: strictDigestValue(authorization.promptOnlyProjectionDigest),
     maximumInputBytes: strictPositiveInteger(authorization.maximumInputBytes, 1_048_576),
     maximumOutputTokens: strictPositiveInteger(authorization.maximumOutputTokens, 4_096),
-    timeoutMilliseconds: strictPositiveInteger(authorization.timeoutMilliseconds, 120_000),
+    timeoutMilliseconds: strictPositiveInteger(authorization.timeoutMilliseconds, maximumRunAuthorizationTimeoutMs),
     issuedAt, expiresAt, fallbackProhibited: true, paidCostCeiling: "0", authorizationDisposition: "authorized",
   });
 }
@@ -803,7 +804,7 @@ export function buildProviderChildEnvironment(input: ProviderChildEnvironmentInp
   const fixedOrigin = exactHttpsOrigin(input.fixedOrigin);
   const maximumInput = strictPositiveInteger(input.maximumInputBytes, 1_048_576);
   const maximumOutput = strictPositiveInteger(input.maximumOutputTokens, 4_096);
-  const timeout = strictPositiveInteger(input.timeoutMilliseconds, 120_000);
+  const timeout = strictPositiveInteger(input.timeoutMilliseconds, maximumRunAuthorizationTimeoutMs);
   return Object.freeze({
     [input.credentialName]: input.credentialValue,
     HOME: input.home,

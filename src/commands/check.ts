@@ -1,4 +1,4 @@
-import { constants, lstatSync, readdirSync, realpathSync, type Stats } from "node:fs";
+import { constants, existsSync, lstatSync, readdirSync, realpathSync, type Stats } from "node:fs";
 import { chmod, link, lstat, mkdir, open, readdir, realpath, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
@@ -109,7 +109,9 @@ export type GraphDerivedCheckResult =
   | { readonly status: "refused"; readonly basis?: RealisationBasis; readonly reasonCode: string; readonly id: string; readonly exitCode?: number; readonly confinementFailure?: CheckConfinementFailure;
     readonly validationExecutionAuthorityResourceDigest?: string; readonly validationWallTimeMilliseconds?: number;
     readonly validationTerminationGraceMilliseconds?: number; readonly validationTimedOut?: true;
-    readonly validationTimeoutTerminationSignal?: "none" | "SIGTERM" | "SIGKILL"; readonly outputResultDigest?: string };
+    readonly validationTimeoutTerminationSignal?: "none" | "SIGTERM" | "SIGKILL"; readonly outputResultDigest?: string;
+    readonly failureDiagnostic?: Readonly<Record<string, unknown>>;
+    readonly diagnosticDetails?: Readonly<Record<string, unknown>> };
 
 const bubblewrapExecutable = "/usr/bin/bwrap" as const;
 const checkedCandidateSchemaIri = "urn:usf:schema:checked-candidate-receipt:1";
@@ -122,7 +124,8 @@ const validationExecutionAuthorityIri = "urn:usf:algorithm:work-integration-tran
 const integrationManifestPath = "graph/manifests/integration.json";
 const checkReceiptRoot = ".usf/receipts/check";
 const workspaceManifestName = ".usf-workspace.json";
-const maximumValidationAuthorityFileBytes = 512 * 1024;
+// Authority closure files are bounded independently from candidate and output limits.
+const maximumValidationAuthorityFileBytes = 5 * 1024 * 1024;
 const maximumCandidateTreeEntries = 8_192;
 const maximumCandidateTreeBytes = 64 * 1024 * 1024;
 const maximumCheckOutputBytes = 256 * 1024;
@@ -132,15 +135,19 @@ const digestPattern = /^sha256:[0-9a-f]{64}$/u;
 class CheckRefusal extends Error {
   readonly reasonCode: string;
   readonly confinementFailure?: CheckConfinementFailure;
-  constructor(reasonCode: string, confinementFailure?: CheckConfinementFailure) {
+  readonly details?: Readonly<Record<string, unknown>>;
+  constructor(reasonCode: string, confinementFailure?: CheckConfinementFailure, details?: Readonly<Record<string, unknown>>) {
     super(reasonCode);
     this.name = "CheckRefusal";
     this.reasonCode = reasonCode;
     this.confinementFailure = confinementFailure;
+    this.details = details;
   }
 }
 
-function refuse(reasonCode: string, confinementFailure?: CheckConfinementFailure): never { throw new CheckRefusal(reasonCode, confinementFailure); }
+function refuse(reasonCode: string, confinementFailure?: CheckConfinementFailure, details?: Readonly<Record<string, unknown>>): never {
+  throw new CheckRefusal(reasonCode, confinementFailure, details);
+}
 
 function exactKeys(value: object, expected: readonly string[]): boolean {
   const actual = Object.keys(value).sort();
@@ -150,13 +157,15 @@ function exactKeys(value: object, expected: readonly string[]): boolean {
 
 function exactGraphValue(graph: LoadedSemanticGraph, subject: string, predicate: string, kind: "iri" | "literal", reason: string): string {
   const values = objectsFor(graph, subject, predicate);
-  if (values.length !== 1 || values[0]?.objectKind !== kind) return refuse(reason);
+  if (values.length !== 1 || values[0]?.objectKind !== kind) return refuse(reason, undefined, { subject, predicate, expectedKind: kind, actualCount: values.length });
   return values[0].object;
 }
 
 function exactGraphType(graph: LoadedSemanticGraph, subject: string, type: string, reason: string): void {
   const values = objectsFor(graph, subject, "urn:usf:predicate:type");
-  if (values.length !== 1 || values[0]?.objectKind !== "iri" || values[0].object !== type) refuse(reason);
+  if (values.length !== 1 || values[0]?.objectKind !== "iri" || values[0].object !== type) refuse(reason, undefined, {
+    subject, predicate: "urn:usf:predicate:type", expectedType: type, actual: values.map(value => value.object),
+  });
 }
 
 interface ValidationExecutionAuthority {
@@ -419,6 +428,7 @@ interface GraphValidation {
   readonly fixtureProcessPolicy: FixtureProcessPolicy | null;
   readonly schemaDependencies: readonly Readonly<{ id: string; digest: string }>[];
   readonly repositoryReadFiles: readonly string[];
+  readonly authorityDependencyPaths: readonly string[];
 }
 
 async function authenticatedWorkspaceManifest(workspace: string, candidateDigest: string, basis: RealisationBasis): Promise<AuthenticatedWorkspaceManifest> {
@@ -517,7 +527,7 @@ function graphRepositoryPath(value: string): string {
   if (!/^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(value) || value.includes("\\") || isAbsolute(value)
     || value.split("/").some((segment) => segment.length === 0 || segment === "." || segment === "..")
     || [".git", ".usf", ".env"].includes(value.split("/")[0] ?? "")) {
-    refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
+    refuse("CHECK_VALIDATION_AUTHORITY_INVALID", undefined, { invalidRepositoryPath: value });
   }
   return value;
 }
@@ -525,19 +535,20 @@ function graphRepositoryPath(value: string): string {
 import { authenticateFixtureProcessHostProfile, authenticateFixtureProcessPolicy, readFixtureProcessPolicy, confinedFixtureProcessLaunch, type FixtureProcessPolicy } from "../realisation/fixture-process.ts";
 
 function graphValidation(root: string, basis: RealisationBasis, validationId: string): GraphValidation {
+  const invalid = (detail: string): never => refuse("CHECK_VALIDATION_AUTHORITY_INVALID", undefined, { detail });
   let graph: LoadedSemanticGraph;
-  try { graph = loadSemanticGraph(root, basis.selection.manifestPath); } catch { return refuse("CHECK_VALIDATION_AUTHORITY_INVALID"); }
+  try { graph = loadSemanticGraph(root, basis.selection.manifestPath); } catch { return invalid("selected semantic manifest could not be loaded"); }
   const selectedManifest = graph.manifests.filter((manifest) => manifest.path === basis.selection.manifestPath);
   if (graph.manifestPath !== basis.selection.manifestPath || selectedManifest.length !== 1
     || resourceDigest(graph, basis.selection.profile) !== basis.selection.profileDigest
     || exactGraphValue(graph, basis.selection.profile, "urn:usf:predicate:version", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID") !== basis.selection.profileVersion) {
-    refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
+    return invalid("selected manifest or profile currentness differs from the realisation basis");
   }
   const selected = basis.trace.validation.filter((validation) => validation.id === validationId);
   if (selected.length !== 1) refuse("CHECK_VALIDATION_NOT_BOUND");
   exactGraphType(graph, validationId, "urn:usf:type:TestObligation", "CHECK_VALIDATION_AUTHORITY_INVALID");
   const validationResourceDigest = resourceDigest(graph, validationId);
-  if (validationResourceDigest !== selected[0]?.digest) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
+  if (validationResourceDigest !== selected[0]?.digest) return invalid("validation obligation digest differs from the realisation basis");
   const command = exactGraphValue(graph, validationId, "urn:usf:predicate:command", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID");
   const commandTokens = command.split(" ");
   if (commandTokens.join(" ") !== command || commandTokens.some((token) => token.length === 0)) refuse("CHECK_VALIDATION_COMMAND_UNSUPPORTED");
@@ -571,14 +582,25 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
     .map((dependency) => ({ kind: "basis-input" as const, ...dependency }));
   const schemaDependencies = sortedDigestRefs(basis.inputs.schemaDigests, "CHECK_VALIDATION_SCHEMA_INVALID");
   const currentnessValues = objectsFor(graph, basis.authority.permission, "urn:usf:predicate:activationCurrentness");
-  if (currentnessValues.length > 1 || currentnessValues.some((quad) => quad.objectKind !== "iri")) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
+  if (currentnessValues.length > 1 || currentnessValues.some((quad) => quad.objectKind !== "iri")) return invalid("activation-currentness authority is ambiguous");
   let declaredReadFiles: string[];
   try { declaredReadFiles = validationRuntimeClosure(graph, validationId).repositoryReadFiles.map(graphRepositoryPath); }
-  catch { return refuse("CHECK_VALIDATION_AUTHORITY_INVALID"); }
+  catch { return invalid("validation runtime closure could not be derived"); }
   const repositoryReadFiles = [...new Set([
     ...declaredReadFiles,
     ...(currentnessValues.length === 0 ? [] : [graphRepositoryPath(exactGraphValue(graph, currentnessValues[0]!.object, "urn:usf:predicate:receiptPath", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID"))]),
   ])].sort();
+  const completionValidationObligations = objectsFor(graph, basis.authority.contract, "urn:usf:predicate:completionValidationObligation")
+    .filter((quad) => quad.objectKind === "iri").map((quad) => quad.object);
+  const publicationTargetPaths = [...new Set(graph.quads
+    .filter((quad) => quad.predicate === "urn:usf:predicate:eligibleWork" && quad.objectKind === "iri" && quad.object === basis.work.id)
+    .map((quad) => quad.subject)
+    .flatMap((policy) => graph.quads
+      .filter((quad) => quad.subject === policy && quad.predicate === "urn:usf:predicate:targetSemanticSourcePath" && quad.objectKind === "literal")
+      .map((quad) => graphRepositoryPath(quad.object))))];
+  const authorityDependencyPaths = completionValidationObligations.includes(validationId) && publicationTargetPaths.length === 1
+    ? repositoryReadFiles.filter((path) => path !== publicationTargetPaths[0])
+    : repositoryReadFiles;
   return Object.freeze({
     commandTokens: Object.freeze(commandTokens),
     resourceDigest: validationResourceDigest,
@@ -594,6 +616,7 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
     fixtureProcessPolicy,
     schemaDependencies: Object.freeze(schemaDependencies),
     repositoryReadFiles: Object.freeze(repositoryReadFiles),
+    authorityDependencyPaths: Object.freeze(authorityDependencyPaths),
   });
 }
 
@@ -655,14 +678,21 @@ async function writeExecutionViewFile(view: string, repositoryPath: string, byte
 }
 
 async function* validationAuthorityFiles(root: string, tree: readonly CandidateTreeEntry[], repositoryReadFiles: readonly string[]) {
-  const candidatePaths = new Set(tree.map((item) => item.path));
   for (const repositoryPath of repositoryReadFiles) {
-    if (candidatePaths.has(repositoryPath)) continue;
     const source = resolve(root, repositoryPath);
     const relation = relative(root, source);
-    if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
-    const { bytes, entry } = await authenticatedContentFile(source, maximumValidationAuthorityFileBytes, "CHECK_VALIDATION_AUTHORITY_INVALID");
-    if (realpathSync(source) !== source) refuse("CHECK_VALIDATION_AUTHORITY_INVALID");
+    if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) refuse("CHECK_VALIDATION_AUTHORITY_INVALID", undefined, { path: repositoryPath, failure: "path-outside-root" });
+    let content: { readonly bytes: Buffer; readonly entry: Stats };
+    try {
+      content = await authenticatedContentFile(source, maximumValidationAuthorityFileBytes, "CHECK_VALIDATION_AUTHORITY_INVALID");
+    } catch (error) {
+      if (error instanceof CheckRefusal && error.reasonCode === "CHECK_VALIDATION_AUTHORITY_INVALID") {
+        return refuse(error.reasonCode, undefined, { path: repositoryPath, failure: "authority-file-authentication" });
+      }
+      throw error;
+    }
+    if (realpathSync(source) !== source) refuse("CHECK_VALIDATION_AUTHORITY_INVALID", undefined, { path: repositoryPath, failure: "path-realisation-changed" });
+    const { bytes, entry } = content;
     yield { path: repositoryPath, bytes, mode: repositoryMode(entry.mode) };
   }
 }
@@ -675,11 +705,25 @@ async function validationAuthorityDependencies(root: string, workspace: string, 
   return dependencies.sort((left, right) => left.path.localeCompare(right.path));
 }
 
+function authorityDependencyMismatches(
+  actual: readonly Readonly<{ path: string; digest: string }>[],
+  expected: readonly Readonly<{ path: string; digest: string }>[],
+): readonly Readonly<{ path: string; actual: string | null; expected: string | null }>[] {
+  const actualByPath = new Map(actual.map((dependency) => [dependency.path, dependency.digest] as const));
+  const expectedByPath = new Map(expected.map((dependency) => [dependency.path, dependency.digest] as const));
+  return [...new Set([...actualByPath.keys(), ...expectedByPath.keys()])]
+    .sort()
+    .filter((path) => actualByPath.get(path) !== expectedByPath.get(path))
+    .slice(0, 64)
+    .map((path) => ({ path, actual: actualByPath.get(path) ?? null, expected: expectedByPath.get(path) ?? null }));
+}
+
 async function prepareCheckExecutionView(
   root: string,
   workspace: string,
   temporary: string,
   repositoryReadFiles: readonly string[],
+  authorityDependencyPaths: readonly string[] = repositoryReadFiles,
 ): Promise<{
   readonly view: string;
   readonly runtime: string;
@@ -688,7 +732,9 @@ async function prepareCheckExecutionView(
   const view = resolve(temporary, "execution-view");
   await mkdir(view, { mode: 0o700 });
   const tree = await candidateTree(workspace);
+  const authorityPaths = new Set(repositoryReadFiles);
   for (const item of tree) {
+    if (authorityPaths.has(item.path)) continue;
     const source = resolve(workspace, item.path);
     const { bytes } = await authenticatedContentFile(source, maximumCandidateTreeBytes, "CANDIDATE_BASIS_MISMATCH");
     if (sha256(bytes) !== item.digest) refuse("CANDIDATE_BASIS_MISMATCH");
@@ -697,6 +743,8 @@ async function prepareCheckExecutionView(
   const authorityDependencies: Array<{ path: string; digest: string }> = [];
   for await (const file of validationAuthorityFiles(root, tree, repositoryReadFiles)) {
     await writeExecutionViewFile(view, file.path, file.bytes, file.mode);
+  }
+  for await (const file of validationAuthorityFiles(root, tree, authorityDependencyPaths)) {
     authorityDependencies.push({ path: file.path, digest: sha256(file.bytes) });
   }
   authorityDependencies.sort((left, right) => left.path.localeCompare(right.path));
@@ -1002,7 +1050,7 @@ async function deriveExecutionIntent(
   authority: ValidationExecutionAuthority,
 ): Promise<Omit<CheckedCandidateExecutionIntent, "state" | "intentDigest" | "receiptDigest">> {
   const facts = await candidateReceiptFacts(root, current.workspace, candidateDigest, current.basis);
-  const authorityDependencies = await validationAuthorityDependencies(root, current.workspace, validation.repositoryReadFiles);
+  const authorityDependencies = await validationAuthorityDependencies(root, current.workspace, validation.authorityDependencyPaths);
   const claims = validationReceiptClaims(validation);
   const receipt = receiptLocation(root, candidateDigest, validationId);
   const intent = intentLocation(root, candidateDigest, validationId);
@@ -1057,7 +1105,8 @@ async function readExecutionIntent(
   return intent;
 }
 
-async function executionIntentPresent(root: string, candidateDigest: string, validationId: string): Promise<boolean> {
+/** Cheap authenticated presence probe used before full candidate reauthentication. */
+export async function executionIntentPresent(root: string, candidateDigest: string, validationId: string): Promise<boolean> {
   if (!await authenticateReceiptAncestry(root, candidateDigest, false)) return false;
   const location = intentLocation(root, candidateDigest, validationId);
   if (await authenticatedReceiptFile(intentTemporaryPath(location.path), [1]) !== null) refuse("CHECK_EXECUTION_INTENT_PENDING");
@@ -1133,17 +1182,17 @@ function executionIntentDisposition(intent: CheckedCandidateExecutionIntent | nu
  * Lock-free intent preflight for a caller already holding the candidate lock.
  * It never repairs pending publication, writes a state, or dispatches a child.
  */
-export async function authenticateGraphDerivedCheckIntent(
+async function authenticateGraphDerivedCheckIntentAtCurrent(
   root: string,
   candidateDigest: string,
   validationId: string,
+  current: { readonly workspace: string; readonly basis: RealisationBasis },
 ): Promise<AuthenticatedGraphDerivedCheckIntentState> {
-  const current = await currentCandidateWorkspaceForCheckRecovery(root, candidateDigest);
   const validation = graphValidation(root, current.basis, validationId);
   const authority = checkedReceiptExecutionAuthority(root);
   const bound = await deriveExecutionIntent(root, candidateDigest, validationId, current, validation, authority);
   const intent = await readExecutionIntent(root, candidateDigest, validationId, bound);
-  const snapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery);
+  const snapshot = await readFullyCurrentReceiptPublicationSnapshot(root, candidateDigest, validationId, async () => current);
   if (intent?.state === "SETTLED" && snapshot.kind !== "FINAL") refuse("CHECK_RECEIPT_PATH_UNSAFE");
   const disposition = executionIntentDisposition(intent, snapshot.receipt);
   if (disposition === "UNKNOWN") refuse("CHECK_EXECUTION_OUTCOME_UNKNOWN");
@@ -1152,6 +1201,29 @@ export async function authenticateGraphDerivedCheckIntent(
     return intent.state;
   }
   return disposition;
+}
+
+export async function authenticateGraphDerivedCheckIntent(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+): Promise<AuthenticatedGraphDerivedCheckIntentState> {
+  return authenticateGraphDerivedCheckIntentAtCurrent(
+    root,
+    candidateDigest,
+    validationId,
+    await currentCandidateWorkspaceForCheckRecovery(root, candidateDigest),
+  );
+}
+
+/** Authenticate one intent against a workspace already authenticated by its caller. */
+export async function authenticateGraphDerivedCheckIntentAtAuthenticatedWorkspace(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  authenticated: { readonly workspace: string; readonly basis: RealisationBasis },
+): Promise<AuthenticatedGraphDerivedCheckIntentState> {
+  return authenticateGraphDerivedCheckIntentAtCurrent(root, candidateDigest, validationId, authenticated);
 }
 
 async function ensureReceiptDirectories(root: string, candidateDigest: string): Promise<void> {
@@ -1272,12 +1344,13 @@ function authenticateReceiptBytes(
   const receipt = parseCheckedReceipt(file.bytes);
   authenticateReceiptBinding(receipt, candidateDigest, validationId);
   const authority = checkedReceiptExecutionAuthority(root);
-  if (receipt.checkedCandidateSchemaDigest !== authority.schemaDigest
-    || receipt.validationExecutionAuthorityResourceDigest !== authority.resourceDigest
-    || receipt.validationWallTimeMilliseconds !== authority.wallTimeMilliseconds
-    || receipt.validationTerminationGraceMilliseconds !== authority.terminationGraceMilliseconds) {
-    refuse("CHECK_RECEIPT_INVALID");
-  }
+  const authorityMismatches = [
+    receipt.checkedCandidateSchemaDigest === authority.schemaDigest ? null : "checkedCandidateSchemaDigest",
+    receipt.validationExecutionAuthorityResourceDigest === authority.resourceDigest ? null : "validationExecutionAuthorityResourceDigest",
+    receipt.validationWallTimeMilliseconds === authority.wallTimeMilliseconds ? null : "validationWallTimeMilliseconds",
+    receipt.validationTerminationGraceMilliseconds === authority.terminationGraceMilliseconds ? null : "validationTerminationGraceMilliseconds",
+  ].filter((claim): claim is string => claim !== null);
+  if (authorityMismatches.length !== 0) refuse("CHECK_RECEIPT_INVALID", undefined, { mismatchedClaims: authorityMismatches });
   if (expectedBytes !== undefined && !file.bytes.equals(expectedBytes)) refuse("CHECK_RECEIPT_CONFLICT");
   return receipt;
 }
@@ -1436,7 +1509,7 @@ async function readFullyCurrentReceiptPublicationSnapshot(
   const current = await readCurrent(canonicalRoot, candidateDigest);
   const validation = graphValidation(canonicalRoot, current.basis, validationId);
   const facts = await candidateReceiptFacts(canonicalRoot, current.workspace, candidateDigest, current.basis);
-  const authorityDependencies = await validationAuthorityDependencies(canonicalRoot, current.workspace, validation.repositoryReadFiles);
+  const authorityDependencies = await validationAuthorityDependencies(canonicalRoot, current.workspace, validation.authorityDependencyPaths);
   const expected = {
     workIri: current.basis.work.id,
     explicitProfileIri: current.basis.selection.profile,
@@ -1447,8 +1520,22 @@ async function readFullyCurrentReceiptPublicationSnapshot(
     validationAuthorityDependencies: authorityDependencies,
     validationAuthorityDependencyDigest: canonicalDigest(authorityDependencies, { rejectAbsolutePaths: true }),
   };
-  if (Object.entries(expected).some(([key, value]) => canonicalJson(receipt[key as keyof CheckedCandidateReceipt]) !== canonicalJson(value))) {
-    refuse("CHECK_RECEIPT_INVALID");
+  const mismatchedClaims = Object.entries(expected)
+    .filter(([key, value]) => canonicalJson(receipt[key as keyof CheckedCandidateReceipt]) !== canonicalJson(value))
+    .map(([key]) => key)
+    .sort();
+  if (mismatchedClaims.length !== 0) {
+    const details: Record<string, unknown> = { mismatchedClaims };
+    if (mismatchedClaims.includes("validationAuthorityDependencies") || mismatchedClaims.includes("validationAuthorityDependencyDigest")) {
+      const dependencyMismatches = authorityDependencyMismatches(receipt.validationAuthorityDependencies, authorityDependencies);
+      details.authorityDependencyMismatches = dependencyMismatches;
+      details.authorityDependencyMismatchPaths = dependencyMismatches.map((dependency) => dependency.path);
+      details.authorityDependencyMismatchDigests = dependencyMismatches.map((dependency) =>
+        `${dependency.path}|receipt=${dependency.actual ?? "absent"}|current=${dependency.expected ?? "absent"}`);
+      details.receiptAuthorityDependencyCount = receipt.validationAuthorityDependencies.length;
+      details.currentAuthorityDependencyCount = authorityDependencies.length;
+    }
+    refuse("CHECK_RECEIPT_INVALID", undefined, details);
   }
   // Async reads must not carry an earlier basis, validation or receipt into reuse.
   const after = await readCurrent(canonicalRoot, candidateDigest);
@@ -1456,7 +1543,7 @@ async function readFullyCurrentReceiptPublicationSnapshot(
   if (canonicalJson(current.basis) !== canonicalJson(after.basis)
     || canonicalJson(validationReceiptClaims(validation)) !== canonicalJson(validationReceiptClaims(validationAfter))
     || canonicalJson(validation.repositoryReadFiles) !== canonicalJson(validationAfter.repositoryReadFiles)
-    || canonicalJson(authorityDependencies) !== canonicalJson(await validationAuthorityDependencies(canonicalRoot, after.workspace, validationAfter.repositoryReadFiles))
+    || canonicalJson(authorityDependencies) !== canonicalJson(await validationAuthorityDependencies(canonicalRoot, after.workspace, validationAfter.authorityDependencyPaths))
     || canonicalJson(facts) !== canonicalJson(await candidateReceiptFacts(canonicalRoot, after.workspace, candidateDigest, after.basis))
     || (await assertSameReceiptPublicationSnapshot(canonicalRoot, candidateDigest, validationId, snapshot, expectedBytes)).identity !== snapshot.identity) {
     refuse("CHECK_RECEIPT_INVALID");
@@ -1491,6 +1578,17 @@ export async function readGraphDerivedCheckReceipt(
   return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspace, false);
 }
 
+/** Read one receipt against a workspace already authenticated under its owner lock. */
+export async function readGraphDerivedCheckReceiptAtAuthenticatedWorkspace(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  authenticated: { readonly workspace: string; readonly basis: RealisationBasis },
+): Promise<GraphDerivedCheckReceiptRead> {
+  const readCurrent: CandidateCurrentReader = async () => authenticated;
+  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, readCurrent, false);
+}
+
 /** Read-only recovery receipt accessor for canonical retained-intent authentication. */
 export async function readGraphDerivedCheckReceiptForRecovery(
   root: string,
@@ -1498,6 +1596,17 @@ export async function readGraphDerivedCheckReceiptForRecovery(
   validationId: string,
 ): Promise<GraphDerivedCheckReceiptRead> {
   return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, currentCandidateWorkspaceForCheckRecovery, true);
+}
+
+/** Recovery receipt accessor for a caller already bracketing workspace currentness. */
+export async function readGraphDerivedCheckReceiptForRecoveryAtAuthenticatedWorkspace(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  authenticated: { readonly workspace: string; readonly basis: RealisationBasis },
+): Promise<GraphDerivedCheckReceiptRead> {
+  const readCurrent: CandidateCurrentReader = async () => authenticated;
+  return readGraphDerivedCheckReceiptCurrent(root, candidateDigest, validationId, readCurrent, true);
 }
 
 async function persistReceipt(root: string, candidateDigest: string, validationId: string, receipt: CheckedCandidateReceipt): Promise<string> {
@@ -1560,6 +1669,11 @@ interface ValidationExecutionObservation {
   readonly outputWithinLimit: boolean;
   readonly timedOut: boolean;
   readonly timeoutTerminationSignal: "none" | "SIGTERM" | "SIGKILL";
+  readonly stdoutObservedBytes: number;
+  readonly stderrObservedBytes: number;
+  readonly stdoutCaptured: Buffer;
+  readonly stderrCaptured: Buffer;
+  readonly outputTruncated: boolean;
 }
 
 async function executeBoundedCheck(
@@ -1571,7 +1685,12 @@ async function executeBoundedCheck(
   return new Promise((finish) => {
     const child = spawn(executable, arguments_, { cwd: workspace, env: {}, stdio: ["ignore", "pipe", "pipe"], detached: true });
     let outputBytes = 0;
+    let stdoutObservedBytes = 0;
+    let stderrObservedBytes = 0;
+    const stdoutChunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
     let outputWithinLimit = true;
+    let outputTruncated = false;
     let settled = false;
     let timedOut = false;
     let timeoutTerminationSignal: "none" | "SIGTERM" | "SIGKILL" = "none";
@@ -1582,7 +1701,8 @@ async function executeBoundedCheck(
       settled = true;
       if (wallTimer !== undefined) clearTimeout(wallTimer);
       if (graceTimer !== undefined) clearTimeout(graceTimer);
-      finish({ exitCode, outputWithinLimit, timedOut, timeoutTerminationSignal });
+      finish({ exitCode, outputWithinLimit, timedOut, timeoutTerminationSignal, stdoutObservedBytes, stderrObservedBytes,
+        stdoutCaptured: Buffer.concat(stdoutChunks), stderrCaptured: Buffer.concat(stderrChunks), outputTruncated });
     };
     const terminateTree = (signal: "SIGTERM" | "SIGKILL"): boolean => {
       try {
@@ -1593,14 +1713,20 @@ async function executeBoundedCheck(
         try { return child.kill(signal); } catch { return false; }
       }
     };
-    const observe = (chunk: Buffer) => {
+    const observe = (chunk: Buffer, stream: "stdout" | "stderr") => {
       outputBytes += chunk.byteLength;
+      if (stream === "stdout") stdoutObservedBytes += chunk.byteLength;
+      else stderrObservedBytes += chunk.byteLength;
+      const retained = Math.max(0, maximumCheckOutputBytes - (stdoutChunks.reduce((sum, item) => sum + item.byteLength, 0)
+        + stderrChunks.reduce((sum, item) => sum + item.byteLength, 0)));
+      if (retained > 0) (stream === "stdout" ? stdoutChunks : stderrChunks).push(chunk.subarray(0, retained));
+      if (chunk.byteLength > retained) outputTruncated = true;
       if (outputBytes <= maximumCheckOutputBytes || !outputWithinLimit) return;
       outputWithinLimit = false;
       terminateTree("SIGKILL");
     };
-    child.stdout?.on("data", observe);
-    child.stderr?.on("data", observe);
+    child.stdout?.on("data", (chunk: Buffer) => observe(chunk, "stdout"));
+    child.stderr?.on("data", (chunk: Buffer) => observe(chunk, "stderr"));
     child.once("error", () => settle(1));
     child.once("exit", (code) => settle(code ?? 1));
     wallTimer = setTimeout(() => {
@@ -1614,6 +1740,117 @@ async function executeBoundedCheck(
       }, authority.terminationGraceMilliseconds);
     }, authority.wallTimeMilliseconds);
   });
+}
+
+async function persistFailureDiagnostic(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+  validation: GraphValidation,
+  intent: CheckedCandidateExecutionIntent,
+  observation: ValidationExecutionObservation,
+): Promise<{ readonly diagnosticPath: string; readonly diagnosticDigest: string; readonly record: Readonly<Record<string, unknown>> }> {
+  const validationHash = canonicalDigest(validationId).slice("sha256:".length);
+  const candidateHash = candidateDigest.slice("sha256:".length);
+  const directory = resolve(root, ".usf/diagnostics/check", candidateHash, validationHash);
+  const diagnosticPath = resolve(directory, `${canonicalDigest({ intentDigest: intent.intentDigest, executionInputDigest: intent.executionInputDigest,
+    exitCode: observation.exitCode, timedOut: observation.timedOut, stdout: sha256(observation.stdoutCaptured), stderr: sha256(observation.stderrCaptured) }).slice("sha256:".length)}.json`);
+  const record = {
+    intentDigest: intent.intentDigest,
+    executionInputDigest: intent.executionInputDigest,
+    candidateDigest,
+    validationObligationIri: validationId,
+    workIri: intent.workIri,
+    explicitProfileIri: intent.explicitProfileIri,
+    originalConstructionBasisDigest: intent.originalConstructionBasisDigest,
+    scopedDependencyDigest: intent.scopedDependencyDigest,
+    validationResourceDigest: validation.resourceDigest,
+    validationCommandDigest: intent.validationCommandDigest,
+    validationEnvironmentDigest: validation.environmentDigest,
+    validationExecutionModeDigest: validation.executionModeDigest,
+    validationExecutionAuthorityResourceDigest: intent.validationExecutionAuthorityResourceDigest,
+    exitCode: observation.exitCode,
+    timedOut: observation.timedOut,
+    timeoutTerminationSignal: observation.timeoutTerminationSignal,
+    outputLimitBytes: maximumCheckOutputBytes,
+    outputWithinLimit: observation.outputWithinLimit,
+    stdoutObservedBytes: observation.stdoutObservedBytes,
+    stderrObservedBytes: observation.stderrObservedBytes,
+    stdoutCapturedBase64: observation.stdoutCaptured.toString("base64"),
+    stderrCapturedBase64: observation.stderrCaptured.toString("base64"),
+    outputTruncated: observation.outputTruncated,
+    diagnosticPath: relative(root, diagnosticPath).replaceAll(sep, "/"),
+  };
+  const diagnosticDigest = canonicalDigest(record, { rejectAbsolutePaths: true });
+  const value = Object.freeze({ diagnosticDigest, ...record });
+  const bytes = Buffer.from(canonicalJson(value, { rejectAbsolutePaths: true }));
+  await mkdir(directory, { recursive: true, mode: 0o700 });
+  try {
+    await writeFile(diagnosticPath, bytes, { flag: "wx", mode: 0o600 });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+    const existing = await import("node:fs/promises").then(fs => fs.readFile(diagnosticPath));
+    if (!existing.equals(bytes)) throw new Error("CHECK_DIAGNOSTIC_CONFLICT");
+  }
+  return Object.freeze({ diagnosticPath: value.diagnosticPath, diagnosticDigest, record: value });
+}
+
+type GraphDerivedCheckFailureDiagnosticRead =
+  | { readonly status: "available"; readonly diagnosticPath: string; readonly diagnostic: Readonly<Record<string, unknown>> }
+  | { readonly status: "absent" }
+  | { readonly status: "refused"; readonly reasonCode: string };
+
+/** Read only the current diagnostic bound to the authenticated candidate and obligation. */
+export async function readGraphDerivedCheckFailureDiagnostic(
+  root: string,
+  candidateDigest: string,
+  validationId: string,
+): Promise<GraphDerivedCheckFailureDiagnosticRead> {
+  try {
+    const current = await currentCandidateWorkspaceForCheckRecovery(root, candidateDigest);
+    const candidateHash = candidateDigest.slice("sha256:".length);
+    const validationHash = canonicalDigest(validationId).slice("sha256:".length);
+    const directory = resolve(root, ".usf/diagnostics/check", candidateHash, validationHash);
+    let names: string[];
+    try { names = (await readdir(directory)).filter(name => /^[0-9a-f]{64}\.json$/u.test(name)).sort(); }
+    catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return { status: "absent" }; throw error; }
+    if (names.length === 0) return { status: "absent" };
+    if (names.length > 32) return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" };
+    const matches: Readonly<Record<string, unknown>>[] = [];
+    for (const name of names) {
+      const path = resolve(directory, name);
+      const entry = await lstat(path);
+      if (!entry.isFile() || entry.isSymbolicLink() || entry.mode !== 0o100600) return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_PATH_UNSAFE" };
+      const bytes = await import("node:fs/promises").then(fs => fs.readFile(path));
+      if (bytes.byteLength > 1024 * 1024) return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" };
+      const value = JSON.parse(bytes.toString("utf8")) as unknown;
+      if (value === null || typeof value !== "object" || Array.isArray(value)) return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" };
+      const record = value as Readonly<Record<string, unknown>>;
+      const digest = record.diagnosticDigest;
+      const withoutDigest = Object.fromEntries(Object.entries(record).filter(([key]) => key !== "diagnosticDigest"));
+      if (typeof digest !== "string" || digest !== canonicalDigest(withoutDigest, { rejectAbsolutePaths: true })
+        || record.diagnosticPath !== `.usf/diagnostics/check/${candidateHash}/${validationHash}/${name}`
+        || record.candidateDigest !== candidateDigest || record.validationObligationIri !== validationId
+        || record.workIri !== current.basis.work.id || record.explicitProfileIri !== current.basis.selection.profile
+        || record.originalConstructionBasisDigest !== current.basis.basisDigest
+        || record.scopedDependencyDigest !== current.basis.work.scopedDependencyDigest) {
+        return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" };
+      }
+      const expectedName = canonicalDigest({
+        intentDigest: record.intentDigest, executionInputDigest: record.executionInputDigest,
+        exitCode: record.exitCode, timedOut: record.timedOut,
+        stdout: sha256(Buffer.from(String(record.stdoutCapturedBase64), "base64")),
+        stderr: sha256(Buffer.from(String(record.stderrCapturedBase64), "base64")),
+      }).slice("sha256:".length) + ".json";
+      if (name !== expectedName) return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" };
+      matches.push(record);
+    }
+    if (matches.length !== 1) return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_CONFLICT" };
+    return { status: "available", diagnosticPath: String(matches[0]!.diagnosticPath), diagnostic: matches[0]! };
+  } catch (error) {
+    if (error instanceof RealisationError) return { status: "refused", reasonCode: error.reasonCode };
+    return { status: "refused", reasonCode: "CHECK_DIAGNOSTIC_INVALID" };
+  }
 }
 
 /**
@@ -1705,9 +1942,18 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
       }
       const dependencyRoots = await toolDependencyRoots();
       const temporary = resolve(workspace, ".usf-check-tmp");
-      const execution = await prepareCheckExecutionView(canonicalRoot, workspace, temporary, validation.repositoryReadFiles);
+      const execution = await prepareCheckExecutionView(canonicalRoot, workspace, temporary, validation.repositoryReadFiles, validation.authorityDependencyPaths);
       const baseLaunch = confinedNodeTestLaunch(execution.view, execution.runtime, dependencyRoots, validation.commandTokens);
-      if (baseLaunch === null) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "BASE_LAUNCH_UNAVAILABLE");
+      if (baseLaunch === null) {
+        throw new CheckRefusal("CHECK_CONFINEMENT_UNAVAILABLE", "BASE_LAUNCH_UNAVAILABLE", {
+          strictCommand: strictNodeTestPaths(validation.commandTokens),
+          bubblewrap: trustedBubblewrap(),
+          permissionFlag: process.allowedNodeEnvironmentFlags.has("--permission"),
+          workspace: authenticatedOwnerDirectory(execution.view, false),
+          dependencies: authenticatedConfiguredToolDependencyRoots(execution.view, dependencyRoots),
+          tests: strictNodeTestPaths(validation.commandTokens)?.map(path => ({ path, exists: existsSync(resolve(execution.view, path)) })),
+        });
+      }
       let launch;
       if (validation.executionModeIri === "urn:usf:mode:deterministic-test-substitute") {
         if (validation.fixtureProcessPolicy !== null) refuse("CHECK_CONFINEMENT_UNAVAILABLE", "MODE_POLICY_MISMATCH");
@@ -1771,6 +2017,9 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
         validationTimeoutTerminationSignal: observation.timeoutTerminationSignal,
       };
       const observedOutputResultDigest = canonicalDigest(observedOutputResult);
+      const failureDiagnostic = startedIntent !== null && (observation.timedOut || !observation.outputWithinLimit || observation.exitCode !== 0)
+        ? await persistFailureDiagnostic(canonicalRoot, candidateDigest, validationId, validation, startedIntent, observation)
+        : null;
       if (observation.timedOut) {
         if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
         return {
@@ -1785,15 +2034,18 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
           validationTimedOut: true,
           validationTimeoutTerminationSignal: observation.timeoutTerminationSignal,
           outputResultDigest: observedOutputResultDigest,
+          ...(failureDiagnostic === null ? {} : { failureDiagnostic: failureDiagnostic.record }),
         };
       }
       if (!observation.outputWithinLimit) {
         if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
-        return { status: "refused", basis, reasonCode: "CHECK_OUTPUT_LIMIT_EXCEEDED", id: validationId, exitCode: observation.exitCode };
+        return { status: "refused", basis, reasonCode: "CHECK_OUTPUT_LIMIT_EXCEEDED", id: validationId, exitCode: observation.exitCode,
+          ...(failureDiagnostic === null ? {} : { failureDiagnostic: failureDiagnostic.record }) };
       }
       if (observation.exitCode !== 0) {
         if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
-        return { status: "refused", basis, reasonCode: "CHECK_FAILED", id: validationId, exitCode: observation.exitCode };
+        return { status: "refused", basis, reasonCode: "CHECK_FAILED", id: validationId, exitCode: observation.exitCode,
+          ...(failureDiagnostic === null ? {} : { failureDiagnostic: failureDiagnostic.record }) };
       }
       const authenticatedAfter = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
       if (authenticatedAfter.basis.basisDigest !== basis.basisDigest) refuse("CANDIDATE_BASIS_MISMATCH");
@@ -1844,7 +2096,8 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
   } catch (error) {
     const reasonCode = error instanceof CheckRefusal ? error.reasonCode : stableReason(error) ?? "CHECK_CONFINEMENT_UNAVAILABLE";
     return { status: "refused", ...(basis === undefined ? {} : { basis }), reasonCode, id: validationId,
-      ...(error instanceof CheckRefusal && error.confinementFailure !== undefined ? { confinementFailure: error.confinementFailure } : {}) };
+      ...(error instanceof CheckRefusal && error.confinementFailure !== undefined ? { confinementFailure: error.confinementFailure } : {}),
+      ...(error instanceof CheckRefusal && error.details !== undefined ? { diagnosticDetails: error.details } : {}) };
   }
 }
 

@@ -44,6 +44,20 @@
       "graph": "urn:usf:graph:cli-transition-completion-field-specifications",
       "role": "contract",
       "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/cli-inventory.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:cli-inventory",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/cli-command-mode-schema.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:cli-command-mode-schema",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
     }
   ]
 }

@@ -1,0 +1,140 @@
+{
+  "$defs": {
+    "entry": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "description": "Exact semantic resources justifying classification; independently checked by class rules.",
+          "items": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "classification": {
+          "description": "Exactly one of the four admitted inventory classes.",
+          "enum": [
+            "generic-interrogation",
+            "group-only",
+            "non-participating",
+            "transition-adapter"
+          ],
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "identity": {
+          "description": "Exact graph classification subject, not an asserted identity override.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "owner": {
+          "description": "Unique actual semantic owner; lexical or runtime registry labels do not confer ownership.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
+        "path": {
+          "description": "Canonical space-separated nonempty selector tokens; compare token arrays exactly, never prefix as execution classification.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "basis",
+        "classification",
+        "identity",
+        "owner",
+        "path"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:usf:cli-inventory:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "denominatorDigest": {
+      "description": "Digest of exact canonical observed registry/parser paths and source identities; never a claim of exhaustive enumeration.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "entries": {
+      "description": "Verified graph classifications only; missing or rejected entries remain diagnostics.",
+      "items": {
+        "$ref": "#/$defs/entry"
+      },
+      "maxItems": 1024,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "executionAuthority": {
+      "const": "none",
+      "description": "Inventory has no execution authority.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "missingPaths": {
+      "description": "Exact canonical paths missing a valid classification, not silently omitted.",
+      "items": {
+        "maxLength": 4096,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 1024,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "reasonCodes": {
+      "description": "Bounded deduplicated census defects; never acceptance outcomes.",
+      "items": {
+        "maxLength": 4096,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 1024,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "sourceBasis": {
+      "description": "Exact current source-row/module basis digest.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "status": {
+      "description": "Complete only when exhaustive mechanical enumeration and exact admitted classification bijection both verify; otherwise incomplete.",
+      "enum": [
+        "complete",
+        "incomplete"
+      ],
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "denominatorDigest",
+    "entries",
+    "executionAuthority",
+    "missingPaths",
+    "reasonCodes",
+    "sourceBasis",
+    "status"
+  ],
+  "type": "object"
+}

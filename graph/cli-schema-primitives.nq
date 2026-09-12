@@ -132,3 +132,11 @@
 <urn:usf:type:OperationalSupportMissing:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
 <urn:usf:type:OperationalSupportRefused:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
 <urn:usf:type:OperationalSupportUnavailableInput:1> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:adapterIdentity> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:effectContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:inputContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:predicate:recoveryContract> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-subject-identity:1> <urn:usf:predicate:implementationState> <urn:usf:implementation-state:proofblocked> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-subject-identity:1> <urn:usf:predicate:text> "Derive the exact selected RDF subject IRI, never an asserted identity predicate, alias or caller override. sourcePredicate must be absent; kind must be iri; cardinality must be exactly one scalar. Bind derivation provenance to the subject's selected source quads. Preserve identity on nested records and refuse undeclared or conflicting sources. This structural identity does not authenticate operational completion or execution authority." <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-subject-identity:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldDerivationRule> <urn:usf:graph:cli-schema-primitives> .
+<urn:usf:cli-field-specification:rule-subject-identity:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-schema-primitives> .

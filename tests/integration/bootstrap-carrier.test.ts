@@ -62,5 +62,5 @@ test("the selected-subdiff denominator and bounded validation timeout remain gra
     wall: objectsFor(graph, algorithm, predicate("validationWallTimeMilliseconds"))[0]!.object,
     grace: objectsFor(graph, algorithm, predicate("validationTerminationGraceMilliseconds"))[0]!.object,
     settlement: objectsFor(graph, algorithm, predicate("validationMaximumSettlementWallTimeMilliseconds"))[0]!.object,
-  }, { wall: "120000", grace: "5000", settlement: "125000" });
+  }, { wall: "300000", grace: "5000", settlement: "305000" });
 });

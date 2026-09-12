@@ -3,18 +3,23 @@ import { readFileSync, realpathSync, lstatSync, openSync, fstatSync, readSync, c
 import { resolve } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { createJsonSchemaValidator, createRegisteredJsonSchemaValidator, maximumRegisteredSchemaDocuments, type RegisteredSchemaDocument, type RegisteredSchemaReference } from "../schema/index.ts";
-import { deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, inspectCliOperationalSupportAdmission, verifyCliDescriptorSchema, type CliTransitionAdapter, type CliOperationalSupport, type CliOperationalSupportDefinition, type CliRecordDerivation, type CliTransitionDiagnostic } from "../graph/cli-transitions.ts";
+import { canonicalParserCommandPath, deriveCliTransitionContext, deriveCliTransitionIds, consistentArtifactProducer, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, deriveCliTransitionCoverage, deriveCliTransitionInventory, inspectCliOperationalSupportAdmission, verifyCliDescriptorSchema, type CliTransitionAdapter, type CliOperationalSupport, type CliOperationalSupportDefinition, type CliRecordDerivation, type CliTransitionDiagnostic } from "../graph/cli-transitions.ts";
 import { canonicalParserContracts } from "./canonical-parser-contracts.ts";
 import { assembleCliTransitionSchemaModules, resolveCliTransitionSchemaModule, deriveCliExternalSchemaReferences, type AuthenticatedCliTransitionSchemaModule, type CliTransitionSchemaModules } from "../graph/cli-transitions.ts";
 import { canonicalQuadDigest, canonicalQuadLine } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError } from "../graph/linear-binding.ts";
 import { prepareLocalContribution, parseLocalContribution, LocalContributionError } from "../collaboration/local-contribution.ts";
-import { RealisationError } from "../realisation/index.ts";
+import { resolveContributions, type ResolvableContribution } from "../collaboration/resolve.ts";
+import { parseRealisationBasis } from "../realisation/basis.ts";
+import { applyResolvedCandidate, authenticateCandidateWorkspace, candidateScope, deriveCandidatePreimages, RealisationError, type CandidateSpec } from "../realisation/index.ts";
+import { isOperation } from "../providers/types.ts";
 import { parseCommandInput, readCommandInput, maximumCommandInputBytes } from "./command-input.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { commandRegistry, transitionInterrogationContract, transitionReadContracts, transitionSchemaContract } from "./help.ts";
 import type { CommandRequest, CommandResult } from "./dispatcher.ts";
 import * as nativeWorkCompletionModule from "./work-completion.ts";
+import { ensureGraphDerivedCheck } from "./check.ts";
+import { integrateCandidates } from "../realisation/transition.ts";
 
 type ObservationObject = Readonly<Record<string, unknown>>;
 function observationObject(value: unknown): ObservationObject {
@@ -24,13 +29,40 @@ function observationObject(value: unknown): ObservationObject {
   return value as ObservationObject;
 }
 
+/**
+ * Shared evaluator for ordinary adapters. It authenticates the current graph,
+ * selected context and compiled role mapping, while refusing absent external
+ * transition input. It never grants execution authority or observes effects.
+ */
+export async function inspectSemanticTransitionOperationalSupport(root: string, request: unknown) {
+  const selected = observationObject(request);
+  if (typeof selected.rootIdentity !== "string" || typeof selected.manifestPath !== "string") {
+    throw new UsfError("CLI_TRANSITION_INPUT_INVALID", exitCodes.INVALID_INPUT, "The semantic evaluator requires the exact derived selection.");
+  }
+  const graph = loadSemanticGraph(root, selected.manifestPath);
+  const context = deriveCliTransitionContext(graph, selected.rootIdentity);
+  if (context.diagnostics.length !== 0 || context.work !== selected.rootIdentity || context.profile === null) {
+    throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "The semantic evaluator selection is not current.");
+  }
+  return Object.freeze({
+    executionAuthority: "none" as const,
+    lockAvailability: "not-observed" as const,
+    operation: "no-change" as const,
+    selection: Object.freeze({ workIri: selected.rootIdentity, profileIri: context.profile, manifestPath: selected.manifestPath }),
+    status: "unavailable" as const,
+    reasonCode: "CLI_TRANSITION_INPUT_NOT_SUPPLIED",
+    facts: Object.freeze([{ kind: "context" as const, identity: selected.rootIdentity, digest: canonicalQuadDigest(graph.quads), current: true as const }]),
+    unavailable: Object.freeze([{ kind: "context" as const, identity: "external-input", state: "missing" as const, reasonCode: "CLI_TRANSITION_INPUT_NOT_SUPPLIED" }]),
+  });
+}
+
 // Compatibility fingerprints bind compiled interpretation, never execution permission.
 const localObservationRules: Readonly<Record<string, string>> = Object.freeze({
   "urn:usf:rule:local-preparation-basis:1": "sha256:539008095c2d34f9bc63a8df28a6669d708c8cfbf5a758794e5c420b3f8bb3bd",
   "urn:usf:rule:local-preparation-boundary:1": "sha256:35a5b4b87f7b6f08a003ba31801d57d4463b1d3ec0a3522a88f2b0632c621cf1",
   "urn:usf:rule:local-preparation-digest:1": "sha256:a5a426dd786a0cf72ee3c620337b0a87e408f6e821df01d328b407dc7fc2c255",
   "urn:usf:rule:local-preparation-guard:1": "sha256:c2bd988a260fb7e684c4b92d74fc3c8aa3fde7ca5d46bd76fd7a7aa58881330a",
-  "urn:usf:rule:local-preparation-input:1": "sha256:3870e48678830f7a3e375f9f006b59be4876807d859ca917394491ecd49f86ec",
+  "urn:usf:rule:local-preparation-input:1": "sha256:e3c5fbec5442c4aea4d6f0bb216ed7a0607ad062917e465ffef5281efb7fda6b",
   "urn:usf:rule:local-preparation-intent:1": "sha256:e05307a94132ed3ee0d18f7665df329281d9f452482e929c0eda0627aa388379",
   "urn:usf:rule:local-preparation-readback:1": "sha256:2c1c6bfb36d46b75bd0969b2591e6b1f757da68ea43eab6ee4b66a4f7bbb0778",
   "urn:usf:rule:local-preparation-replay:1": "sha256:036ed9d43505cd6cb54cee125961f4a35a8ea62224426a0a8702ac9dde5ea232",
@@ -49,7 +81,7 @@ interface TransitionImplementation {
   /** A result fragment generated by the existing descriptor schema, never a copied schema file. */
   readonly generatedResultRecord?: string;
   readonly artifactSchema?: string;
-  readonly effectClass: "observation" | "candidate-workspace" | "check-receipt-persistence" | "completion-publication";
+  readonly effectClass: "observation" | "candidate-workspace" | "check-receipt-persistence" | "completion-publication" | "source-integration";
   readonly recoveryCasesDigest: string;
   readonly rules: Readonly<Record<string, string>>;
   readonly ruleRoles?: Readonly<Record<string, string | readonly string[]>>;
@@ -237,6 +269,57 @@ const completionRuleRoles = Object.freeze({
   "recovery.obligations": [completionRule],
 });
 
+function ordinaryCandidateFromResolution(output: ObservationObject): CandidateSpec {
+  if (output.schema !== "urn:usf:resolve-result:1" || output.status !== "resolved" || output.candidate === null || typeof output.candidate !== "object") {
+    throw new UsfError("RESOLVE_REFUSED", exitCodes.DOMAIN_FAILURE, "Ordinary apply requires an accepted resolved candidate.");
+  }
+  const candidate = output.candidate as ObservationObject;
+  const basis = parseRealisationBasis(candidate.basis);
+  const identity = candidate.identity as ObservationObject | undefined;
+  const operations = candidate.payload && typeof candidate.payload === "object"
+    ? (candidate.payload as ObservationObject).operations
+    : undefined;
+  const lineage = candidate.lineage as ObservationObject | undefined;
+  if (candidate.schema !== "urn:usf:candidate:1" || candidate.kind !== "candidate" || candidate.status !== "resolved"
+    || typeof identity?.artifactDigest !== "string" || identity.basisDigest !== basis.basisDigest
+    || !Array.isArray(operations) || !operations.every(isOperation)
+    || !Array.isArray(lineage?.acceptedContributionDigests) || !Array.isArray(lineage?.rejected)) {
+    throw new UsfError("APPLY_CANDIDATE_INVALID", exitCodes.INVALID_INPUT, "Resolved ordinary candidate is incomplete.");
+  }
+  const typedOperations = operations as readonly CandidateSpec["operations"][number][];
+  const writeSet = [...new Set(typedOperations.map(operation => operation.path))].sort();
+  return Object.freeze({
+    digest: identity.artifactDigest as string,
+    basis,
+    operations: Object.freeze(typedOperations.map(operation => Object.freeze({ ...operation }))),
+    lineage: Object.freeze({ acceptedContributionDigests: Object.freeze([...lineage.acceptedContributionDigests as readonly string[]]), rejected: Object.freeze([...lineage.rejected]) }),
+    scope: Object.freeze(candidateScope(basis)),
+    writeSet: Object.freeze(writeSet),
+    preimages: Object.freeze({}),
+  }) as CandidateSpec;
+}
+
+async function deriveOrdinaryCandidate(root: string, selection: { readonly rootIdentity: string; readonly manifestPath: string }, input: ObservationObject, profile: string): Promise<CandidateSpec> {
+  if (!Array.isArray(input.contributions) || input.contributions.length === 0) {
+    throw new UsfError("RESOLVE_CONTRIBUTIONS_REQUIRED", exitCodes.INVALID_INPUT, "Ordinary apply requires at least one contribution.");
+  }
+  const contributions = input.contributions as ResolvableContribution[];
+  for (const contribution of contributions) {
+    const basis = parseRealisationBasis((contribution as { readonly basis?: unknown }).basis);
+    if (basis.work.id !== selection.rootIdentity || basis.selection.profile !== profile) {
+      throw new UsfError("RESOLVE_BASIS_INVALID", exitCodes.CURRENTNESS_FAILURE, "Every contribution must bind the selected work and profile.");
+    }
+  }
+  const resolution = resolveContributions(contributions);
+  const candidate = ordinaryCandidateFromResolution(resolution as unknown as ObservationObject);
+  return Object.freeze({ ...candidate, preimages: Object.freeze(await deriveCandidatePreimages(root, candidate.basis, candidate.writeSet)) });
+}
+
+function ordinaryRefusal(rootIdentity: string, profile: string, error: unknown): ObservationObject {
+  const reasonCode = error instanceof UsfError ? error.code : error instanceof RealisationError ? error.reasonCode : "ORDINARY_APPLY_REFUSED";
+  return Object.freeze({ schema: "urn:usf:ordinary-effect-result:1", status: "refused", work: rootIdentity, profile, reasonCode });
+}
+
 const transitionAdapters = new Map<string, TransitionImplementation>([[
   "resolve prepare-local", {
     id: "urn:usf:cli-adapter:local-contribution-prepare:1",
@@ -279,8 +362,316 @@ const transitionAdapters = new Map<string, TransitionImplementation>([[
   identity: output => ({ work: output.workIri, profile: output.profileIri }),
 }]]);
 
+transitionAdapters.set("resolve ordinary", {
+  id: "urn:usf:cli-adapter:ordinary-resolve:1",
+  command: "urn:usf:command:ordinary-resolve:1",
+  algorithm: "urn:usf:algorithm:ordinary-resolve-adapter:1",
+  outputSchema: "urn:usf:resolve-result:1",
+  resultSchema: "urn:usf:schema:ordinary-resolve-result:1",
+  resultSchemaPath: "schemas/resolve-result.schema.json",
+  artifactSchema: "urn:usf:schema:ordinary-resolved-candidate:1",
+  effectClass: "observation",
+  recoveryCasesDigest: "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  rules: Object.freeze({
+    "urn:usf:rule:ordinary-boundary-input:1": "sha256:6f36290ec7dd37126cd97f9d3f6ac1c8ac5b2f2fdb3536f9bf826cffeabf5850",
+    "urn:usf:rule:ordinary-boundary-resolve:1": "sha256:2a71c81b278ee2807cd3dbd8980287d3e9f171b514fc0f3fbf6542be2e62a280",
+    "urn:usf:rule:ordinary-boundary-terminal:1": "sha256:80751283185ee6df8d9d558500f985751000e2993d89d56f1d2c82f3cdbc15bf",
+    "urn:usf:rule:local-preparation-basis:1": "sha256:539008095c2d34f9bc63a8df28a6669d708c8cfbf5a758794e5c420b3f8bb3bd",
+    "urn:usf:rule:local-preparation-readback:1": "sha256:2c1c6bfb36d46b75bd0969b2591e6b1f757da68ea43eab6ee4b66a4f7bbb0778",
+    "urn:usf:rule:local-preparation-digest:1": "sha256:a5a426dd786a0cf72ee3c620337b0a87e408f6e821df01d328b407dc7fc2c255",
+  }),
+  ruleRoles: Object.freeze({
+    "input.derivationRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.guardRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "effect.scopeRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.readbackRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "effect.safetyRule": "urn:usf:rule:ordinary-boundary-terminal:1",
+    "produces.0.basisRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "produces.0.authenticationRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "produces.0.digestRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "consumes.0.basisRule": "urn:usf:rule:local-preparation-basis:1",
+    "consumes.0.authenticationRule": "urn:usf:rule:local-preparation-readback:1",
+    "consumes.0.digestRule": "urn:usf:rule:local-preparation-digest:1",
+    "recovery.intentRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "recovery.boundaryRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "recovery.unknownOutcomeRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "recovery.reconciliationRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "recovery.terminalProofRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "recovery.obligations": ["urn:usf:rule:ordinary-boundary-resolve:1"],
+  }),
+  nativePreflight: "inspectSemanticTransitionOperationalSupport",
+  consumedSchemas: ["urn:usf:local-contribution:1"],
+  async prepare(_root, selection, input, profile) {
+    if (!Array.isArray(input.contributions) || input.contributions.length === 0) {
+      throw new UsfError("RESOLVE_CONTRIBUTIONS_REQUIRED", exitCodes.INVALID_INPUT, "Ordinary resolve requires at least one contribution.");
+    }
+    const contributions = input.contributions as ResolvableContribution[];
+    for (const contribution of contributions) {
+      const basis = parseRealisationBasis((contribution as { readonly basis?: unknown }).basis);
+      if (basis.work.id !== selection.rootIdentity || basis.selection.profile !== profile) {
+        throw new UsfError("RESOLVE_BASIS_INVALID", exitCodes.CURRENTNESS_FAILURE, "Every contribution must bind the selected work and profile.");
+      }
+    }
+    return resolveContributions(contributions);
+  },
+  identity: output => ({
+    work: (output.basis as ObservationObject).work && ((output.basis as ObservationObject).work as ObservationObject).id,
+    profile: ((output.basis as ObservationObject).selection as ObservationObject).profile,
+  }),
+});
+
 
 const noChangeRule = (name: string) => `urn:usf:rule:no-change-descriptor-${name}:1`;
+transitionAdapters.set("apply ordinary", {
+  id: "urn:usf:cli-adapter:ordinary-apply:1",
+  command: "urn:usf:command:ordinary-apply:1",
+  algorithm: "urn:usf:algorithm:ordinary-apply-adapter:1",
+  outputSchema: "urn:usf:schema:ordinary-effect-result:1",
+  resultSchema: "urn:usf:schema:ordinary-effect-result:1",
+  artifactSchema: "urn:usf:schema:ordinary-applied-workspace-reference:1",
+  generatedResultRecord: "urn:usf:cli-field-specification:record-ordinary-effect-result:1",
+  effectClass: "candidate-workspace",
+  recoveryCasesDigest: "sha256:9e2f080a5832936490e18e56da850b4f6a03b0d7981c2f972103101331f77b2a",
+  rules: Object.freeze({
+    "urn:usf:rule:ordinary-boundary-input:1": "sha256:6f36290ec7dd37126cd97f9d3f6ac1c8ac5b2f2fdb3536f9bf826cffeabf5850",
+    "urn:usf:rule:ordinary-boundary-resolve:1": "sha256:2a71c81b278ee2807cd3dbd8980287d3e9f171b514fc0f3fbf6542be2e62a280",
+    "urn:usf:rule:ordinary-boundary-apply:1": "sha256:675e784251cc33c280ccbd3592b2e5c7b72c7be864d1c47128330da6fc1d4a48",
+    "urn:usf:rule:ordinary-boundary-terminal:1": "sha256:80751283185ee6df8d9d558500f985751000e2993d89d56f1d2c82f3cdbc15bf",
+    "urn:usf:rule:ordinary-candidate-intent:1": "sha256:d93acbe383898b9dcfe3c8b7370c3e65d515c5278ba4893378b603160b995cc8",
+    "urn:usf:rule:ordinary-candidate-boundary:1": "sha256:2c940520784a24fd522eaef91f8cd03de0904217cb40f74ccbe4b5996dcd8a53",
+    "urn:usf:rule:ordinary-candidate-readback:1": "sha256:39e77401e978f925bea8d1ebb17b82ffb944034e11de9f21fe4cb6e49109008d",
+    "urn:usf:rule:ordinary-candidate-replay:1": "sha256:5f5c83186c33b6ee0a53cf6d3dea53936bd54326255ef59ffadc8679dd717d14",
+    "urn:usf:rule:ordinary-candidate-terminal:1": "sha256:f86256338a3878cb69a7ade42e91030d86ba51a2ded3e34a17eef4eff7761068",
+  }),
+  ruleRoles: Object.freeze({
+    "input.derivationRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.guardRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "effect.scopeRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.readbackRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "effect.safetyRule": "urn:usf:rule:ordinary-boundary-terminal:1",
+    "produces.0.basisRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "produces.0.authenticationRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "produces.0.digestRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "consumes.0.basisRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "consumes.0.authenticationRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "consumes.0.digestRule": "urn:usf:rule:ordinary-boundary-resolve:1",
+    "recovery.intentRule": "urn:usf:rule:ordinary-candidate-intent:1",
+    "recovery.boundaryRule": "urn:usf:rule:ordinary-candidate-boundary:1",
+    "recovery.unknownOutcomeRule": "urn:usf:rule:ordinary-candidate-replay:1",
+    "recovery.reconciliationRule": "urn:usf:rule:ordinary-candidate-readback:1",
+    "recovery.terminalProofRule": "urn:usf:rule:ordinary-candidate-terminal:1",
+    "recovery.obligations": ["urn:usf:rule:ordinary-candidate-boundary:1", "urn:usf:rule:ordinary-candidate-readback:1", "urn:usf:rule:ordinary-candidate-replay:1"],
+  }),
+  nativePreflight: "inspectSemanticTransitionOperationalSupport",
+  consumedSchemas: ["urn:usf:schema:ordinary-resolved-candidate:1"],
+  async prepare(root, selection, input, profile) {
+    try {
+      const candidate = await deriveOrdinaryCandidate(root, selection, input, profile);
+      const applied = await applyResolvedCandidate(root, candidate);
+      const authenticated = await authenticateCandidateWorkspace(root, candidate.digest);
+      const appliedWorkspace = {
+        schema: "urn:usf:ordinary-applied-workspace-reference:1",
+        work: selection.rootIdentity,
+        profile,
+        candidateDigest: authenticated.candidateDigest,
+        originalBasisDigest: candidate.basis.basisDigest,
+        currentBasisDigest: authenticated.constructionBasis.basisDigest,
+        manifestDigest: candidate.digest,
+        inventoryDigest: authenticated.candidateTreeDigest,
+      };
+      return Object.freeze({
+        schema: "urn:usf:ordinary-effect-result:1",
+        status: "ok",
+        work: selection.rootIdentity,
+        profile,
+        candidateDigest: authenticated.candidateDigest,
+        originalBasisDigest: candidate.basis.basisDigest,
+        currentBasisDigest: authenticated.constructionBasis.basisDigest,
+        appliedWorkspace,
+        artifacts: [{
+          schema: "urn:usf:ordinary-applied-workspace-reference:1",
+          identity: authenticated.candidateDigest,
+          digest: authenticated.workspaceIdentityDigest,
+          sourceBasis: candidate.basis.basisDigest,
+          authenticationRule: "urn:usf:rule:ordinary-boundary-apply:1",
+          path: ".usf/workspaces/" + authenticated.candidateDigest.slice("sha256:".length),
+        }],
+        disposition: applied.disposition,
+      });
+    } catch (error) {
+      return ordinaryRefusal(selection.rootIdentity, profile, error);
+    }
+  },
+  identity: output => ({ work: output.work, profile: output.profile }),
+});
+
+transitionAdapters.set("check ordinary", {
+  id: "urn:usf:cli-adapter:ordinary-check:1",
+  command: "urn:usf:command:ordinary-check:1",
+  algorithm: "urn:usf:algorithm:ordinary-check-adapter:1",
+  outputSchema: "urn:usf:schema:ordinary-effect-result:1",
+  resultSchema: "urn:usf:schema:ordinary-effect-result:1",
+  artifactSchema: "urn:usf:schema:ordinary-checked-set-reference:1",
+  generatedResultRecord: "urn:usf:cli-field-specification:record-ordinary-effect-result:1",
+  effectClass: "check-receipt-persistence",
+  recoveryCasesDigest: "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  rules: Object.freeze({
+    "urn:usf:rule:ordinary-boundary-input:1": "sha256:6f36290ec7dd37126cd97f9d3f6ac1c8ac5b2f2fdb3536f9bf826cffeabf5850",
+    "urn:usf:rule:ordinary-boundary-apply:1": "sha256:675e784251cc33c280ccbd3592b2e5c7b72c7be864d1c47128330da6fc1d4a48",
+    "urn:usf:rule:ordinary-boundary-check:1": "sha256:eba8051037c44dc5b5eaa33d4c029c409ddac87a48ff96f2bfbe8d4f42adaad7",
+    "urn:usf:rule:ordinary-boundary-terminal:1": "sha256:80751283185ee6df8d9d558500f985751000e2993d89d56f1d2c82f3cdbc15bf",
+  }),
+  ruleRoles: Object.freeze({
+    "input.derivationRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.guardRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "effect.scopeRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.readbackRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "effect.safetyRule": "urn:usf:rule:ordinary-boundary-terminal:1",
+    "produces.0.basisRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "produces.0.authenticationRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "produces.0.digestRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "consumes.0.basisRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "consumes.0.authenticationRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "consumes.0.digestRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "recovery.intentRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "recovery.boundaryRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "recovery.unknownOutcomeRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "recovery.reconciliationRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "recovery.terminalProofRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "recovery.obligations": ["urn:usf:rule:ordinary-boundary-check:1"],
+  }),
+  nativePreflight: "inspectSemanticTransitionOperationalSupport",
+  consumedSchemas: ["urn:usf:schema:ordinary-applied-workspace-reference:1"],
+  async prepare(root, selection, input, profile) {
+    try {
+      const candidate = await deriveOrdinaryCandidate(root, selection, input, profile);
+      const validationIds = [...new Set(candidate.basis.trace.validation.map(validation => validation.id))].sort();
+      if (validationIds.length === 0) throw new UsfError("CHECK_VALIDATION_NOT_BOUND", exitCodes.CURRENTNESS_FAILURE, "The selected ordinary basis has no required validation obligations.");
+      const results = [];
+      for (const validationId of validationIds) {
+        const result = await ensureGraphDerivedCheck(root, candidate.digest, validationId);
+        if (result.status !== "pass") throw new UsfError(result.reasonCode, exitCodes.DOMAIN_FAILURE, "An ordinary validation obligation refused.");
+        results.push(result);
+      }
+      const basis = results[0]!.basis;
+      if (results.some(result => result.basis.basisDigest !== basis.basisDigest)) {
+        throw new UsfError("CANDIDATE_BASIS_MISMATCH", exitCodes.CURRENTNESS_FAILURE, "Ordinary validation receipts do not share one current basis.");
+      }
+      const receipts = results.map(result => ({
+        schema: "urn:usf:ordinary-artifact-reference:1",
+        identity: result.receipt.validationObligationIri,
+        digest: result.receipt.receiptDigest,
+        sourceBasis: basis.basisDigest,
+        authenticationRule: "urn:usf:rule:ordinary-boundary-check:1",
+        path: result.receiptPath,
+      }));
+      const checkedSet = {
+        schema: "urn:usf:ordinary-checked-set-reference:1",
+        work: selection.rootIdentity,
+        profile,
+        candidateDigest: candidate.digest,
+        originalBasisDigest: candidate.basis.basisDigest,
+        currentBasisDigest: basis.basisDigest,
+        validationIdentities: validationIds,
+        receipts,
+      };
+      return Object.freeze({
+        schema: "urn:usf:ordinary-effect-result:1",
+        status: "ok",
+        work: selection.rootIdentity,
+        profile,
+        candidateDigest: candidate.digest,
+        originalBasisDigest: candidate.basis.basisDigest,
+        currentBasisDigest: basis.basisDigest,
+        checkedSet,
+        artifacts: receipts,
+      });
+    } catch (error) {
+      return ordinaryRefusal(selection.rootIdentity, profile, error);
+    }
+  },
+  identity: output => ({ work: output.work, profile: output.profile }),
+});
+
+transitionAdapters.set("integrate ordinary", {
+  id: "urn:usf:cli-adapter:ordinary-integrate:1",
+  command: "urn:usf:command:ordinary-integrate:1",
+  algorithm: "urn:usf:algorithm:ordinary-integrate-adapter:1",
+  outputSchema: "urn:usf:schema:ordinary-effect-result:1",
+  resultSchema: "urn:usf:schema:ordinary-effect-result:1",
+  artifactSchema: "urn:usf:schema:integration-observation:2",
+  generatedResultRecord: "urn:usf:cli-field-specification:record-ordinary-effect-result:1",
+  effectClass: "source-integration",
+  recoveryCasesDigest: "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  rules: Object.freeze({
+    "urn:usf:rule:ordinary-boundary-input:1": "sha256:6f36290ec7dd37126cd97f9d3f6ac1c8ac5b2f2fdb3536f9bf826cffeabf5850",
+    "urn:usf:rule:ordinary-boundary-apply:1": "sha256:675e784251cc33c280ccbd3592b2e5c7b72c7be864d1c47128330da6fc1d4a48",
+    "urn:usf:rule:ordinary-boundary-check:1": "sha256:eba8051037c44dc5b5eaa33d4c029c409ddac87a48ff96f2bfbe8d4f42adaad7",
+    "urn:usf:rule:ordinary-boundary-integrate:1": "sha256:b9f29653e6d59a691198f5ff13b47d3b34f1b1d1654d6f07996c51753a2dd56a",
+    "urn:usf:rule:ordinary-boundary-postimage:1": "sha256:c1693e2333de549a827f743a394fc9ed762054e9b78461604ff1761f3b7efd41",
+    "urn:usf:rule:ordinary-boundary-terminal:1": "sha256:80751283185ee6df8d9d558500f985751000e2993d89d56f1d2c82f3cdbc15bf",
+  }),
+  ruleRoles: Object.freeze({
+    "input.derivationRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.guardRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "effect.scopeRule": "urn:usf:rule:ordinary-boundary-input:1",
+    "effect.readbackRule": "urn:usf:rule:ordinary-boundary-postimage:1",
+    "effect.safetyRule": "urn:usf:rule:ordinary-boundary-terminal:1",
+    "produces.0.basisRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "produces.0.authenticationRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "produces.0.digestRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "consumes.0.basisRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "consumes.0.authenticationRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "consumes.0.digestRule": "urn:usf:rule:ordinary-boundary-apply:1",
+    "consumes.1.basisRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "consumes.1.authenticationRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "consumes.1.digestRule": "urn:usf:rule:ordinary-boundary-check:1",
+    "recovery.intentRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "recovery.boundaryRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "recovery.unknownOutcomeRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "recovery.reconciliationRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "recovery.terminalProofRule": "urn:usf:rule:ordinary-boundary-integrate:1",
+    "recovery.obligations": ["urn:usf:rule:ordinary-boundary-integrate:1"],
+  }),
+  nativePreflight: "inspectSemanticTransitionOperationalSupport",
+  consumedSchemas: ["urn:usf:schema:ordinary-applied-workspace-reference:1", "urn:usf:schema:ordinary-checked-set-reference:1"],
+  async prepare(root, selection, input, profile) {
+    try {
+      const candidate = await deriveOrdinaryCandidate(root, selection, input, profile);
+      const validationIds = [...new Set(candidate.basis.trace.validation.map(validation => validation.id))].sort();
+      if (validationIds.length === 0) throw new UsfError("CHECK_VALIDATION_NOT_BOUND", exitCodes.CURRENTNESS_FAILURE, "The selected ordinary basis has no required validation obligations.");
+      for (const validationId of validationIds) {
+        const result = await ensureGraphDerivedCheck(root, candidate.digest, validationId);
+        if (result.status !== "pass") throw new UsfError(result.reasonCode, exitCodes.DOMAIN_FAILURE, "An ordinary validation obligation refused.");
+      }
+      const observation = await integrateCandidates(root, { candidateDigests: [candidate.digest] });
+      if (observation.outcome !== "urn:usf:outcome:integration-success") {
+        return ordinaryRefusal(selection.rootIdentity, profile, observation.refusalReason);
+      }
+      return Object.freeze({
+        schema: "urn:usf:ordinary-effect-result:1",
+        status: "ok",
+        work: selection.rootIdentity,
+        profile,
+        candidateDigest: candidate.digest,
+        originalBasisDigest: candidate.basis.basisDigest,
+        currentBasisDigest: candidate.basis.basisDigest,
+        artifacts: [{
+          schema: "urn:usf:integration-observation:2",
+          identity: observation.observationDigest,
+          digest: observation.observationDigest,
+          sourceBasis: candidate.basis.basisDigest,
+          authenticationRule: "urn:usf:rule:ordinary-boundary-integrate:1",
+          path: ".usf/receipts/integration/" + observation.observationDigest.slice("sha256:".length) + ".json",
+        }],
+      });
+    } catch (error) {
+      return ordinaryRefusal(selection.rootIdentity, profile, error);
+    }
+  },
+  identity: output => ({ work: output.work, profile: output.profile }),
+});
+
 transitionAdapters.set("realise no-change", {
   id: "urn:usf:cli-adapter:no-change-workspace:1",
   command: "urn:usf:command:realise-no-change:1",
@@ -600,7 +991,8 @@ export function inspectTransition(graph: SemanticGraph, selection: { readonly ro
   const descriptor = projected.value;
   if (implementation.ruleRoles === undefined) validateLocalObservationRoles(descriptor, transitions[0]!);
   else validateObservationRoles(descriptor, transitions[0]!, implementation.ruleRoles);
-  if (implementation.publicationPolicy === undefined ? descriptor.algorithm !== undefined || descriptor.publicationPolicy !== undefined
+  if (implementation.publicationPolicy === undefined
+    ? (descriptor.algorithm !== undefined && descriptor.algorithm !== implementation.algorithm) || descriptor.publicationPolicy !== undefined
     : descriptor.algorithm !== implementation.algorithm || descriptor.publicationPolicy !== implementation.publicationPolicy) {
     throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Algorithm or policy binding does not match compiled observation support.");
   }
@@ -783,14 +1175,18 @@ async function nativeOperationalPreflight(
     const module: Record<string, unknown> = inspectorName === "inspectLocalContribution"
       ? await import("../collaboration/local-contribution.ts") as unknown as Record<string, unknown>
       : nativeWorkCompletionModule as unknown as Record<string, unknown>;
-    const inspect = module[inspectorName];
+    const inspect = inspectorName === "inspectSemanticTransitionOperationalSupport"
+      ? inspectSemanticTransitionOperationalSupport : module[inspectorName];
     if (typeof inspect !== "function") throw new UsfError("TRANSITION_OPERATIONAL_PREFLIGHT_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Shared native inspector is unavailable.");
     const outerGraphDigest = canonicalQuadDigest(graph.quads);
-    if (bindingAwareNativeSelection(root, selection).graphDigest !== outerGraphDigest) {
+    const before = bindingAwareNativeSelection(root, selection);
+    if (before.graphDigest !== outerGraphDigest) {
       throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Transition graph changed before native operational observation.");
     }
-    const native = await withCurrentNativeSelection(root, selection, async current => inspect(root, current));
-    if (bindingAwareNativeSelection(root, selection).graphDigest !== outerGraphDigest) {
+    const native = await inspect(root, { rootIdentity: before.rootIdentity, manifestPath: before.manifestPath });
+    const after = bindingAwareNativeSelection(root, selection);
+    if (after.rootIdentity !== before.rootIdentity || after.manifestPath !== before.manifestPath
+      || after.profile !== before.profile || after.graphDigest !== outerGraphDigest) {
       throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Transition graph changed during native operational observation.");
     }
     const value = observationObject(native);
@@ -799,6 +1195,7 @@ async function nativeOperationalPreflight(
     const expectedOperation: Readonly<Record<string, string>> = {
       inspectNoChangeWork: "no-change", inspectCompletionChecks: "checks", inspectCompletionEvidence: "evidence",
       inspectCanonicalCompletionProof: "proof", inspectCanonicalCompletionPublication: "publication", inspectLocalContribution: "local-contribution",
+      inspectSemanticTransitionOperationalSupport: "no-change",
     };
     const nativeManifest = admitted.context.binding?.targetManifest ?? selection.manifestPath;
     if (nativeSelection === null || nativeSelection.workIri !== admitted.context.work || nativeSelection.profileIri !== admitted.context.profile
@@ -981,6 +1378,12 @@ function terminalAttachmentSpecification(graph: SemanticGraph, contract: string)
   return record === undefined ? null : { property: candidates[0]!.property, recordFragment: record.fragment };
 }
 
+function terminalBranchAttachmentSpecification(_graph: SemanticGraph, _contract: string): { readonly property: string; readonly recordFragment: string } | null {
+  // Branch attachment remains disabled until its native result contract is
+  // admitted by the same semantic adapter boundary as terminal artifacts.
+  return null;
+}
+
 function descriptorDeclaresTerminalAttachment(descriptor: Readonly<Record<string, unknown>>, property: string): boolean {
   const definitions = descriptor.$defs;
   if (definitions === null || typeof definitions !== "object" || Array.isArray(definitions)) return false;
@@ -990,13 +1393,13 @@ function descriptorDeclaresTerminalAttachment(descriptor: Readonly<Record<string
   return properties !== null && typeof properties === "object" && !Array.isArray(properties) && Object.hasOwn(properties, property);
 }
 
-function attachAuthenticatedTerminalArtifacts(
+async function attachAuthenticatedTerminalArtifacts(
   repositoryRoot: string,
   graph: SemanticGraph,
   selection: { readonly rootIdentity: string; readonly manifestPath: string },
   output: ReturnType<typeof deriveCliTransitionCoverage>,
   descriptor: Readonly<Record<string, unknown>>,
-): ReturnType<typeof deriveCliTransitionCoverage> {
+): Promise<ReturnType<typeof deriveCliTransitionCoverage>> {
   if (typeof output.contract !== "string" || typeof output.profile !== "string" || typeof output.work !== "string") return output;
   const work = output.work;
   const context = deriveCliTransitionContext(graph, selection.rootIdentity);
@@ -1076,9 +1479,38 @@ function attachAuthenticatedTerminalArtifacts(
     || currentNativeManifestPath !== nativeManifestPath) {
     throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Terminal authority changed during native authentication.");
   }
-  const terminalClosure = { ...output.terminalClosure, assessment: { ...assessment, [attachment.property]: result.authenticatedArtifacts } };
+  const branchAttachment = terminalBranchAttachmentSpecification(graph, output.contract);
+  let branchAssessments: unknown = assessment.branchAssessments;
+  if (branchAttachment !== null && descriptorDeclaresTerminalAttachment(descriptor, branchAttachment.property)) {
+    const evaluateBranches = native.evaluateCanonicalTerminalBranches;
+    if (typeof evaluateBranches !== "function") throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Native terminal branch evaluation is unavailable.");
+    const branchResult = observationObject(await evaluateBranches(repositoryRoot, { rootIdentity: work, manifestPath: nativeManifestPath }));
+    const branchKeys = ["branchAssessments", "evaluator", "evaluatorDigest", "manifestPath", "profile", "work"];
+    const branchProperties = Object.getOwnPropertyDescriptors(branchResult);
+    if (Object.getOwnPropertySymbols(branchResult).length !== 0 || canonicalJson(Object.getOwnPropertyNames(branchResult).sort()) !== canonicalJson(branchKeys)
+      || branchKeys.some(key => branchProperties[key] === undefined || !("value" in branchProperties[key]!))
+      || branchResult.evaluator !== "urn:usf:rule:ordinary-terminal-branch-evaluation:1"
+      || branchResult.evaluatorDigest !== canonicalQuadDigest(graph.quads.filter(q => q.subject === branchResult.evaluator))
+      || branchResult.manifestPath !== nativeManifestPath || branchResult.profile !== output.profile || branchResult.work !== work
+      || !Array.isArray(branchResult.branchAssessments) || branchResult.branchAssessments.length > 16) {
+      throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Native terminal branch evaluation output is not an exact current assessment.");
+    }
+    const branchSchema = { $schema: descriptor.$schema, $id: "urn:usf:cli-terminal-branch-runtime-validation:1",
+      $ref: `${String(descriptor.$id)}#${branchAttachment.recordFragment}` };
+    const branchValidator = createRegisteredJsonSchemaValidator(branchSchema, { ...selectedSchemaRegistry(graph, selection), dependencySchemas: [descriptor] });
+    if (branchResult.branchAssessments.some(value => !branchValidator.validate(value).valid)) {
+      throw new UsfError("CLI_TRANSITION_UNIMPLEMENTED", exitCodes.DOMAIN_FAILURE, "Native terminal branch assessments do not match the selected descriptor schema.");
+    }
+    branchAssessments = branchResult.branchAssessments;
+  }
+  const terminalClosure = { ...output.terminalClosure, assessment: { ...assessment, [attachment.property]: result.authenticatedArtifacts,
+    ...(branchAttachment === null ? {} : { [branchAttachment.property]: branchAssessments }) } };
   const { digest: _ignored, ...body } = output;
-  return { ...body, terminalClosure, digest: canonicalDigest({ ...body, terminalClosure }) };
+  const diagnostics = body.diagnostics.filter(diagnostic => diagnostic.reasonCode !== "TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED");
+  return { ...body, diagnostics, terminalClosure, complete: diagnostics.length === 0,
+    reasonCode: diagnostics.length === 0 ? "TRANSITION_COVERAGE_COMPLETE" as const : "TRANSITION_SEMANTICS_INCOMPLETE" as const,
+    digest: canonicalDigest({ ...body, diagnostics, terminalClosure, complete: diagnostics.length === 0,
+      reasonCode: diagnostics.length === 0 ? "TRANSITION_COVERAGE_COMPLETE" as const : "TRANSITION_SEMANTICS_INCOMPLETE" as const }) };
 }
 
 interface OperationalPreflightResult {
@@ -1100,6 +1532,7 @@ function operationalSupportValidationDiagnostics(transitionIdentity: string, err
 }
 
 async function operationalSupportForCoverage(repositoryRoot: string, graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }): Promise<OperationalPreflightResult> {
+  return nativeWorkCompletionModule.withCompletionInspectionMemo(async () => {
   const context = deriveCliTransitionContext(graph, selection.rootIdentity);
   if (context.work === null || context.contract === null) return { supports: new Map(), adapterDiagnostics: new Map() };
   const specifications = deriveCliRecordSpecifications(graph, { contractIdentity: context.contract });
@@ -1119,29 +1552,29 @@ async function operationalSupportForCoverage(repositoryRoot: string, graph: Sema
   const reference = module === null ? `${String(schema.$id)}#/$defs/operationalSupport`
     : `${module.record.schemaIdentity}#${module.record.fragment}`;
   const validator = createRegisteredJsonSchemaValidator({ $schema: schema.$schema, $id: "urn:usf:cli-transition-operational-support-runtime:1", $ref: reference }, { ...registry, dependencySchemas: [schema] });
-  for (const [path, implementation] of transitionAdapters) {
-    if (implementation.nativePreflight === undefined || ![...selected].some(id => values(id, "command").includes(implementation.command))) continue;
+  const observations = await Promise.all([...transitionAdapters].map(async ([path, implementation]) => {
+    if (implementation.nativePreflight === undefined || ![...selected].some(id => values(id, "command").includes(implementation.command))) return null;
     let admitted: ReturnType<typeof inspectTransition>;
     try { admitted = inspectTransition(graph, selection, path); }
-    catch { continue; }
+    catch { return null; }
     const admission = inspectCliOperationalSupportAdmission(graph, admitted.implementation.id, nativeOperationalSupportDefinition, registry.modules);
-    if (admission.length !== 0) {
-      adapterDiagnostics.set(path, admission);
-      continue;
-    }
+    if (admission.length !== 0) return { path, diagnostics: admission } as const;
     const projection = deriveCliRecord(graph, { recordIdentity: record.id, subjectIdentity: admitted.transitionIdentity }, specifications);
-    if (!projection.valid) continue;
+    if (!projection.valid) return null;
     const support = await nativeOperationalPreflight(repositoryRoot, graph, selection, path, projection, admitted.transitionIdentity);
-    if (support === null) continue;
+    if (support === null) return null;
     // Invalid support stays adapter-local and cannot clear graph gaps.
     const validation = validator.validate(support);
-    if (!validation.valid) {
-      adapterDiagnostics.set(path, operationalSupportValidationDiagnostics(admitted.transitionIdentity, validation.errors));
-      continue;
-    }
-    supports.set(path, support);
+    if (!validation.valid) return { path, diagnostics: operationalSupportValidationDiagnostics(admitted.transitionIdentity, validation.errors) } as const;
+    return { path, support } as const;
+  }));
+  for (const observation of observations) {
+    if (observation === null) continue;
+    if ("diagnostics" in observation) adapterDiagnostics.set(observation.path, observation.diagnostics ?? []);
+    else supports.set(observation.path, observation.support);
   }
   return { supports, adapterDiagnostics };
+  });
 }
 
 export async function transitionCommandHandler(request: CommandRequest, installedCommands: readonly string[]): Promise<CommandResult> {
@@ -1156,16 +1589,11 @@ export async function transitionCommandHandler(request: CommandRequest, installe
     if ("topics" in command) for (const topic of command.topics ?? []) paths.set(topic.path.join(" "), topic.path);
   }
   for (const command of installedCommands) paths.set(command, [command]);
-  // Legacy handlers still own nested and option-selected parsers. This bounded
-  // projection cannot attest an exhaustive inventory until they are migrated.
-  const inventory = {
-    complete: false,
-    parserSource: canonicalParserContracts,
-    leaves: [...paths.values()].map((path) => ({ path,
-      owner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "urn:usf:contract:cli-transition-definition:1" : null,
-      parserOwner: path.join(" ") === transitionInterrogationContract.path.join(" ") ? "src/commands/help.ts#transitionInterrogationContract" : null,
-    })),
-  };
+  for (const binding of canonicalParserContracts.contracts) {
+    const path = canonicalParserCommandPath(binding);
+    paths.set(path, path.split(" "));
+  }
+  const inventory = { ...deriveCliTransitionInventory(graph, [...paths.values()]), parserSource: canonicalParserContracts };
   const registry = selectedSchemaRegistry(graph, selection);
   const preflight = await operationalSupportForCoverage(request.repositoryRoot, graph, selection);
   let output = boundedTransitionRead(() => deriveCliTransitionCoverage(graph, selection, inventory, transitionAdaptersForCoverage(preflight.supports, preflight.adapterDiagnostics), registry.modules));
@@ -1177,7 +1605,7 @@ export async function transitionCommandHandler(request: CommandRequest, installe
       throw new UsfError(agreement.reasonCode, exitCodes.DOMAIN_FAILURE, "Descriptor schema must match the selected semantic field specifications.", { ...agreement });
     }
   }
-  output = attachAuthenticatedTerminalArtifacts(request.repositoryRoot, graph, selection, output, descriptor);
+  output = await attachAuthenticatedTerminalArtifacts(request.repositoryRoot, graph, selection, output, descriptor);
   const currentRegistry = selectedSchemaRegistry(loadTransitionContextGraph(request.repositoryRoot, selection), selection);
   if (currentRegistry.digest !== registry.digest) {
     throw new UsfError("CLI_TRANSITION_STALE", exitCodes.CURRENTNESS_FAILURE, "Schema module authority changed during transition interrogation.");

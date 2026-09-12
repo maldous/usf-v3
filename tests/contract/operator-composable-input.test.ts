@@ -18,10 +18,12 @@ import { proposalBasis, proposalPacket } from "../fixtures/proposal-packet.ts";
 const codeIs = (code: string) => (error: unknown): boolean => error instanceof Error && (error as Error & { code?: string }).code === code;
 
 test("call and resolve accept only one bounded inline, stdin or owner-private file input", async (context) => {
+  assert.equal(maximumCommandInputBytes, 5 * 1024 * 1024);
   for (const command of ["CALL", "RESOLVE"] as const) {
     assert.deepEqual(parseCommandInput(["--input", "-"], command), { mode: "source", source: "-" });
     assert.deepEqual(parseCommandInput(["--input", ".usf/inputs/work.json"], command), { mode: "source", source: ".usf/inputs/work.json" });
     assert.deepEqual(parseCommandInput(["{}"], command), { mode: "inline", json: "{}" });
+    assert.doesNotThrow(() => parseCommandInput(["x".repeat(maximumCommandInputBytes)], command));
     for (const args of [[], ["--input"], ["--input", ""], ["--input", "-", "extra"], ["--unknown", "x"], ["--input", "-", "--input", "-"]]) {
       assert.throws(() => parseCommandInput(args, command), { code: `${command}_ARGUMENTS_INVALID`, exitCode: 2 });
     }

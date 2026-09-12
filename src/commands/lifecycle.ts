@@ -178,7 +178,7 @@ export const lifecycleCommandReasonCodes = Object.freeze({
 const automationPath = "config/automation.json";
 const maximumAutomationBytes = 16 * 1024;
 const defaultInstance = "default";
-const defaultStopWaitMs = 5_000;
+const defaultStopWaitMs = 300_000;
 const digestPattern = /^sha256:[0-9a-f]{64}$/;
 const lifecycleToolPaths = Object.freeze([
   "bin/usf",

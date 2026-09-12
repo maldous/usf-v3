@@ -85,7 +85,7 @@ installation. The adaptation is limited to these operating rules:
   superseding binding, prepare/run that exact binding, and read its settled
   attempt/result. Do not replay the stale binding or manufacture closure.
 
-Version 7 retains the authorized stewardship setup correction and adds explicit
+Version 8 retains the authorized stewardship setup correction and adds explicit
 full-context freeze, dispatch-budget, dynamic-within-ceiling budget and producer/readback preflights following
 the repeated USF-1192 candidate and diagnostic-boundary failures. These are
 operator-requested discipline corrections, not inferred semantic requirements.
@@ -103,6 +103,14 @@ authority change and evidence from comparable settled runs.
 
 These imported rules are provider-neutral. They are advisory context for this
 helper and never activate runtime behavior or update a host skill.
+
+Steward recovery is a same-shell operation boundary. After a supported
+`steward claim` or `steward recover`, the exact returned claim and generation
+must be exported as `USF_STEWARD_CLAIM_ID` and `USF_STEWARD_GENERATION` before
+the guarded CLI operation. Otherwise the operation must refuse with
+`STEWARD_CLAIM_STALE`; a successful claim alone is not ambient authorization.
+Keep recovery, guarded mutation, and release/handoff in one durable shell and
+explicitly recover a claim whose prior shell exited.
 
 The helper joins an observed lifecycle phase with a supplied settled result
 reference. Its input records explicit nullable attempt, issue, lane, work,
@@ -129,3 +137,40 @@ routing, update a host skill, or apply themselves.
 Context is an explicit digest-addressed allowlist. Never read private Codex
 runtime state, chat/session material, credentials, ambient host configuration,
 or provider-specific private prompts.
+
+Publication snapshot schemas are a separate validation dependency closure from
+completion check-receipt authority. Derive external schema paths from the
+selected snapshot schema identities in the semantic graph; do not add those
+paths to the completion policy's receipt-authority schema set merely to make a
+validator resolve. Doing so changes currentness and invalidates otherwise
+authentic retained check receipts. A schema-ref refusal is a tooling defect to
+diagnose, not permission to weaken validation or replay the whole frontier.
+
+When a retained check receipt fails currentness, the CLI may report a bounded
+sorted claim-name list in diagnosticDetails.mismatchedClaims. Use that list to
+repair the exact producer/reader contract. Do not expose or reconstruct
+authority from caller-supplied values, and do not treat a cache hit as a receipt
+until all currentness, identity, environment and recovery checks pass.
+
+For repeat validation, use the registered `check` adapter as the only result
+reuse surface. It may reuse a complete receipt only when the current candidate,
+RealisationBasis, validation command/resource, environment, execution policy,
+tool/schema/authority closure and recovery state all reauthenticate. Validator
+compilation caching is an implementation detail and cannot stand in for a
+receipt. Missing, stale, conflicting, partial, interrupted or unknown state
+must reconcile or refuse through the native transition; it must never be
+treated as a blind cache miss or replayed from a label match. This guidance
+reduces repeated discovery and is provider-neutral; it does not change semantic
+authority or completion rules.
+
+For expensive terminal or lineage fixtures, separate authenticated receipt-set
+setup from the read-only assertion under test. Reuse one exact
+content/currentness-bound seed for later lineage mutations, never synthetic
+receipts or a label-only cache hit, and report setup and assertion durations
+separately. An interrupted setup is an incomplete observation, not a terminal
+test result.
+
+`transition inspect` can return `complete: true` with
+`executionAuthority: none`: semantic coverage is complete, but no effect is
+authorised. Keep `parallelSafety` independent and fail closed when it is
+`unproven`, even if diagnostics are empty.

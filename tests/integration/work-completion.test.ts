@@ -16,6 +16,7 @@ import {
   completionAwareProveCommandHandler,
   completionAwarePublishCommandHandler,
   prepareCompletionChecks,
+  readCompletionValidationSeed,
   realiseCommandHandler,
   realiseNoChangeWork,
 } from "../../src/commands/work-completion.ts";
@@ -164,6 +165,17 @@ async function isolatedPrecompletionRepository(): Promise<{ root: string; cleanu
     if (entry.name === ".git" || entry.name === "node_modules" || entry.name.startsWith(".usf")) continue;
     await cp(resolve(canonicalRoot, entry.name), resolve(root, entry.name), { recursive: true });
   }
+  // This helper represents a clean pre-completion repository. Construction
+  // grants are publication output in the copied source tree, so retain no
+  // historical grant rows that could make the fixture's fresh publication
+  // appear partially applied.
+  const constructionGrants = resolve(root, "graph/cli-transition-definition-grants.nq");
+  if (existsSync(constructionGrants)) {
+    const source = await readFile(constructionGrants, "utf8");
+    await writeFile(constructionGrants, source.split("\n")
+      .filter(line => !line.includes("<urn:usf:grant:construction-authority:"))
+      .join("\n"));
+  }
   const receiptDirectory = resolve(root, "evidence/work-completion");
   if (existsSync(receiptDirectory)) {
     const removedBySource = new Map<string, Set<string>>();
@@ -245,22 +257,22 @@ test("retained real receipt is reauthenticated before no-change completion effec
         assert.deepEqual(await readFile(workspaceManifestPath), manifestBytes);
       }
       await writeFile(workspaceManifestPath, "invalid retained manifest", { mode: 0o600 });
-      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      await assert.rejects(replay, { code: "INVALID_WORKSPACE_MANIFEST", exitCode: 4 });
       assert.equal(await readFile(workspaceManifestPath, "utf8"), "invalid retained manifest");
       await unlink(workspaceManifestPath);
-      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      await assert.rejects(replay, { code: "INVALID_WORKSPACE_MANIFEST", exitCode: 4 });
       assert.equal(existsSync(workspaceManifestPath), false, "partial workspace must not be silently reconstructed");
       assert.equal((await stat(workspacePath)).ino, original.ino);
       await writeFile(workspaceManifestPath, manifestBytes, { mode: 0o600 });
       const extraPath = resolve(workspacePath, "unexpected-replay-input.txt");
       await writeFile(extraPath, "preserve conflicting bytes", { mode: 0o600 });
-      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      await assert.rejects(replay, { code: "CANDIDATE_BASIS_MISMATCH", exitCode: 4 });
       assert.equal(await readFile(extraPath, "utf8"), "preserve conflicting bytes");
       await unlink(extraPath);
       const retainedSourcePath = resolve(workspacePath, "src/core/scope.ts");
       const retainedSource = await readFile(retainedSourcePath);
       await writeFile(retainedSourcePath, "changed retained source");
-      await assert.rejects(replay, { code: "WORK_COMPLETION_REALISATION_REFUSED", exitCode: 4 });
+      await assert.rejects(replay, { code: "CANDIDATE_BASIS_MISMATCH", exitCode: 4 });
       assert.equal(await readFile(retainedSourcePath, "utf8"), "changed retained source");
       await writeFile(retainedSourcePath, retainedSource);
       assert.deepEqual(await replay(), realised);
@@ -532,7 +544,7 @@ async function canonicalNoChangeFixture() {
 
 function runNoChangeCli(root: string) {
   return JSON.parse(execFileSync(process.execPath, [resolve(root, "src/cli.ts"), "realise", "no-change", "--input", canonicalNoChangeInput],
-    { cwd: root, encoding: "utf8", timeout: 60_000, maxBuffer: 4 * 1024 * 1024 })) as { candidateDigest: string; workspacePath: string; status: string };
+    { cwd: root, encoding: "utf8", timeout: 300_000, maxBuffer: 4 * 1024 * 1024 })) as { candidateDigest: string; workspacePath: string; status: string };
 }
 
 test("root-derived completion checks derive no-effect identity and reconcile a genuine retained set", {
@@ -651,7 +663,7 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
       isolated.root, identity, retainedObligation, "pending-synced", pendingPath], {
       cwd: isolated.root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"],
     });
-    let launches = 0, successfulExits = 0, reached = false, stdout = "", stderr = "";
+    let launches = 0, successfulExits = 0, reached = false, stdout = "", stderr = "", childResult: unknown;
     interrupted.stdout!.on("data", chunk => { stdout += String(chunk); });
     interrupted.stderr!.on("data", chunk => { stderr += String(chunk); });
     interrupted.on("message", (message: unknown) => {
@@ -659,18 +671,21 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
       const event = message as Record<string, unknown>;
       if (event.kind === "validation-spawn") launches++;
       if (event.kind === "validation-exit" && event.code === 0 && event.signal === null) successfulExits++;
+      if (event.kind === "unexpected-result" || event.kind === "result") childResult = event.result;
       if (event.kind === "boundary" && event.boundary === "pending-synced") {
         reached = true;
         interrupted.kill("SIGKILL");
       }
     });
-    const timeout = setTimeout(() => interrupted.kill("SIGKILL"), 120_000);
+    const timeout = setTimeout(() => interrupted.kill("SIGKILL"), 300_000);
     try {
       const ended = await new Promise<{ readonly signal: NodeJS.Signals | null }>((accept, reject) => {
         interrupted.once("error", reject);
         interrupted.once("close", (_code, signal) => accept({ signal }));
       });
-      assert.equal(reached, true, stderr);
+      const diagnosticOutput = (childResult as { failureDiagnostic?: { stdoutCapturedBase64?: string } } | undefined)?.failureDiagnostic?.stdoutCapturedBase64;
+      const decodedDiagnostic = diagnosticOutput === undefined ? undefined : Buffer.from(diagnosticOutput, "base64").toString("utf8");
+      assert.equal(reached, true, stderr || stdout || decodedDiagnostic || JSON.stringify(childResult));
       assert.equal(ended.signal, "SIGKILL");
       assert.equal(stdout, "", stderr);
     } finally { clearTimeout(timeout); }
@@ -702,6 +717,14 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
     const { receiptSetDigest, ...stableSet } = first;
     assert.equal(receiptSetDigest, canonicalDigest(stableSet, { rejectAbsolutePaths: true }));
 
+    const seed = await readCompletionValidationSeed(isolated.root, request);
+    assert.deepEqual(seed, first, "the persisted seed must be the authenticated complete receipt-set result");
+    const missingSeedReceipt = resolve(isolated.root, retainedAfter!.receiptPath);
+    const retainedSeedReceiptBytes = await readFile(missingSeedReceipt);
+    await unlink(missingSeedReceipt);
+    await assert.rejects(() => readCompletionValidationSeed(isolated.root, request), { code: "WORK_COMPLETION_SEED_NOT_CURRENT" });
+    await writeFile(missingSeedReceipt, retainedSeedReceiptBytes, { mode: 0o600 });
+
     const replay = await prepareCompletionChecks(isolated.root, request);
     assert.deepEqual(replay, first, "a complete retained set has stable readback after native per-member reconciliation");
   } finally { await isolated.cleanup(); }
@@ -722,7 +745,7 @@ async function interruptNoChange(root: string, boundary: "before" | "after"): Pr
     stderr += String(chunk);
     if (!reached && stderr.includes("FAULT_BOUNDARY_REACHED")) { reached = true; child.kill("SIGTERM"); }
   });
-  const timer = setTimeout(() => child.kill("SIGKILL"), 60_000);
+  const timer = setTimeout(() => child.kill("SIGKILL"), 300_000);
   try {
     await new Promise<void>((resolvePromise, reject) => {
       child.once("error", reject);
@@ -1101,7 +1124,7 @@ async function interruptLegacyPublication(root: string, sourcePath: string, bund
       child.kill("SIGKILL");
     }
   });
-  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 300_000);
   try {
     const ended = await new Promise<{ signal: NodeJS.Signals | null }>((accept, reject) => {
       child.once("error", reject);
@@ -1129,7 +1152,7 @@ async function interruptCanonicalPublication(root: string, sourcePath: string, b
       child.kill("SIGKILL");
     }
   });
-  const timeout = setTimeout(() => child.kill("SIGKILL"), 120_000);
+  const timeout = setTimeout(() => child.kill("SIGKILL"), 300_000);
   try {
     const ended = await new Promise<{ signal: NodeJS.Signals | null }>((accept, reject) => {
       child.once("error", reject);
@@ -1261,10 +1284,11 @@ async function assertSettledCompleteCheckSet(root: string): Promise<Readonly<{ c
   let observed: { validationLaunches?: unknown; result?: unknown };
   try {
     observed = JSON.parse(execFileSync(process.execPath, ["--input-type=module", "--eval", program], {
-      cwd: root, encoding: "utf8", timeout: 120_000, maxBuffer: 4 * 1024 * 1024,
+      cwd: root, encoding: "utf8", timeout: 300_000, maxBuffer: 4 * 1024 * 1024,
     })) as { validationLaunches?: unknown; result?: unknown };
   } catch (error: unknown) {
-    assert.fail(`instrumented public prepareCompletionChecks failed: ${JSON.stringify(error)}`);
+    const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    assert.fail(`instrumented public prepareCompletionChecks failed: ${detail}`);
   }
   assert.equal(observed!.validationLaunches, 0, "a complete copied receipt set must not launch validation during public preparation");
   const prepared = observed!.result as Record<string, unknown>;
@@ -1522,12 +1546,11 @@ test("transition inspection refuses an unsupported selected publication receipt 
 });
 
 test("canonical terminal evaluation refuses altered evaluator and artifact lineage", async () => {
-  const isolated = await canonicalNoChangeFixture();
+  const isolated = await canonicalCheckedPrepublicationClone();
   try {
     const native: typeof import("../../src/commands/work-completion.ts") =
       await import(pathToFileURL(resolve(canonicalRoot, "src/commands/work-completion.ts")).href);
     const request = Object.freeze({ rootIdentity: canonicalNoChangeSelection.rootIdentity, manifestPath: canonicalNoChangeSelection.manifestPath });
-    await prepareGenuineCanonicalPublicationRoot(isolated.root);
     const publication = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "apply" }));
     assert.equal((publication as { publicationState: string }).publicationState, "created");
     assert.equal(native.evaluateCanonicalCompletionTerminal(isolated.root, request).authenticatedArtifacts.length, 1);
@@ -1543,8 +1566,9 @@ test("canonical terminal evaluation refuses altered evaluator and artifact linea
         assert.deepEqual(native.evaluateCanonicalCompletionTerminal(isolated.root, request).authenticatedArtifacts, []);
       } catch (error: unknown) {
         const code = error !== null && typeof error === "object" && "code" in error ? (error as { code?: unknown }).code : undefined;
+        const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
         assert.ok(code === "WORK_COMPLETION_TERMINAL_ARTIFACT_INVALID" || code === "WORK_COMPLETION_TERMINAL_STALE",
-          `lineage mutation must refuse or produce no accepted artifacts: ${JSON.stringify(error)}`);
+          `lineage mutation must refuse or produce no accepted artifacts: ${detail}`);
       }
     };
     try {

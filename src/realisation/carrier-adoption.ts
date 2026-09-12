@@ -120,7 +120,7 @@ interface BootstrapCarrierValidationResult {
   readonly executionModeDigest: string;
   readonly dependencyDigest: string;
   readonly dependencyMembers: readonly ValidationDependencyMember[];
-  readonly wallTimeLimitMilliseconds: 120000;
+  readonly wallTimeLimitMilliseconds: 300000;
   readonly terminationGraceMilliseconds: 5000;
   readonly timedOut: false;
   readonly lastTerminationSignal: "not-used";
@@ -240,7 +240,7 @@ interface CarrierAuthority {
   readonly admissionReceiptIri?: string;
   readonly authorityManifestDigest: string;
   readonly scopedAuthorityDependencyDigest: string;
-  readonly wallTimeMilliseconds: 120000;
+  readonly wallTimeMilliseconds: 300000;
   readonly terminationGraceMilliseconds: 5000;
 }
 
@@ -666,7 +666,7 @@ function extractAuthority(root: string, request: BootstrapCarrierRequest): Carri
   }
   const wallTimeMilliseconds = positiveInteger(graph, algorithmIri, "validationWallTimeMilliseconds");
   const terminationGraceMilliseconds = positiveInteger(graph, algorithmIri, "validationTerminationGraceMilliseconds");
-  if (wallTimeMilliseconds !== 120000 || terminationGraceMilliseconds !== 5000 || positiveInteger(graph, algorithmIri, "validationMaximumSettlementWallTimeMilliseconds") !== 125000
+  if (wallTimeMilliseconds !== 300000 || terminationGraceMilliseconds !== 5000 || positiveInteger(graph, algorithmIri, "validationMaximumSettlementWallTimeMilliseconds") !== 305000
     || one(graph, algorithmIri, "validationTerminationSignal", "literal") !== "SIGTERM" || one(graph, algorithmIri, "validationForcedTerminationSignal", "literal") !== "SIGKILL"
     || one(graph, algorithmIri, "validationTimeoutReasonCode", "literal") !== "BOOTSTRAP_CARRIER_VALIDATION_TIMEOUT") refuse("BOOTSTRAP_CARRIER_AUTHORITY_INVALID", exitCodes.CURRENTNESS_FAILURE, "The validation timeout authority is invalid.");
   return Object.freeze({
@@ -1195,7 +1195,7 @@ async function runHistoricalValidations(root: string, authority: CarrierAuthorit
         validationIri, validationResourceDigest: resourceDigest(graph, validationIri), carrierCommit: authority.commit, carrierTree: authority.tree,
         commandDigest: canonicalDigest(command.tokens), commandTokens: command.tokens,
         environmentDigest: resourceDigest(graph, validationEnvironmentIri), executionModeDigest: resourceDigest(graph, deterministicExecutionModeIri),
-        dependencyDigest: canonicalDigest(dependencies), dependencyMembers: dependencies, wallTimeLimitMilliseconds: 120000 as const,
+        dependencyDigest: canonicalDigest(dependencies), dependencyMembers: dependencies, wallTimeLimitMilliseconds: 300000 as const,
         terminationGraceMilliseconds: 5000 as const, timedOut: false as const, lastTerminationSignal: "not-used" as const,
         exitCode: 0 as const, outcome: "pass" as const, failureIdentities: [] as const, failureSetDigest: canonicalDigest([]),
       };

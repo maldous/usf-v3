@@ -28,9 +28,11 @@ import { parseRepositoryPath } from "../core/scope.ts";
 import { loadSemanticGraph, objectValues, type LoadedSemanticGraph } from "../graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../graph/nquads.ts";
 import { deriveWork, evaluateCurrentNoChangeCompletion, type WorkPacket } from "../graph/work.ts";
-import { deriveCliTransitionContext } from "../graph/cli-transitions.ts";
+import { deriveCliTerminalAssessment, deriveCliTransitionContext } from "../graph/cli-transitions.ts";
+import { resolveContributions, type ResolvableContribution } from "../collaboration/resolve.ts";
 import {
   authenticateNoChangeWorkspace,
+  withAuthenticatedNoChangeWorkspace,
   inspectNoChangeWorkspace,
   inspectNoChangeWorkspaceState,
   materialiseNoChangeCandidate,
@@ -59,16 +61,19 @@ import {
   type WorkCompletionPublicationOperation,
   type WorkCompletionPublicationReceipt,
 } from "../realisation/work-completion.ts";
-import { acquirePrimaryMutationLock } from "../realisation/transition.ts";
+import { acquirePrimaryMutationLock, inspectCandidateIntegrationRecovery, type CandidateIntegrationRecoveryInspection } from "../realisation/transition.ts";
 import { createJsonSchemaValidator } from "../schema/index.ts";
-import { readGraphDerivedCheckReceipt, readGraphDerivedCheckReceiptForRecovery, ensureGraphDerivedCheck, authenticateGraphDerivedCheckIntent, type CheckedCandidateReceipt } from "./check.ts";
+import { readGraphDerivedCheckReceipt, readGraphDerivedCheckReceiptAtAuthenticatedWorkspace, readGraphDerivedCheckReceiptForRecoveryAtAuthenticatedWorkspace, readGraphDerivedCheckFailureDiagnostic, ensureGraphDerivedCheck, executionIntentPresent, authenticateGraphDerivedCheckIntentAtAuthenticatedWorkspace, type CheckedCandidateReceipt } from "./check.ts";
+import { parseCommandInput, readCommandInput } from "./command-input.ts";
 import { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } from "./construction-authority.ts";
 import type { CommandHandler, CommandRequest, CommandResult } from "./dispatcher.ts";
+
 
 const digestPattern = /^sha256:[0-9a-f]{64}$/u;
 const iriPattern = /^urn:[^<>\s]+$/u;
 const candidatePathPattern = /^\.usf\/candidates\/work-completion\/[A-Za-z0-9._-]+\.json$/u;
 const receiptPathPattern = /^evidence\/work-completion\/[0-9a-f]{64}\.json$/u;
+const completionSeedPathPattern = /^\.usf\/receipts\/check\/[0-9a-f]{64}\/completion-validation-seed\.json$/u;
 const maximumInputBytes = 4 * 1024 * 1024;
 const predicate = (name: string): string => `urn:usf:predicate:${name}`;
 
@@ -103,6 +108,7 @@ interface PreparedPublication {
 interface PublicationSnapshotBinding {
   readonly root: string;
   readonly schemaPath: string;
+  readonly schemaPaths: readonly string[];
   readonly fragment: string;
 }
 
@@ -110,6 +116,11 @@ interface PreparedPublicationSnapshot {
   readonly metadata: CompletionPublicationSnapshot;
   readonly bytes: ReadonlyMap<string, Buffer>;
 }
+
+// The key includes every graph-selected schema byte, so a changed dependency
+// cannot reuse a validator compiled for an older authority closure.
+const MAX_SNAPSHOT_VALIDATOR_CACHE_ENTRIES = 8;
+const snapshotValidatorCache = new Map<string, ReturnType<typeof createJsonSchemaValidator>>();
 
 export type NativePreflightFact = Readonly<{
   kind: "context" | "authority" | "basis" | "scope" | "candidate-identity" | "candidate-workspace" | "check-receipt" | "check-recovery" | "evidence" | "proof-bundle" | "publication-receipt" | "publication-snapshot" | "local-preimage" | "tool-source";
@@ -142,6 +153,14 @@ function refuse(code: string, message: string, exitCode: ExitCode = exitCodes.IN
 
 function asUsfError(error: unknown, fallback: string, exitCode: ExitCode = exitCodes.CURRENTNESS_FAILURE): never {
   if (error instanceof UsfError) throw error;
+  if (error !== null && typeof error === "object") {
+    const candidate = error as { reasonCode?: unknown; details?: unknown };
+    if (typeof candidate.reasonCode === "string" && /^[A-Z0-9_:-]+$/u.test(candidate.reasonCode)) {
+      const details = candidate.details !== null && typeof candidate.details === "object" && !Array.isArray(candidate.details)
+        ? candidate.details as Record<string, unknown> : { reason: candidate.reasonCode };
+      throw new UsfError(candidate.reasonCode.split(":", 1)[0] as string, exitCode, "Work-completion validation refused.", details);
+    }
+  }
   const message = error instanceof Error ? error.message.slice(0, 256) : fallback;
   const reason = /^[A-Z0-9_:-]+$/u.test(message) ? message : fallback;
   throw new UsfError(reason.split(":", 1)[0] as string, exitCode, "Work-completion validation refused.", { reason: message });
@@ -429,6 +448,74 @@ function persistCandidate(root: string, path: string | undefined, value: unknown
   containedCandidatePath(root, path, false);
 }
 
+function completionValidationSeedPath(root: string, candidateDigest: string, createParent: boolean): string {
+  if (!digestPattern.test(candidateDigest)) {
+    refuse("WORK_COMPLETION_SEED_IDENTITY_INVALID", "The validation seed candidate identity is invalid.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  const repositoryPath = `.usf/receipts/check/${candidateDigest.slice("sha256:".length)}/completion-validation-seed.json`;
+  if (!completionSeedPathPattern.test(repositoryPath)) {
+    refuse("WORK_COMPLETION_SEED_PATH_INVALID", "The validation seed path is not the derived private path.", exitCodes.CONTAINMENT_REFUSAL);
+  }
+  assertPrivateDirectory(root, dirname(repositoryPath), createParent);
+  const canonicalRoot = realpathSync(resolve(root));
+  const absolute = resolve(canonicalRoot, repositoryPath);
+  const relation = relative(canonicalRoot, absolute);
+  if (relation === "" || relation === ".." || relation.startsWith(`..${sep}`) || isAbsolute(relation)) {
+    refuse("WORK_COMPLETION_SEED_PATH_ESCAPE", "The validation seed path escapes the repository.", exitCodes.CONTAINMENT_REFUSAL);
+  }
+  if (existsSync(absolute)) {
+    const entry = lstatSync(absolute);
+    if (entry.isSymbolicLink() || !entry.isFile() || entry.nlink !== 1 || entry.uid !== processUid(entry.uid)
+      || (entry.mode & 0o177) !== 0 || entry.size > maximumInputBytes || realpathSync(absolute) !== absolute) {
+      refuse("WORK_COMPLETION_SEED_FILE_UNSAFE", "The validation seed is not an owner-private regular file.", exitCodes.CONTAINMENT_REFUSAL);
+    }
+  }
+  return absolute;
+}
+
+function completionValidationSeedExists(root: string, candidateDigest: string): boolean {
+  if (!digestPattern.test(candidateDigest)) return false;
+  const canonicalRoot = realpathSync(resolve(root));
+  const absolute = resolve(canonicalRoot, `.usf/receipts/check/${candidateDigest.slice("sha256:".length)}/completion-validation-seed.json`);
+  const relation = relative(canonicalRoot, absolute);
+  return relation !== "" && relation !== ".." && !relation.startsWith(`..${sep}`) && !isAbsolute(relation) && existsSync(absolute);
+}
+
+function readCompletionValidationSeedFile(root: string, candidateDigest: string): unknown {
+  const absolute = completionValidationSeedPath(root, candidateDigest, false);
+  try {
+    return JSON.parse(readFileSync(absolute, "utf8"));
+  } catch (error) {
+    if (error instanceof UsfError) throw error;
+    refuse("WORK_COMPLETION_SEED_INVALID", "The validation seed is missing or malformed.", exitCodes.CURRENTNESS_FAILURE);
+  }
+}
+
+function persistCompletionValidationSeed(root: string, candidateDigest: string, value: Record<string, unknown>): string {
+  const absolute = completionValidationSeedPath(root, candidateDigest, true);
+  const bytes = `${canonicalJson(value, { rejectAbsolutePaths: true })}\n`;
+  if (existsSync(absolute)) {
+    const existing = readCompletionValidationSeedFile(root, candidateDigest);
+    if (canonicalJson(existing, { rejectAbsolutePaths: true }) !== canonicalJson(value, { rejectAbsolutePaths: true })) {
+      refuse("WORK_COMPLETION_SEED_CONFLICT", "A different validation seed already exists for the derived candidate.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    return absolute;
+  }
+  try { atomicCreate(absolute, bytes, 0o600); }
+  catch (error) {
+    if (error !== null && typeof error === "object" && (error as NodeJS.ErrnoException).code === "EEXIST") {
+      const existing = readCompletionValidationSeedFile(root, candidateDigest);
+      if (canonicalJson(existing, { rejectAbsolutePaths: true }) !== canonicalJson(value, { rejectAbsolutePaths: true })) {
+        refuse("WORK_COMPLETION_SEED_CONFLICT", "Concurrent validation seed production produced conflicting bytes.", exitCodes.INTEGRATION_CONFLICT);
+      }
+      return absolute;
+    }
+    throw error;
+  }
+  readCompletionValidationSeedFile(root, candidateDigest);
+  return absolute;
+}
+
 function validateSchema<T>(root: string, repositoryPath: string, value: unknown): value is T {
   try {
     const schema = JSON.parse(readFileSync(resolve(root, repositoryPath), "utf8")) as unknown;
@@ -498,8 +585,9 @@ async function validationReferences(
   root: string,
   packet: WorkPacket,
   workspace: AuthenticatedNoChangeWorkspace,
+  readReceipt: typeof readGraphDerivedCheckReceipt = readGraphDerivedCheckReceipt,
 ): Promise<readonly CompletionValidationReference[]> {
-  const state = await validationReceiptState(root, packet, workspace);
+  const state = await validationReceiptState(root, packet, workspace, readReceipt);
   if (state.missing.length !== 0) refuse("WORK_COMPLETION_CHECK_RECEIPT_MISSING", "A required graph-derived check receipt is absent.", exitCodes.CURRENTNESS_FAILURE, { obligationIri: state.missing[0] });
   return state.references;
 }
@@ -510,20 +598,43 @@ async function deriveEvidence(
   packet: WorkPacket,
   candidateDigest: string,
   readOnly = false,
+  validationSeed?: Record<string, unknown>,
 ): Promise<CompletionEvidenceCandidate> {
   const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
-  const workspace = await (readOnly ? inspectNoChangeWorkspace(root, candidateDigest) : authenticateNoChangeWorkspace(root, candidateDigest));
-  if (workspace.constructionBasis.basisDigest !== packet.realisationBasis?.basisDigest
-    || canonicalJson(workspace.policy) !== canonicalJson(authority.policy)) {
-    refuse("WORK_COMPLETION_WORKSPACE_STALE", "The no-change workspace no longer matches current scoped authority.", exitCodes.CURRENTNESS_FAILURE);
+  if (readOnly) {
+    const workspace = await inspectNoChangeWorkspace(root, candidateDigest);
+    if (workspace.constructionBasis.basisDigest !== packet.realisationBasis?.basisDigest
+      || canonicalJson(workspace.policy) !== canonicalJson(authority.policy)) {
+      refuse("WORK_COMPLETION_WORKSPACE_STALE", "The no-change workspace no longer matches current scoped authority.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    const references = validationSeed === undefined
+      ? await validationReferences(root, packet, workspace)
+      : validationSeed.receipts as readonly CompletionValidationReference[];
+    const evidence = createCompletionEvidenceCandidate(graph, packet, workspace, references);
+    validateCompletionEvidenceShape(evidence);
+    if (!validateSchema<CompletionEvidenceCandidate>(root, authority.evidenceSchemaPath, evidence)) {
+      refuse("WORK_COMPLETION_EVIDENCE_SCHEMA_INVALID", "Derived completion evidence failed its closed graph-selected schema.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return evidence;
   }
-  const references = await validationReferences(root, packet, workspace);
-  const evidence = createCompletionEvidenceCandidate(graph, packet, workspace, references);
-  validateCompletionEvidenceShape(evidence);
-  if (!validateSchema<CompletionEvidenceCandidate>(root, authority.evidenceSchemaPath, evidence)) {
-    refuse("WORK_COMPLETION_EVIDENCE_SCHEMA_INVALID", "Derived completion evidence failed its closed graph-selected schema.", exitCodes.CURRENTNESS_FAILURE);
-  }
-  return evidence;
+  return withAuthenticatedNoChangeWorkspace(root, candidateDigest, async (workspace) => {
+    if (workspace.constructionBasis.basisDigest !== packet.realisationBasis?.basisDigest
+      || canonicalJson(workspace.policy) !== canonicalJson(authority.policy)) {
+      refuse("WORK_COMPLETION_WORKSPACE_STALE", "The no-change workspace no longer matches current scoped authority.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    const readReceipt = (receiptRoot: string, digest: string, validationId: string) =>
+      readGraphDerivedCheckReceiptAtAuthenticatedWorkspace(receiptRoot, digest, validationId, {
+        workspace: workspace.workspace,
+        basis: workspace.constructionBasis,
+      });
+    const references = await validationReferences(root, packet, workspace, readReceipt);
+    const evidence = createCompletionEvidenceCandidate(graph, packet, workspace, references);
+    validateCompletionEvidenceShape(evidence);
+    if (!validateSchema<CompletionEvidenceCandidate>(root, authority.evidenceSchemaPath, evidence)) {
+      refuse("WORK_COMPLETION_EVIDENCE_SCHEMA_INVALID", "Derived completion evidence failed its closed graph-selected schema.", exitCodes.CURRENTNESS_FAILURE);
+    }
+    return evidence;
+  });
 }
 
 async function authenticateEvidence(
@@ -566,13 +677,16 @@ async function authenticateBundle(
   return { bundle, packet };
 }
 
-async function prepareNoChangeContext(root: string, request: RealiseRequest) {
-  const graph = loadSemanticGraph(root, request.manifestPath);
+function prepareNoChangeContextFromGraph(graph: LoadedSemanticGraph, request: RealiseRequest) {
   const packet = exactPacket(graph, request.profile, request.work);
   const basis = packet.realisationBasis;
   if (basis === undefined) refuse("WORK_COMPLETION_BASIS_MISSING", "The selected work has no realisation basis.", exitCodes.CURRENTNESS_FAILURE);
   const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
   return Object.freeze({ graph, packet, basis, authority });
+}
+
+async function prepareNoChangeContext(root: string, request: RealiseRequest) {
+  return prepareNoChangeContextFromGraph(loadSemanticGraph(root, request.manifestPath), request);
 }
 
 async function realiseNoChange(root: string, request: RealiseRequest): Promise<Record<string, unknown>> {
@@ -634,28 +748,66 @@ async function prepareChecksSelectionContext(root: string, request: unknown, rea
       }
     };
     const withWorkspace = readOnly
-      ? async <T>(operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>) => operation(await inspectNoChangeWorkspace(repositoryRoot, candidateDigest, "check-recovery"))
+      ? async <T>(operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>) => {
+        const before = await inspectNoChangeWorkspace(repositoryRoot, candidateDigest, "check-recovery");
+        const result = await operation(before);
+        const after = await inspectNoChangeWorkspace(repositoryRoot, candidateDigest, "check-recovery");
+        if (canonicalJson(before) !== canonicalJson(after)) {
+          refuse("WORK_COMPLETION_WORKSPACE_STALE", "The no-change workspace changed during read-only check-set authentication.", exitCodes.CURRENTNESS_FAILURE);
+        }
+        return result;
+      }
       : async <T>(operation: (workspace: AuthenticatedNoChangeWorkspace) => Promise<T>) => withAuthenticatedNoChangeWorkspaceForCheckRecovery(repositoryRoot, candidateDigest, operation);
-    const readState = () => withWorkspace(async (workspace) => {
+    const withState = <T>(operation: (state: Awaited<ReturnType<typeof validationReceiptState>> & { readonly reconciliations: readonly string[] }) => Promise<T> | T) => withWorkspace(async (workspace) => {
       assertCurrent();
       if (workspace.constructionBasis.basisDigest !== basis.basisDigest
         || canonicalJson(workspace.policy) !== canonicalJson(initial.authority.policy)) {
         refuse("WORK_COMPLETION_WORKSPACE_STALE", "The no-change workspace no longer matches current scoped authority.", exitCodes.CURRENTNESS_FAILURE);
       }
-      const state = await validationReceiptState(repositoryRoot, initial.packet, workspace, readGraphDerivedCheckReceiptForRecovery);
+      const authenticated = Object.freeze({ workspace: workspace.workspace, basis: workspace.constructionBasis });
+      const readReceipt = (receiptRoot: string, digest: string, validationId: string) =>
+        readGraphDerivedCheckReceiptForRecoveryAtAuthenticatedWorkspace(receiptRoot, digest, validationId, authenticated);
+      const state = await validationReceiptState(repositoryRoot, initial.packet, workspace, readReceipt);
       const reconciliations: string[] = [];
       for (const obligationIri of state.obligations) {
-        if (await authenticateGraphDerivedCheckIntent(repositoryRoot, candidateDigest, obligationIri) === "STARTED") reconciliations.push(obligationIri);
+        // An absent intent is the common case. Probe its authenticated path
+        // before rebuilding the full candidate/workspace binding.
+        if (await executionIntentPresent(repositoryRoot, candidateDigest, obligationIri)
+          && await authenticateGraphDerivedCheckIntentAtAuthenticatedWorkspace(repositoryRoot, candidateDigest, obligationIri, authenticated) === "STARTED") {
+          reconciliations.push(obligationIri);
+        }
       }
       assertCurrent();
-      return Object.freeze({ ...state, reconciliations: Object.freeze(reconciliations) });
+      return operation(Object.freeze({ ...state, reconciliations: Object.freeze(reconciliations) }));
     });
-    return { selected, repositoryRoot, initial, basis, candidateDigest, readState, assertCurrent };
+    const readState = () => withState(state => state);
+    return { selected, repositoryRoot, initial, basis, candidateDigest, readState, withState, assertCurrent };
 }
 
 async function prepareChecksContext(root: string, request: unknown, readOnly = false) {
   const context = await prepareChecksSelectionContext(root, request, readOnly);
   return { ...context, before: await context.readState() };
+}
+
+function completionReceiptSetResult(
+  workIri: string,
+  profileIri: string,
+  candidateDigest: string,
+  constructionBasisDigest: string,
+  state: { readonly obligations: readonly string[]; readonly references: readonly CompletionValidationReference[] },
+): Record<string, unknown> {
+  const draft = {
+    schema: "urn:usf:schema:completion-check-receipt-set-result:1" as const,
+    status: "current" as const,
+    workIri,
+    profileIri,
+    candidateDigest,
+    constructionBasisDigest,
+    validationObligations: state.obligations,
+    receipts: state.references,
+    nonClaims: Object.freeze(["completion", "parallel-safety", "partial-set-recovery", "terminal-closure"]),
+  };
+  return Object.freeze({ ...draft, receiptSetDigest: canonicalDigest(draft, { rejectAbsolutePaths: true }) });
 }
 
 /** Derive and authenticate the complete graph-required receipt set without accepting completion. */
@@ -667,9 +819,16 @@ export async function prepareCompletionChecks(root: string, request: unknown): P
       await readState();
       const checked = await ensureGraphDerivedCheck(repositoryRoot, candidateDigest, obligationIri);
       if (checked.status !== "pass") {
+        // The child may have atomically published a current receipt and then
+        // lost its acknowledgement while the parent was observing it. A
+        // current authenticated receipt is sufficient reconciliation; stale,
+        // partial, or absent state remains a typed refusal.
+        const reconciled = await readGraphDerivedCheckReceipt(repositoryRoot, candidateDigest, obligationIri);
+        if (reconciled !== null) return;
         refuse(checked.reasonCode, "A required graph-derived check refused; no complete set is acknowledged.", exitCodes.CURRENTNESS_FAILURE, {
           obligationIri,
           ...(checked.confinementFailure === undefined ? {} : { confinementFailure: checked.confinementFailure }),
+          ...(checked.failureDiagnostic === undefined ? {} : { failureDiagnostic: checked.failureDiagnostic }),
         });
       }
       await readState();
@@ -679,19 +838,79 @@ export async function prepareCompletionChecks(root: string, request: unknown): P
     const after = await readState();
     if (after.reconciliations.length !== 0) refuse("WORK_COMPLETION_CHECK_SET_STALE", "Required intent state changed and still needs reconciliation; no complete set is acknowledged.", exitCodes.CURRENTNESS_FAILURE);
     if (after.missing.length !== 0) refuse("WORK_COMPLETION_CHECK_RECEIPT_MISSING", "The required check receipt set is incomplete.", exitCodes.CURRENTNESS_FAILURE, { obligationIri: after.missing[0] });
-    const draft = {
-      schema: "urn:usf:schema:completion-check-receipt-set-result:1" as const,
-      status: "current" as const,
-      workIri: initial.packet.id,
-      profileIri: selected.profile,
-      candidateDigest,
-      constructionBasisDigest: basis.basisDigest,
-      validationObligations: after.obligations,
-      receipts: after.references,
-      nonClaims: Object.freeze(["completion", "parallel-safety", "partial-set-recovery", "terminal-closure"]),
-    };
-    return Object.freeze({ ...draft, receiptSetDigest: canonicalDigest(draft, { rejectAbsolutePaths: true }) });
+    const result = completionReceiptSetResult(initial.packet.id, selected.profile, candidateDigest, basis.basisDigest, after);
+    persistCompletionValidationSeed(repositoryRoot, candidateDigest, result);
+    return result;
   } catch (error) { return asUsfError(error, "WORK_COMPLETION_CHECK_SET_REFUSED"); }
+}
+
+/**
+ * Reauthenticate the explicit producer artifact without entering the native
+ * check runner. A missing seed is a bounded refusal, never an implicit rebuild.
+ */
+export async function readCompletionValidationSeed(root: string, request: unknown): Promise<Record<string, unknown>> {
+  try {
+    const context = await prepareChecksSelectionContext(root, request, true);
+    return await context.withState(state => {
+      if (state.reconciliations.length !== 0 || state.missing.length !== 0) {
+        refuse("WORK_COMPLETION_SEED_NOT_CURRENT", "The complete current receipt set is not available for seed consumption.", exitCodes.CURRENTNESS_FAILURE, {
+          missing: state.missing,
+          reconciliations: state.reconciliations,
+        });
+      }
+      const expected = completionReceiptSetResult(context.initial.packet.id, context.selected.profile, context.candidateDigest, context.basis.basisDigest, state);
+      const actual = readCompletionValidationSeedFile(context.repositoryRoot, context.candidateDigest);
+      if (canonicalJson(actual, { rejectAbsolutePaths: true }) !== canonicalJson(expected, { rejectAbsolutePaths: true })) {
+        refuse("WORK_COMPLETION_SEED_STALE", "The persisted validation seed does not match the current authenticated receipt set.", exitCodes.CURRENTNESS_FAILURE, {
+          candidateDigest: context.candidateDigest,
+          expectedSeedDigest: expected.receiptSetDigest,
+        });
+      }
+      return expected;
+    });
+  } catch (error) {
+    // A settled intent whose receipt path is missing or inconsistent is a
+    // non-current seed, not a generic containment failure at this boundary.
+    // Preserve the native path refusal for producer/recovery callers.
+    const nativeCode = error instanceof UsfError ? error.code
+      : error !== null && typeof error === "object" && typeof (error as { reasonCode?: unknown }).reasonCode === "string"
+        ? (error as { reasonCode: string }).reasonCode : undefined;
+    if (nativeCode === "CHECK_RECEIPT_PATH_UNSAFE") {
+      return asUsfError(new UsfError("WORK_COMPLETION_SEED_NOT_CURRENT", exitCodes.CURRENTNESS_FAILURE,
+        "The complete current receipt set is not available for seed consumption.", { cause: nativeCode }), "WORK_COMPLETION_SEED_NOT_CURRENT");
+    }
+    return asUsfError(error, "WORK_COMPLETION_SEED_REFUSED");
+  }
+}
+
+/** Read-only diagnosis of the current check denominator; it never runs or repairs a check. */
+export async function prepareCompletionDiagnosis(root: string, request: unknown): Promise<Record<string, unknown>> {
+  const initial = await prepareRootInspectionContext(root, request);
+  const context = await prepareChecksSelectionContext(root, initial.nativeRequest, true);
+  const state = await context.readState();
+  const current = new Set(state.references.map(reference => reference.obligationIri));
+  const recovering = new Set(state.reconciliations);
+  const members = await Promise.all(state.obligations.map(async validationObligationIri => {
+    const outcomeState = current.has(validationObligationIri) ? "current-receipt" as const
+      : recovering.has(validationObligationIri) ? "unknown" as const : "absent" as const;
+    // A successful receipt never inherits an older failure. Unknown/absent
+    // outcomes may expose only a current, digest-authenticated diagnostic.
+    if (outcomeState === "current-receipt") return Object.freeze({ validationObligationIri, outcomeState, diagnosticAvailability: "unavailable" as const });
+    const diagnostic = await readGraphDerivedCheckFailureDiagnostic(context.repositoryRoot, context.candidateDigest, validationObligationIri);
+    if (diagnostic.status === "available") return Object.freeze({ validationObligationIri, outcomeState, diagnosticAvailability: "available" as const, diagnostic: diagnostic.diagnostic });
+    if (diagnostic.status === "refused") return Object.freeze({ validationObligationIri, outcomeState, diagnosticAvailability: "refused" as const, reasonCode: diagnostic.reasonCode });
+    return Object.freeze({ validationObligationIri, outcomeState, diagnosticAvailability: "unavailable" as const });
+  }));
+  return Object.freeze({
+    schema: "urn:usf:check-result:1" as const,
+    topic: "diagnose" as const,
+    workIri: initial.nativeRequest.work,
+    explicitProfileIri: initial.nativeRequest.profile,
+    candidateDigest: context.candidateDigest,
+    executionAuthority: "none" as const,
+    complete: false as const,
+    members: Object.freeze(members),
+  });
 }
 
 export interface CompletionEvidencePreparationRequest {
@@ -801,7 +1020,14 @@ async function prepareProofContext(root: string, request: CanonicalCompletionPro
     if (basis === undefined || typeof obligation !== "string") refuse("WORK_COMPLETION_PROOF_OBLIGATION_INVALID", "Canonical proof preparation requires one graph-selected completion proof obligation.", exitCodes.CURRENTNESS_FAILURE);
     const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
     const candidateDigest = await deriveNoChangeCandidateIdentity(repositoryRoot, basis, authority.policy);
-    const evidence = await deriveEvidence(repositoryRoot, graph, packet, candidateDigest, readOnly);
+    const seedRequest = { work: selected.rootIdentity, profile: context.profile, manifestPath: selected.manifestPath };
+    // Read-only inspection may describe an authenticated legacy receipt set
+    // before a seed has been produced. Effectful proof preparation remains
+    // seed-only; a present seed is always reauthenticated rather than bypassed.
+    const validationSeed = !readOnly || completionValidationSeedExists(repositoryRoot, candidateDigest)
+      ? await readCompletionValidationSeed(repositoryRoot, seedRequest)
+      : undefined;
+    const evidence = await deriveEvidence(repositoryRoot, graph, packet, candidateDigest, readOnly, validationSeed);
     const bundle = await produceCompletionProof(repositoryRoot, graph, packet, evidence, obligation);
     const currentGraph = loadSemanticGraph(repositoryRoot, selected.manifestPath);
     const currentContext = deriveCliTransitionContext(currentGraph, selected.rootIdentity);
@@ -894,6 +1120,112 @@ export function evaluateCanonicalCompletionTerminal(root: string, request: Canon
     refuse("WORK_COMPLETION_TERMINAL_STALE", "Terminal source, receipt or authority changed during readback.", exitCodes.CURRENTNESS_FAILURE);
   }
   return Object.freeze(after.result);
+}
+
+export interface CanonicalTerminalBranchExternal {
+  readonly contributions: readonly unknown[];
+}
+
+/**
+ * Authenticate the declared terminal branches through their native readers.
+ * This is an observation only: it never creates candidates, checks, intents,
+ * receipts, locks, or publication state.
+ */
+export async function evaluateCanonicalTerminalBranches(
+  root: string,
+  request: CanonicalCompletionProofRequest,
+  external?: CanonicalTerminalBranchExternal,
+) {
+  const selected = parseCanonicalCompletionProofRequest(request);
+  const repository = realpathSync(root);
+  const graph = loadSemanticGraph(repository, selected.manifestPath);
+  const context = deriveCliTransitionContext(graph, selected.rootIdentity);
+  if (context.diagnostics.length !== 0 || context.profile === null || context.work !== selected.rootIdentity) {
+    refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Terminal branch evaluation requires one admitted work context.");
+  }
+  const structural = deriveCliTerminalAssessment(graph, selected.rootIdentity);
+  const evaluator = "urn:usf:rule:ordinary-terminal-branch-evaluation:1";
+  const evaluatorDigest = canonicalQuadDigest(graph.quads.filter((quad) => quad.subject === evaluator));
+  const branchRows: Readonly<Record<string, unknown>>[] = (structural.branchAssessments ?? [])
+    .filter((value) => value !== null && typeof value === "object" && !Array.isArray(value))
+    .map((value) => value as Readonly<Record<string, unknown>>);
+  const reasonSet = (values: readonly string[]): readonly string[] => Object.freeze([...new Set(values)].sort());
+  const nativeFacts = (values: readonly string[]): readonly string[] => Object.freeze([...new Set([evaluatorDigest, ...values])].sort());
+  const update = (
+    branch: Readonly<Record<string, unknown>>,
+    outcome: "accepted" | "missing" | "refused" | "stale" | "unknown",
+    reasons: readonly string[],
+    facts: readonly string[],
+  ): Readonly<Record<string, unknown>> => {
+    const obligations = Array.isArray(branch.obligations) ? branch.obligations.map((value) => {
+      if (value === null || typeof value !== "object" || Array.isArray(value)) return value;
+      const obligation = value as Readonly<Record<string, unknown>>;
+      return Object.freeze({ ...obligation, outcome, reasonCodes: reasonSet(reasons),
+        ...(outcome === "accepted" && typeof obligation.artifactIdentity === "string" ? { artifactDigest: facts.at(-1) } : {}) });
+    }) : [];
+    return Object.freeze({ ...branch, applicability: outcome === "accepted" ? "applicable" : branch.applicability,
+      outcome, obligations: Object.freeze(obligations), nativeFactDigests: nativeFacts(facts), reasonCodes: reasonSet(reasons) });
+  };
+  const assessed: Readonly<Record<string, unknown>>[] = [];
+  for (const branch of branchRows) {
+    const branchIdentity = branch.branchIdentity;
+    if (typeof branchIdentity !== "string") continue;
+    if (branchIdentity === "urn:usf:cli-branch:ordinary-completion:1") {
+      try {
+        const completion = evaluateCanonicalCompletionTerminal(repository, selected) as Readonly<Record<string, unknown>>;
+        const artifacts = Array.isArray(completion.authenticatedArtifacts) ? completion.authenticatedArtifacts : [];
+        if (artifacts.length > 0) {
+          assessed.push(update(branch, "accepted", [], artifacts.map((artifact) => canonicalDigest(artifact))));
+        } else {
+          assessed.push(update(branch, "missing", ["TERMINAL_BRANCH_ARTIFACT_MISSING", "TERMINAL_BRANCH_PROOF_MISSING"], []));
+        }
+      } catch {
+        assessed.push(update(branch, "unknown", ["TERMINAL_BRANCH_EVALUATOR_UNAVAILABLE"], []));
+      }
+      continue;
+    }
+    if (branchIdentity === "urn:usf:cli-branch:ordinary-construction:1") {
+      const contributions = external?.contributions;
+      if (!Array.isArray(contributions) || contributions.length === 0 || contributions.length > 32) {
+        assessed.push(update(branch, "unknown", ["TERMINAL_BRANCH_INPUT_MISSING"], []));
+        continue;
+      }
+      try {
+        const resolution = resolveContributions(contributions as ResolvableContribution[]);
+        const candidate = resolution.candidate;
+        if (resolution.status !== "resolved" || candidate === null || candidate.basis.work.id !== context.work
+          || candidate.basis.selection.profile !== context.profile || candidate.basis.selection.manifestPath !== selected.manifestPath) {
+          assessed.push(update(branch, "refused", ["TERMINAL_BRANCH_SCOPE_CONFLICT"], []));
+          continue;
+        }
+        const inspection: CandidateIntegrationRecoveryInspection = await inspectCandidateIntegrationRecovery(repository, {
+          candidateDigests: [candidate.identity.artifactDigest],
+        });
+        const facts = inspection.factDigests;
+        if (inspection.state === "primary-advanced" && inspection.observation?.outcome === "urn:usf:outcome:integration-success") {
+          assessed.push(update(branch, "accepted", [], facts));
+        } else if (inspection.state === "stale") {
+          assessed.push(update(branch, "stale", ["TERMINAL_BRANCH_CURRENTNESS_STALE", inspection.reasonCode ?? "INTEGRATION_POSTIMAGE_MOVED"], facts));
+        } else if (inspection.state === "quarantined") {
+          assessed.push(update(branch, "refused", ["TERMINAL_BRANCH_RECOVERY_UNRESOLVED", inspection.reasonCode ?? "INTEGRATION_RECOVERY_QUARANTINED"], facts));
+        } else if (inspection.state === "absent" || inspection.state === "prepared-commit") {
+          assessed.push(update(branch, "missing", ["TERMINAL_BRANCH_ARTIFACT_MISSING"], facts));
+        } else {
+          assessed.push(update(branch, "unknown", ["TERMINAL_BRANCH_RECOVERY_UNRESOLVED", inspection.reasonCode ?? "INTEGRATION_INTENT_MISMATCH"], facts));
+        }
+      } catch {
+        assessed.push(update(branch, "unknown", ["TERMINAL_BRANCH_EVALUATOR_UNAVAILABLE"], []));
+      }
+      continue;
+    }
+    assessed.push(update(branch, "unknown", ["TERMINAL_BRANCH_EVALUATOR_UNAVAILABLE"], []));
+  }
+  const currentGraph = loadSemanticGraph(repository, selected.manifestPath);
+  if (canonicalQuadDigest(currentGraph.quads) !== canonicalQuadDigest(graph.quads)) {
+    refuse("WORK_COMPLETION_TERMINAL_STALE", "Terminal branch authority changed during native evaluation.", exitCodes.CURRENTNESS_FAILURE);
+  }
+  return Object.freeze({ branchAssessments: Object.freeze(assessed), evaluator, evaluatorDigest,
+    manifestPath: selected.manifestPath, profile: context.profile, work: context.work });
 }
 
 function parseCanonicalCompletionPublicationRequest(value: unknown): Readonly<CanonicalCompletionPublicationRequest> {
@@ -1014,7 +1346,7 @@ async function prepareRootInspectionContext(root: string, request: unknown) {
     refuse("WORK_COMPLETION_ARGUMENTS_INVALID", "Native inspection requires one admitted work context.");
   }
   const nativeRequest = Object.freeze({ work: selected.rootIdentity, profile: context.profile, manifestPath: selected.manifestPath });
-  return { selected, nativeRequest, ...await prepareNoChangeContext(root, nativeRequest) };
+  return { selected, nativeRequest, ...prepareNoChangeContextFromGraph(graph, nativeRequest) };
 }
 
 /** Observational facts only. No workspaces, checks, locks or publication are created. */
@@ -1034,7 +1366,7 @@ export async function inspectNoChangeWork(root: string, request: unknown): Promi
   });
 }
 
-async function prepareCompletionInspectionContext(root: string, request: unknown) {
+async function prepareCompletionInspectionContextUncached(root: string, request: unknown) {
     const initial = await prepareRootInspectionContext(root, request);
     const context = await prepareChecksSelectionContext(root, initial.nativeRequest, true);
     const facts = [...packetPreflightFacts(context.initial.packet, context.initial.authority),
@@ -1054,6 +1386,27 @@ async function prepareCompletionInspectionContext(root: string, request: unknown
       ...before.reconciliations.map(identity => Object.freeze({ kind: "check-recovery" as const, identity, state: "recovery-required" as const, reasonCode: "WORK_COMPLETION_CHECK_RECOVERY_REQUIRED" })),
     ];
     return { packet: context.initial.packet, manifestPath: context.selected.manifestPath, facts, unavailable };
+}
+
+type CompletionInspectionContext = Awaited<ReturnType<typeof prepareCompletionInspectionContextUncached>>;
+let completionInspectionMemo: Map<string, Promise<CompletionInspectionContext>> | undefined;
+
+/** Share one exact read-only check context during a single frontier interrogation. */
+export async function withCompletionInspectionMemo<T>(operation: () => Promise<T>): Promise<T> {
+  const previous = completionInspectionMemo;
+  completionInspectionMemo = new Map();
+  try { return await operation(); }
+  finally { completionInspectionMemo = previous; }
+}
+
+async function prepareCompletionInspectionContext(root: string, request: unknown): Promise<CompletionInspectionContext> {
+  if (completionInspectionMemo === undefined) return prepareCompletionInspectionContextUncached(root, request);
+  const key = canonicalJson([realpathSync(resolve(root)), request]);
+  const existing = completionInspectionMemo.get(key);
+  if (existing !== undefined) return existing;
+  const pending = prepareCompletionInspectionContextUncached(root, request);
+  completionInspectionMemo.set(key, pending);
+  return pending;
 }
 
 export async function inspectCompletionChecks(root: string, request: unknown): Promise<NativeOperationalPreflight> {
@@ -1421,18 +1774,74 @@ function publicationSnapshotBinding(graph: LoadedSemanticGraph, authority: NoCha
     || parseRepositoryPath(schemaPath, "file") === null || !/^\/\$defs\/[A-Za-z][A-Za-z0-9]*$/.test(fragment)) {
     refuse("WORK_COMPLETION_SNAPSHOT_AUTHORITY_INVALID", "Snapshot paths or record selection escape the admitted policy.", exitCodes.CONTAINMENT_REFUSAL);
   }
-  return Object.freeze({ root: snapshotRoot, schemaPath, fragment });
+  const identities = new Set<string>();
+  const pending = [schemaPath];
+  const collectRefs = (value: unknown): void => {
+    if (Array.isArray(value)) { for (const item of value) collectRefs(item); return; }
+    if (value === null || typeof value !== "object") return;
+    for (const [key, item] of Object.entries(value)) {
+      if (key === "$ref" && typeof item === "string" && item.startsWith("urn:usf:")) identities.add(item.split("#", 1)[0]!);
+      else collectRefs(item);
+    }
+  };
+  const paths = new Set<string>([schemaPath]);
+  const identityPaths = new Map<string, string>();
+  const visited = new Set<string>();
+  while (pending.length !== 0) {
+    const path = pending.shift()!;
+    if (visited.has(path)) continue;
+    visited.add(path);
+    let document: unknown;
+    try { document = JSON.parse(readFileSync(resolve(graph.repositoryRoot, path), "utf8")); }
+    catch { refuse("WORK_COMPLETION_SNAPSHOT_AUTHORITY_INVALID", "Snapshot schema dependency bytes are unavailable.", exitCodes.CURRENTNESS_FAILURE, { path }); }
+    collectRefs(document);
+    for (const identity of [...identities]) {
+      if (identityPaths.has(identity)) continue;
+      const schemaRows = graph.quads.filter(q => q.predicate === predicate("schemaIdentity") && q.objectKind === "iri" && q.object === identity);
+      const subjects = [...new Set(schemaRows.map(q => q.subject))];
+      const repositoryPaths = [...new Set(subjects.flatMap(subject => graph.quads
+        .filter(q => q.subject === subject && q.predicate === predicate("repositoryPath") && q.objectKind === "literal")
+        .map(q => q.object)))];
+      if (subjects.length !== 1 || repositoryPaths.length !== 1 || parseRepositoryPath(repositoryPaths[0]!, "file") === null) {
+        refuse("WORK_COMPLETION_SNAPSHOT_AUTHORITY_INVALID", "Snapshot schema dependency identity is not uniquely graph-bound.", exitCodes.CURRENTNESS_FAILURE, { identity });
+      }
+      paths.add(repositoryPaths[0]!);
+      identityPaths.set(identity, repositoryPaths[0]!);
+      pending.push(repositoryPaths[0]!);
+    }
+  }
+  return Object.freeze({ root: snapshotRoot, schemaPath, schemaPaths: Object.freeze([...paths].sort(utf8Compare)), fragment });
 }
 
 function snapshotSchema(root: string, binding: PublicationSnapshotBinding, value: unknown): asserts value is CompletionPublicationSnapshot {
   const schema = JSON.parse(readFileSync(resolve(root, binding.schemaPath), "utf8")) as { $schema?: string; $defs?: Record<string, unknown> };
-  const result = createJsonSchemaValidator({ $schema: schema.$schema, $defs: schema.$defs, $ref: `#${binding.fragment}` }).validate(value);
+  const dependencies = binding.schemaPaths
+    .filter((path) => path !== binding.schemaPath)
+    .map((path) => JSON.parse(readFileSync(resolve(root, path), "utf8")));
+  const rootSchema = {
+    $schema: schema.$schema,
+    $id: "urn:usf:completion-publication-snapshot-validation:1",
+    $defs: schema.$defs,
+    $ref: `#${binding.fragment}`,
+  };
+  const cacheKey = sha256(canonicalJson({ rootSchema, dependencies }, { rejectAbsolutePaths: true }));
+  let validator = snapshotValidatorCache.get(cacheKey);
+  if (validator === undefined) {
+    validator = createJsonSchemaValidator(rootSchema, { dependencySchemas: dependencies });
+    if (snapshotValidatorCache.size >= MAX_SNAPSHOT_VALIDATOR_CACHE_ENTRIES) {
+      const oldest = snapshotValidatorCache.keys().next().value;
+      if (typeof oldest === "string") snapshotValidatorCache.delete(oldest);
+    }
+    snapshotValidatorCache.set(cacheKey, validator);
+  }
+  const result = validator.validate(value);
   if (!result.valid) refuse("WORK_COMPLETION_SNAPSHOT_SCHEMA_INVALID", "Snapshot failed its graph-selected generated record schema.", exitCodes.CURRENTNESS_FAILURE);
 }
 
 function publicationInputPath(path: string): boolean {
   if (parseRepositoryPath(path, "file") !== null) return true;
   if (/^\.usf\/receipts\/check\/[0-9a-f]{64}\/[0-9a-f]{64}(?:\.intent)?\.json(?:\.pending)?$/.test(path)) return true;
+  if (/^\.usf\/receipts\/check\/[0-9a-f]{64}\/completion-validation-seed\.json$/.test(path)) return true;
   const workspace = /^\.usf\/workspaces\/[0-9a-f]{64}\/(.+)$/.exec(path);
   return workspace !== null && parseRepositoryPath(workspace[1]!, "file") !== null;
 }
@@ -1440,7 +1849,7 @@ function publicationInputPath(path: string): boolean {
 function readPublicationFile(root: string, path: string, privateFile = false, snapshotRoot?: string): { bytes: Buffer; mode: number } {
   const snapshotFile = snapshotRoot !== undefined && path.startsWith(snapshotRoot)
     && /^[0-9a-f]{64}\/[0-9a-f]{64}\/(?:snapshot\.json|source\.pending|files\/[0-9]{4}\.bin)$/.test(path.slice(snapshotRoot.length));
-  if (!publicationInputPath(path) && !snapshotFile) refuse("WORK_COMPLETION_SNAPSHOT_PATH_INVALID", "Snapshot input requires one contained file path.", exitCodes.CONTAINMENT_REFUSAL);
+  if (!publicationInputPath(path) && !snapshotFile) refuse("WORK_COMPLETION_SNAPSHOT_PATH_INVALID", "Snapshot input requires one contained file path.", exitCodes.CONTAINMENT_REFUSAL, { path });
   const absolute = resolve(root, path);
   let cursor = realpathSync(root);
   for (const segment of dirname(path).split("/")) {
@@ -1476,7 +1885,7 @@ function buildPublicationSnapshot(root: string, prepared: PreparedPublication, b
   const paths = new Set<string>([
     ...prepared.graph.sources.map(source => source.path),
     ...prepared.graph.manifests.map(manifest => manifest.path),
-    ...prepared.authority.schemaPaths, ...prepared.authority.toolPaths, binding.schemaPath,
+    ...prepared.authority.schemaPaths, ...prepared.authority.toolPaths, ...binding.schemaPaths,
   ]);
   const addTree = (path: string, depth = 0): void => {
     if (depth > 32 || paths.size > 1024) refuse("WORK_COMPLETION_SNAPSHOT_BOUNDS", "Snapshot input closure exceeds its bound.", exitCodes.CONTAINMENT_REFUSAL);
@@ -1944,6 +2353,14 @@ export const realiseCommandHandler: CommandHandler = async ({ args, repositoryRo
   try {
     return { output: await realiseNoChangeWork(repositoryRoot, parseRealiseRequest(args)) };
   } catch (error) { return asUsfError(error, "WORK_COMPLETION_REALISATION_REFUSED"); }
+};
+
+export const completionDiagnosisCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
+  try {
+    const input = parseCommandInput(args, "RESOLVE");
+    if (input.mode !== "source") throw new UsfError("RESOLVE_ARGUMENTS_INVALID", exitCodes.INVALID_INPUT, "Check diagnosis requires the registered --input transport.");
+    return { output: await prepareCompletionDiagnosis(repositoryRoot, await readCommandInput(repositoryRoot, input, "RESOLVE")) };
+  } catch (error) { return asUsfError(error, "WORK_COMPLETION_DIAGNOSIS_REFUSED"); }
 };
 
 export const completionAwareEvidenceCommandHandler: CommandHandler = async (command): Promise<CommandResult> => {

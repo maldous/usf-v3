@@ -94,10 +94,16 @@ test("one static registry covers parsing and every self-describing help topic", 
   assert.deepEqual(apply.exitCodes, [0, 2, 4, 5, 7]);
 
   const checkHelp = helpCommandResult(["check", "--json"]);
-  const check = (checkHelp.output as { command: { exitCodes: number[]; exitCodeMeanings: Array<{ code: number; meaning: string }>; options: Array<{ description: string }> } }).command;
+  const check = (checkHelp.output as { command: { exitCodes: number[]; exitCodeMeanings: Array<{ code: number; meaning: string }>; options: Array<{ syntax?: string; description: string }> } }).command;
   assert.deepEqual(check.exitCodes, [0, 1, 2, 3, 4, 5, 7]);
   assert.match(check.exitCodeMeanings.find((entry) => entry.code === 1)!.meaning, /validation failure/u);
-  assert.match(check.options[1]!.description, /120000 millisecond wall-time limit/u);
+  assert.match(check.options[1]!.description, /300000 millisecond wall-time limit/u);
+  assert.match(check.options.find((option) => option.syntax === "--candidate DIGEST")!.description, /reused automatically after reauthentication/u);
+  assert.match(check.options.find((option) => option.syntax === "--input PATH|-")!.description, /interrupted, unknown, stale or conflicting state is reconciled or refused/u);
+
+  const hermesHelp = helpCommandResult(["hermes", "--json"]);
+  const hermes = (hermesHelp.output as { command: { options: Array<{ syntax: string; description: string }> } }).command;
+  assert.match(hermes.options.find((option) => option.syntax === "--wait-ms N")!.description, /default 300000ms, maximum 900000ms/u);
 
   const integrateHelp = helpCommandResult(["integrate", "--json"]);
   const integrate = (integrateHelp.output as { command: { availability: string; authorityEffect: string; options: Array<{ syntax: string; description: string }>; exitCodes: number[] } }).command;

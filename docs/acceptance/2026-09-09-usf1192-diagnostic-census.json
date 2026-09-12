@@ -1,0 +1,1856 @@
+{
+  "version": 2,
+  "purpose": "Immutable diagnostic ownership handoff, not graph authority or execution permission",
+  "inputs": [
+    {
+      "path": ".usf/inputs/usf1192-command-mode-staging-installed-frontier.json",
+      "sha256": "sha256:6a5e2543bd088a24bc54cb9fb6264d3b84f9a19c9d4ad5471f3434aa390a173f"
+    },
+    {
+      "path": ".usf/inputs/usf1192-check-failure-diagnostics-transition/logs/runtime-activation349-isolated-inspect.stdout",
+      "sha256": "sha256:82ce4862ac4da3eb9d81f42b11bb0ab4e9740197f013a7a876852dc95bca12ec"
+    },
+    {
+      "path": ".usf/inputs/usf1192-check-failure-diagnostics-transition/logs/runtime-activation349-context.json",
+      "sha256": "sha256:ed1625dfeef65fe75d2c1b9b72526079436e9d5067081d57a553fdc53fbf4b1a"
+    }
+  ],
+  "installedDigest": "sha256:29b253bd115cd89f11bc350d2c9e1704fd569a4b732a9b0179698c1ddd2451af",
+  "candidateDigest": "sha256:073d3199a1e5ee14efa9d87cca59fc4be77817add260fe1b2a896df7e09d49f0",
+  "candidateGraphDigest": "sha256:7c91b71fb95f67ece55f963ffa0f20405f1c6ad7a57927fbf475a237841e21d0",
+  "currentAuthoritySemanticDigest": "sha256:c25fb0e106ec6d85245544328654c57160c731251930c8660a51894bd7d32695",
+  "currentAuthoritySourceSnapshotDigest": "sha256:eb6798555baafbe509b4d4c13b6c74dd641acee3c82777af171b0d1cce60b0f9",
+  "candidateSourceContext": {
+    "root": "/home/user/src/usf-v3/.usf/inputs/usf1192-check-failure-diagnostics-transition/runtime-activation349",
+    "independentGitRoot": true,
+    "execution": "byte-copy",
+    "command": "COREPACK_HOME=$PWD/.usf/cache/corepack ./bin/usf transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json",
+    "result": {
+      "exitCode": 1,
+      "durationMilliseconds": 89238
+    },
+    "outputSha256": "sha256:82ce4862ac4da3eb9d81f42b11bb0ab4e9740197f013a7a876852dc95bca12ec",
+    "reportDigest": "sha256:073d3199a1e5ee14efa9d87cca59fc4be77817add260fe1b2a896df7e09d49f0",
+    "complete": false,
+    "executionAuthority": "none",
+    "commandModeCount": 1,
+    "diagnosticCounts": {
+      "CLI_OPERATIONAL_RULE_UNRESOLVED": 23,
+      "TRANSITION_IMPLEMENTATION_ONLY_LEAF": 78,
+      "TRANSITION_INVENTORY_INCOMPLETE": 1,
+      "INVALID_REALISATION_BASIS": 5,
+      "LOCAL_CONSTRUCTION_REFUSED": 1,
+      "TRANSITION_EVALUATORS_UNAUTHENTICATED": 10,
+      "TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED": 1
+    }
+  },
+  "counts": {
+    "installed": 123,
+    "candidate": 119,
+    "union": 128,
+    "retained": 114,
+    "removed": 9,
+    "added": 5
+  },
+  "families": [
+    {
+      "id": "adapter/parser",
+      "lane": 1,
+      "dependencies": [
+        "Main command bridge/schema registration"
+      ],
+      "notes": "Zero remaining direct mapping diagnostics in candidate is not executable acceptance.",
+      "sourceScopes": [
+        {
+          "path": "src/cli.ts",
+          "candidateSha256": "sha256:83a8bdcb69a1c27f5afc9dc0b0ce8fa98fd246e46e152745712a027c1013947d",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        },
+        {
+          "path": "src/commands/canonical-parser-contracts.ts",
+          "candidateSha256": "sha256:1838a9a8de63bf2a42e13f2488f49053258496945f6c96025a8cf2fb020c2bb4",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        },
+        {
+          "path": "src/commands/resolve.ts",
+          "candidateSha256": "sha256:5fb8dbf4f39d5a7a139068c6916892815696cf87a5c36452b5e34d08bfc46ae0",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        },
+        {
+          "path": "src/commands/apply.ts",
+          "candidateSha256": "sha256:aea4584051bb0d63ea99d31248b16cdbfe8b8bc8f7faa6a45f4b7b3ec93930d1",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        }
+      ],
+      "installedCount": 9,
+      "candidateCount": 0
+    },
+    {
+      "id": "evaluator/basis",
+      "lane": 2,
+      "dependencies": [
+        "current selected construction authority",
+        "effect/recovery readonly native APIs",
+        "Main operationalSupport field binding"
+      ],
+      "notes": "Do not repair authority by code or weaken invalid basis refusal. src/realisation/basis.ts is not currently write-admitted.",
+      "sourceScopes": [
+        {
+          "path": "src/commands/work-completion.ts",
+          "candidateSha256": "sha256:ac1584a8df72d6d3d8bb7fb40ef61af11f9e7fba07a10eb072075dd70f8da34f",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        },
+        {
+          "path": "src/collaboration/local-contribution.ts",
+          "candidateSha256": "sha256:9acd70c98d43431df986318d15d91716efc4137f168aac13d1cbe12b839b9bf5",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        }
+      ],
+      "installedCount": 20,
+      "candidateCount": 20
+    },
+    {
+      "id": "effect/recovery",
+      "lane": 3,
+      "dependencies": [
+        "evaluator/basis inputs",
+        "terminal exact result currentness"
+      ],
+      "notes": "Outer regression selection/observation prerequisite remains in this existing family; no invented emitted diagnostic or new executor.",
+      "sourceScopes": [
+        {
+          "path": "src/commands/check.ts",
+          "candidateSha256": "sha256:8352fe42e18ccb884766b3ff3ea5bb3a2fcea67d94bd83bc8bce0071d5592a1e",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        },
+        {
+          "path": "src/realisation/index.ts",
+          "candidateSha256": "sha256:37c7a0c2091ceaa343c8f1a35fee548845a474e9a0ddcfc07b90d1bf9d903c97",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        },
+        {
+          "path": "src/realisation/transition.ts",
+          "candidateSha256": "sha256:ede97578ee68fb755f8f297d5d9fa9b02f48886c26169970059cc7f20c8dcd28",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        }
+      ],
+      "installedCount": 9,
+      "candidateCount": 9
+    },
+    {
+      "id": "parallel-auth",
+      "lane": 4,
+      "dependencies": [
+        "evaluator/basis",
+        "effect/recovery",
+        "exact scope/resource conflict denominator"
+      ],
+      "notes": "Shared kernel implementation remains Main-owned; runtime parallel safety stays unproven.",
+      "sourceScopes": [],
+      "installedCount": 10,
+      "candidateCount": 10
+    },
+    {
+      "id": "inventory",
+      "lane": 5,
+      "dependencies": [
+        "adapter/parser immutable selectors",
+        "Main graph kernel inventory ingestion",
+        "graph-owned required circuit classification"
+      ],
+      "notes": "Inventory aggregate is a rollup, not a separate work item. No blanket exclusion of required Linear/Hermes leaves.",
+      "sourceScopes": [
+        {
+          "path": "src/commands/help.ts",
+          "candidateSha256": "sha256:5efa0f54a6dd47541f0ef56900a3218904c06ac0de6ab96bf265ac6dc6f2af63",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        },
+        {
+          "path": "src/commands/dispatcher.ts",
+          "candidateSha256": "sha256:a6619da1f686a0753c581b536f7aafae51f012ec8dfa7a62f313a2aafd52d82a",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        }
+      ],
+      "installedCount": 74,
+      "candidateCount": 79
+    },
+    {
+      "id": "terminal",
+      "lane": 6,
+      "dependencies": [
+        "evaluator/basis",
+        "effect/recovery",
+        "exact branch proof/artifact readback"
+      ],
+      "notes": "Shared command and graph bridge changes are serialized through Main.",
+      "sourceScopes": [
+        {
+          "path": "src/realisation/work-completion.ts",
+          "candidateSha256": "sha256:77db34a58c26b31e952c6a9627aa085ae181cad7f6777b6b24f63e29a6e06ade",
+          "workWritePath": true,
+          "contractPermitsWrite": true
+        }
+      ],
+      "installedCount": 1,
+      "candidateCount": 1
+    }
+  ],
+  "diagnostics": [
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:artifact-authentication-rule:1",
+        "field": "authenticationRule"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:artifact-basis-rule:1",
+        "field": "basisRule"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:artifact-digest-rule:1",
+        "field": "digestRule"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:effect-guard-rule:1",
+        "field": "guardRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:effect-readback-rule:1",
+        "field": "readbackRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:effect-safety-rule:1",
+        "field": "safetyRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:effect-scope-rule:1",
+        "field": "scopeRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-basis-currentness-rule:1",
+        "field": "currentnessRule"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-basis-realisation-basis:1",
+        "field": "realisationBasis"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-basis-resource-digest:1",
+        "field": "resourceDigest"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-basis-scope-digest:1",
+        "field": "scopeDigest"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-basis-semantic-digest:1",
+        "field": "semanticDigest"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-basis-verification-evidence:1",
+        "field": "verificationEvidence"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-basis-verifier:1",
+        "field": "verifier"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-pair-evidence:1",
+        "field": "evidence"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-proved-basis:1",
+        "field": "basis"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:field-parallel-safety-proved-pairs:1",
+        "field": "pairs"
+      },
+      "owner": "parallel-auth",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:input-derivation-rule:1",
+        "field": "derivationRule"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:recovery-boundary-rule:1",
+        "field": "boundaryRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:recovery-intent-rule:1",
+        "field": "intentRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:recovery-reconciliation-rule:1",
+        "field": "reconciliationRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:recovery-terminal-proof-rule:1",
+        "field": "terminalProofRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic",
+      "feeds": [
+        "terminal"
+      ]
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_OPERATIONAL_RULE_UNRESOLVED",
+        "subject": "urn:usf:cli-field-specification:recovery-unknown-outcome-rule:1",
+        "field": "unknownOutcomeRule"
+      },
+      "owner": "effect/recovery",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_PARSER_SOURCE_MISSING",
+        "subject": "urn:usf:cli-canonical-parser-contract:check-diagnose:1",
+        "field": "parserExport"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_PARSER_SOURCE_MISSING",
+        "subject": "urn:usf:cli-canonical-parser-contract:ordinary-apply:1",
+        "field": "parserExport"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_PARSER_SOURCE_MISSING",
+        "subject": "urn:usf:cli-canonical-parser-contract:ordinary-check:1",
+        "field": "parserExport"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_PARSER_SOURCE_MISSING",
+        "subject": "urn:usf:cli-canonical-parser-contract:ordinary-integrate:1",
+        "field": "parserExport"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "CLI_PARSER_SOURCE_MISSING",
+        "subject": "urn:usf:cli-canonical-parser-contract:ordinary-resolve:1",
+        "field": "parserExport"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "INVALID_REALISATION_BASIS",
+        "subject": "urn:usf:cli-transition:completion-check-receipts:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "INVALID_REALISATION_BASIS",
+        "subject": "urn:usf:cli-transition:completion-evidence:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "INVALID_REALISATION_BASIS",
+        "subject": "urn:usf:cli-transition:completion-proof:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "INVALID_REALISATION_BASIS",
+        "subject": "urn:usf:cli-transition:completion-publication:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "INVALID_REALISATION_BASIS",
+        "subject": "urn:usf:cli-transition:no-change-workspace:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "LOCAL_CONSTRUCTION_REFUSED",
+        "subject": "urn:usf:cli-transition:local-contribution-prepare:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_ADAPTER_UNMAPPED",
+        "subject": "urn:usf:cli-transition:ordinary-apply:1",
+        "field": "adapter"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_ADAPTER_UNMAPPED",
+        "subject": "urn:usf:cli-transition:ordinary-check:1",
+        "field": "adapter"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_ADAPTER_UNMAPPED",
+        "subject": "urn:usf:cli-transition:ordinary-integrate:1",
+        "field": "adapter"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_ADAPTER_UNMAPPED",
+        "subject": "urn:usf:cli-transition:ordinary-resolve:1",
+        "field": "adapter"
+      },
+      "owner": "adapter/parser",
+      "presence": "installed-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:completion-check-receipts:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:completion-evidence:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:completion-proof:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:completion-publication:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:local-contribution-prepare:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:no-change-workspace:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:ordinary-apply:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:ordinary-check:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:ordinary-integrate:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_EVALUATORS_UNAUTHENTICATED",
+        "subject": "urn:usf:cli-transition:ordinary-resolve:1",
+        "field": "operationalRules"
+      },
+      "owner": "evaluator/basis",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"apply\",\"ordinary\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "candidate-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"apply\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"bootstrap-carrier\",\"adopt\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"bootstrap-carrier\",\"verify\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"bootstrap-carrier\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"call\",\"compare\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"call\",\"parallel\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"call\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"check\",\"diagnose\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "candidate-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"check\",\"ordinary\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "candidate-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"check\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"doctor\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"drift\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"evidence\",\"completion\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"evidence\",\"construction\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"evidence\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"execute\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"graph\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"help\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"hermes\",\"steward\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"hermes\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"init\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"integrate\",\"ordinary\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "candidate-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"integrate\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"linear-binding\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"cache\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"concurrency\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"failures\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"models\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"providers\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"record\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"runs\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"summary\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\",\"tokens\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"metrics\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"models\",\"list\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"models\",\"refresh\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"models\",\"summary\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"models\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"observe\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"probe\",\"availability\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"probe\",\"semantic\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"probe\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"profile\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"prove\",\"completion\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"prove\",\"construction\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"prove\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"aliases\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"census\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"host\",\"census\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"host\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"receipt\",\"acquire\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"receipt\",\"verify\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"receipt\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\",\"status\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"providers\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"publish\",\"bootstrap-transition\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"publish\",\"construction-authority\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"publish\",\"work-completion\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"publish\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"query\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"realise\",\"no-change\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"realise\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"resolve\",\"ordinary\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "candidate-only",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"resolve\",\"prepare-local\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"resolve\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"review\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"route\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"start\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"status\",\"lifecycle\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"status\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"stop\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"transact\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"transition\",\"inspect\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"transition\",\"schema\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"transition\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"watch\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_IMPLEMENTATION_ONLY_LEAF",
+        "subject": "[\"work\"]",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_INVENTORY_INCOMPLETE",
+        "subject": "urn:usf:work:cli-transition-definition",
+        "field": "inventory"
+      },
+      "owner": "inventory",
+      "presence": "both",
+      "aggregate": true,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    },
+    {
+      "key": {
+        "reasonCode": "TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED",
+        "subject": "urn:usf:work:cli-transition-definition",
+        "field": "terminalArtifact/recovery"
+      },
+      "owner": "terminal",
+      "presence": "both",
+      "aggregate": false,
+      "separateWorkItem": false,
+      "observationKind": "diagnostic"
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "NativePreflightFact",
+      "path": "src/commands/work-completion.ts",
+      "sourceSha256": "sha256:ac1584a8df72d6d3d8bb7fb40ef61af11f9e7fba07a10eb072075dd70f8da34f",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    },
+    {
+      "name": "NativePreflightUnavailable",
+      "path": "src/commands/work-completion.ts",
+      "sourceSha256": "sha256:ac1584a8df72d6d3d8bb7fb40ef61af11f9e7fba07a10eb072075dd70f8da34f",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    },
+    {
+      "name": "NativeOperationalPreflight",
+      "path": "src/commands/work-completion.ts",
+      "sourceSha256": "sha256:ac1584a8df72d6d3d8bb7fb40ef61af11f9e7fba07a10eb072075dd70f8da34f",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    },
+    {
+      "name": "AuthenticatedCliTransitionSchemaModule",
+      "path": "src/graph/cli-transitions.ts",
+      "sourceSha256": "sha256:349709894a397b5d63f33628f48ee4c38b1bfe3a2dd360b7ea3b8600d0afa24d",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    },
+    {
+      "name": "CliTransitionSchemaModules",
+      "path": "src/graph/cli-transitions.ts",
+      "sourceSha256": "sha256:349709894a397b5d63f33628f48ee4c38b1bfe3a2dd360b7ea3b8600d0afa24d",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    },
+    {
+      "name": "CliFieldDerivation",
+      "path": "src/graph/cli-transitions.ts",
+      "sourceSha256": "sha256:349709894a397b5d63f33628f48ee4c38b1bfe3a2dd360b7ea3b8600d0afa24d",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    },
+    {
+      "name": "CliTransitionAdapter",
+      "path": "src/graph/cli-transitions.ts",
+      "sourceSha256": "sha256:349709894a397b5d63f33628f48ee4c38b1bfe3a2dd360b7ea3b8600d0afa24d",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    },
+    {
+      "name": "CliOperationalSupport",
+      "path": "src/graph/cli-transitions.ts",
+      "sourceSha256": "sha256:349709894a397b5d63f33628f48ee4c38b1bfe3a2dd360b7ea3b8600d0afa24d",
+      "identityBoundary": "Exact exported symbol in digest-bound source; declaration text intentionally omitted."
+    }
+  ],
+  "mainSerialized": {
+    "sourceFiles": [
+      {
+        "path": "src/graph/cli-transitions.ts",
+        "candidateSha256": "sha256:349709894a397b5d63f33628f48ee4c38b1bfe3a2dd360b7ea3b8600d0afa24d"
+      },
+      {
+        "path": "src/commands/transition.ts",
+        "candidateSha256": "sha256:6fd7240094287423cf02eae54338e8a434a8285deb63621ce9948b235a5a59f2"
+      },
+      {
+        "path": "src/graph/work.ts",
+        "candidateSha256": "sha256:01a87ee4a9d34fa56a10dc66b962607e27955c5f060e6bed44fccbde721d1d6f"
+      },
+      {
+        "path": "src/schema/index.ts",
+        "candidateSha256": "sha256:609432280ee50ddd2ce7d17da4db7f20c30d0f3573880f92a0cdf6e1be629dd8"
+      }
+    ],
+    "semanticFiles": "All graph/schema changes",
+    "tests": "Existing shared transition/coverage tests remain Main-serialized until explicit disjoint test ownership"
+  },
+  "ambiguities": [
+    {
+      "kind": "cause-not-authenticated",
+      "owner": "evaluator/basis",
+      "detail": "Invalid basis and construction refusal keys do not identify which authority input is stale; no code-fix presumption."
+    },
+    {
+      "kind": "inventory-not-complete",
+      "owner": "inventory",
+      "detail": "78 candidate leaf diagnostics include registered selectors; emitted mechanically, not 78 missing implementations. Aggregate is rollup only."
+    },
+    {
+      "kind": "shared-file-write-boundary",
+      "owner": "Main",
+      "detail": "Adapter bridge, generic kernel, shared graph work currentness and schema validator are serialized. Family ownership is not authorization to cross these paths."
+    },
+    {
+      "kind": "unrepresented-prerequisite",
+      "owner": "effect/recovery",
+      "detail": "Authenticated selection/consumption of existing authorized outer regression outcomes is not emitted by frontier; track under current diagnostic acceptance, not a seventh family."
+    }
+  ],
+  "unassignableDiagnosticKeys": [],
+  "nonclaims": {
+    "executionAuthority": "none",
+    "parallelSafety": "unproven",
+    "complete": false,
+    "acceptanceDenominatorComplete": false,
+    "sourceDispatchAuthorizedByThisArtifact": false
+  },
+  "predecessor": {
+    "path": ".usf/inputs/usf1192-six-family-census/diagnostic-family-map.json",
+    "sha256": "fca06510b4faef0eeeae49ff109464292518500654a047f162a43be80a67bc1e"
+  }
+}

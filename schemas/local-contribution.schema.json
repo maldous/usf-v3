@@ -73,7 +73,7 @@
                   },
                   "content": {
                     "type": "string",
-                    "maxLength": 1048576
+                    "maxLength": 5242880
                   },
                   "encoding": {
                     "enum": [

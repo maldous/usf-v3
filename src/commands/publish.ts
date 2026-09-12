@@ -529,7 +529,7 @@ function runFocusedValidations(root: string, shadow: string, graph: SemanticGrap
       for (const testToken of testTokens) exactContainedPath(shadow, repositoryPath(testToken, "PUBLISH_VALIDATION_PATH_INVALID"), true);
       const launch = confinedNodeTestLaunch(shadow, scratch, [resolve(root, "node_modules"), resolve(root, ".usf/cache")], commandTokens);
       if (launch === null) refuse("PUBLISH_VALIDATION_COMMAND_REFUSED", "Focused validation confinement is unavailable for the exact graph command.", exitCodes.CONTAINMENT_REFUSAL);
-      const result = spawnSync(launch.executable, launch.arguments, { cwd: shadow, env: {}, encoding: "utf8", timeout: 120_000, maxBuffer: 4 * 1024 * 1024 });
+      const result = spawnSync(launch.executable, launch.arguments, { cwd: shadow, env: {}, encoding: "utf8", timeout: 300_000, maxBuffer: 4 * 1024 * 1024 });
       if (result.error || result.status !== 0 || result.signal !== null) refuse("PUBLISH_FOCUSED_VALIDATION_FAILED", `Graph-declared focused validation ${id} did not pass.`);
       const resultDigest = canonicalDigest({ id, command, outcome: "pass" });
       return Object.freeze({ id, command, outcome: "pass" as const, resultDigest });

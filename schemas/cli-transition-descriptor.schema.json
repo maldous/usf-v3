@@ -414,6 +414,13 @@
           "type": "array",
           "uniqueItems": true
         },
+        "resultFieldSpecification": {
+          "description": "Exact field-specification identity locating this artifact payload in its producer success result. No inferred property-name or schema-name matching.",
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+          "type": "string"
+        },
         "schema": {
           "description": "Exact artifact schema/version selected from graph authority.",
           "maxLength": 4096,
@@ -828,7 +835,7 @@
           "type": "string"
         },
         "operations": {
-          "description": "Genuinely external proposed file bytes/deletions; at most 64 operations and 1048576 aggregate UTF-8 transport bytes, validated before any output.",
+          "description": "Genuinely external proposed file bytes/deletions; at most 64 operations and 5242880 aggregate UTF-8 transport bytes, validated before any output.",
           "items": {
             "$ref": "#/$defs/localPreparationOperation"
           },
@@ -857,7 +864,7 @@
       "properties": {
         "content": {
           "description": "Exact proposed text or canonical base64 bytes; empty content is permitted. Aggregate transport-byte limit is enforced by input derivation.",
-          "maxLength": 1048576,
+          "maxLength": 5242880,
           "minLength": 0,
           "type": "string"
         },
@@ -1367,6 +1374,10 @@
     "ordinaryEffectSuccess": {
       "additionalProperties": false,
       "properties": {
+        "appliedWorkspace": {
+          "$ref": "#/$defs/ordinaryAppliedWorkspaceReference",
+          "description": "Optional in the shared result shape, required exactly when the selected producer declares this payload binding. Native authentication and reference agreement remain mandatory."
+        },
         "artifacts": {
           "description": "Typed structural field; authenticating the native rule remains separately required.",
           "items": {
@@ -1382,6 +1393,10 @@
           "maxLength": 4096,
           "minLength": 1,
           "type": "string"
+        },
+        "checkedSet": {
+          "$ref": "#/$defs/ordinaryCheckedSetReference",
+          "description": "Optional in the shared result shape, required exactly when the selected producer declares this payload binding. Native authentication and reference agreement remain mandatory."
         },
         "currentBasisDigest": {
           "description": "Typed structural field; authenticating the native rule remains separately required.",

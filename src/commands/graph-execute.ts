@@ -74,7 +74,10 @@ const hardMaximumConcurrency = 16;
 // Measured against real routes: a model still silent at this point is not the
 // productive one, and eight attempts at four minutes each would let one work
 // unit consume an entire operating cycle.
-const invocationTimeoutMs = 150_000;
+// Keep the local SDK invocation floor aligned with the five-minute BAU
+// execution minimum; measured-route headroom and the absolute ceiling still
+// bound unusually slow or runaway work.
+const invocationTimeoutMs = 300_000;
 const hostAgentTimeoutFloorMs = 420_000;
 const invocationTimeoutCeilingMs = 600_000;
 // Graph executions may overlap in one supervisor process. Keep dispatch fully

@@ -16,8 +16,8 @@ import { classifySubtests, type CapabilityImplementationNeed } from "./implement
  * environment -- and records what each facet-named subtest returned. It records
  * outcomes only; turning an outcome into a verdict remains the evaluator's job.
  */
-const conformanceTimeoutMs = 120_000;
-const typecheckTimeoutMs = 180_000;
+const conformanceTimeoutMs = 300_000;
+const typecheckTimeoutMs = 300_000;
 const maximumCapturedBytes = 16_000;
 
 export interface FacetConformanceOutcome {

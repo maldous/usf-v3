@@ -5,6 +5,7 @@ type Disposition = "unknown" | "accepted" | "failed-validation" | "provider-fail
 type Provenance = { identity: string; contentDigest: string; producerIdentity: string };
 type Tokens = { value: number | null; provenance: Provenance | null };
 type Duration = { valueNanoseconds: number | null; provenance: Provenance | null };
+const MAX_FEEDBACK_INPUT_CHARACTERS = 5_000_000;
 export interface FeedbackContext {
   identity: string; contentDigest: string; contentClass: string; provenanceIdentity: string;
   sourceName: string; sourceDigest: string; importVersion: string;
@@ -43,7 +44,7 @@ function snapshot<T>(input: T): T {
     if (++nodes > 100_000 || depth > 24) refuse("INPUT_BOUND");
     if (typeof value === "string") {
       characters += value.length;
-      if (characters > 2_000_000) refuse("INPUT_BOUND");
+      if (characters > MAX_FEEDBACK_INPUT_CHARACTERS) refuse("INPUT_BOUND");
       return value;
     }
     if (value === null || typeof value === "boolean") return value;

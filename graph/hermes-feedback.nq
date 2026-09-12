@@ -34,6 +34,7 @@
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:hermes-feedback> <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-feedback-context-provenance> <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-feedback-measurement-boundary> <urn:usf:graph:hermes-feedback> .
+<urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-feedback-input-capacity> <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-feedback-observation-identity> <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-feedback-repeated-evidence> <urn:usf:graph:hermes-feedback> .
 <urn:usf:contract:hermes-feedback:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-feedback-settled-result-join> <urn:usf:graph:hermes-feedback> .
@@ -183,6 +184,11 @@
 <urn:usf:requirement:hermes-feedback-measurement-boundary> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:hermes-feedback> .
 <urn:usf:requirement:hermes-feedback-measurement-boundary> <urn:usf:predicate:text> "Compute only monotonic observed phase-wall duration from supplied non-negative offsets in one declared clock instance/domain. It is not queue time, model-active time, CPU time, provider latency, total elapsed time or accepted-progress duration. Queue/model-active durations and input/output tokens are either known nonnegative values with explicit producer provenance or null with null provenance; never synthesize them from UTC, lifecycle records or historical summaries. Raw provider outcome is distinct from semantic disposition." <urn:usf:graph:hermes-feedback> .
 <urn:usf:requirement:hermes-feedback-measurement-boundary> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-feedback> .
+<urn:usf:requirement:hermes-feedback-input-capacity> <urn:usf:predicate:canonicalName> "hermes-feedback-input-capacity" <urn:usf:graph:hermes-feedback> .
+<urn:usf:requirement:hermes-feedback-input-capacity> <urn:usf:predicate:maximumCharacters> "5000000" <urn:usf:graph:hermes-feedback> .
+<urn:usf:requirement:hermes-feedback-input-capacity> <urn:usf:predicate:text> "Snapshot plain JSON feedback inputs with a fixed maximum of 5000000 aggregate string characters before schema validation; reject inputs beyond this bound without invoking accessors, canonicalization or lifecycle effects. This generic observation bound is independent of Atlas-specific output ceilings." <urn:usf:graph:hermes-feedback> .
+<urn:usf:requirement:hermes-feedback-input-capacity> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-feedback> .
+<urn:usf:predicate:maximumCharacters> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:hermes-feedback> .
 <urn:usf:requirement:hermes-feedback-observation-identity> <urn:usf:predicate:canonicalName> "hermes-feedback-observation-identity" <urn:usf:graph:hermes-feedback> .
 <urn:usf:requirement:hermes-feedback-observation-identity> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:hermes-feedback> .
 <urn:usf:requirement:hermes-feedback-observation-identity> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:hermes-feedback> .

@@ -100,7 +100,7 @@
 <urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureExecutable> <urn:usf:host-tool:fixture-flock:1> <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureExecutable> <urn:usf:host-tool:fixture-git:1> <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureExecutable> <urn:usf:host-tool:fixture-node:1> <urn:usf:graph:fixture-process-validation> .
-<urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureInterpreterDigest> "sha256:1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118" <urn:usf:graph:fixture-process-validation> .
+<urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureInterpreterDigest> "sha256:e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureInterpreterPath> "/usr/bin/python3.12" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureLauncherPath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:1> <urn:usf:predicate:fixtureProfileAssetDigest> "sha256:988f9e499b1678f6f723a987c1dda62c8ddbcb821c243e07596c0db80b5a774b" <urn:usf:graph:fixture-process-validation> .
@@ -114,7 +114,7 @@
 <urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureExecutable> <urn:usf:host-tool:fixture-flock:1> <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureExecutable> <urn:usf:host-tool:fixture-git:1> <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureExecutable> <urn:usf:host-tool:fixture-node:1> <urn:usf:graph:fixture-process-validation> .
-<urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureInterpreterDigest> "sha256:1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118" <urn:usf:graph:fixture-process-validation> .
+<urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureInterpreterDigest> "sha256:e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureInterpreterPath> "/usr/bin/python3.12" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureLauncherPath> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:fixture-process-validation> .
 <urn:usf:mode:confined-fixture-process:2> <urn:usf:predicate:fixtureProfileAssetDigest> "sha256:988f9e499b1678f6f723a987c1dda62c8ddbcb821c243e07596c0db80b5a774b" <urn:usf:graph:fixture-process-validation> .

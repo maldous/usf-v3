@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
 const generator = "scripts/derive-anqr-architecture-rules.mjs";
 const experienceGenerator = "scripts/derive-anqr-experience.mjs";
+const localeGenerator = "scripts/derive-anqr-locales.mjs";
 
 /**
  * ANQR enforces its architecture from a rules file projected out of this graph.
@@ -28,6 +29,17 @@ function productRulesPath(): string | null {
   // Sibling checkout by convention, which is how the operator maps it locally.
   const candidate = resolve(repositoryRoot, "../anqr/packages/architecture/rules.json");
   return existsSync(candidate) ? candidate : null;
+}
+
+function productLocalesPath(): string | null {
+  const candidate = resolve(repositoryRoot, "../anqr/packages/architecture/locales.json");
+  return existsSync(candidate) ? candidate : null;
+}
+
+function deriveLocales(): string {
+  return execFileSync(process.execPath, [localeGenerator], {
+    cwd: repositoryRoot, encoding: "utf8", maxBuffer: 1 << 28,
+  });
 }
 
 function productExperiencePath(): string | null {
@@ -216,4 +228,35 @@ test("planted: experience authority drift is detected, and the graph wins", (con
   } finally {
     writeFileSync(source, graphBytes);
   }
+});
+
+/**
+ * The locale registry is the claimed language denominator projected out of the
+ * graph. It fails in both directions for the same reasons the rules projection
+ * does, and additionally asserts the denominator itself: a registry that has
+ * quietly lost locales still round-trips, so the count and the reference are
+ * checked against the graph's own declaration rather than against the file.
+ */
+test("ANQR's locale registry equals a fresh derivation from the graph", () => {
+  const target = productLocalesPath();
+  const derived = deriveLocales();
+  const registry = JSON.parse(derived) as {
+    referenceCode: string; localeCount: number; rightToLeftCount: number;
+    locales: readonly { code: string; direction: string; reference: boolean }[];
+  };
+  assert.equal(registry.referenceCode, "en-GB", "the graph names en-GB as the parity reference");
+  assert.equal(registry.locales.length, registry.localeCount);
+  assert.equal(registry.localeCount, 86, "the declared denominator is 86 claimed locales");
+  assert.equal(registry.rightToLeftCount, 7, "seven of them are written right to left");
+  assert.equal(registry.locales.filter((locale) => locale.reference).length, 1);
+  assert.deepEqual([...new Set(registry.locales.map((locale) => locale.code))].length, registry.locales.length,
+    "no locale code appears twice");
+  if (target === null) {
+    // Same disposition as the rules projection: absent product checkout skips
+    // with a stated reason rather than failing, so USF stays independently
+    // testable.
+    return;
+  }
+  assert.equal(readFileSync(target, "utf8"), derived,
+    "the committed locale registry must equal a fresh derivation; regenerate it rather than editing it");
 });

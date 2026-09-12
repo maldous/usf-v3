@@ -1085,7 +1085,7 @@ export async function runForegroundLifecycle(input: RunForegroundLifecycleInput)
   const minimumMs = input.idleBackoff?.minimumMs ?? 100;
   const maximumMs = input.idleBackoff?.maximumMs ?? 1_000;
   const cycleTimeoutMs = input.cycleTimeoutMs ?? 600_000;
-  const drainTimeoutMs = input.drainTimeoutMs ?? 5_000;
+  const drainTimeoutMs = input.drainTimeoutMs ?? 300_000;
   const stopPollMs = input.stopPollMs ?? 25;
   if (!Number.isSafeInteger(minimumMs) || !Number.isSafeInteger(maximumMs) || minimumMs < 10 || maximumMs < minimumMs || maximumMs > 60_000) {
     throw lifecycleError("LIFECYCLE_BACKOFF_INVALID", exitCodes.INVALID_INPUT, "Lifecycle idle backoff is outside its bounded range.");

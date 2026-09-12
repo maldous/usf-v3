@@ -6,7 +6,7 @@ import { canonicalJson } from "../core/canonical.ts";
 
 const STATE_SCHEMA = "urn:usf:hermes-linear-state:1";
 const STATE_VERSION = 1;
-const MAX_STATE_BYTES = 2 * 1024 * 1024;
+const MAX_STATE_BYTES = 5 * 1024 * 1024;
 const MAX_INTENTS = 512;
 const MAX_HISTORY = 2048;
 const MAX_PROGRESS = 512;

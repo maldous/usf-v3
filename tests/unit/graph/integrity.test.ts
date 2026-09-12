@@ -33,10 +33,12 @@ test("selected production CLI record specifications satisfy complete graph integ
   const sourceTypeRows = selectedGraph.quads.filter(quad => recordSpecifications.has(quad.subject) && quad.predicate === P + "sourceType" && quad.objectKind === "iri");
   assert(sourceTypeRows.length > 0);
   const sourceTypes = new Set(sourceTypeRows.map(quad => quad.object));
-  const operationalFields = new Set(selectedGraph.quads.filter(quad => quad.subject.startsWith("urn:usf:cli-field-specification:field-operational-support-")
+  // Operational-support records are selected through their separate schema
+  // module; this manifest owns the canonical field-specification population.
+  const fieldSpecifications = new Set(selectedGraph.quads.filter(quad => quad.subject.startsWith("urn:usf:cli-field-specification:")
     && quad.predicate === P + "type" && quad.objectKind === "iri" && quad.object === T + "CliFieldSpecification").map(quad => quad.subject));
-  assert(operationalFields.size > 0);
-  assert.deepEqual(report.violations.filter(violation => sourceTypes.has(violation.subject) || operationalFields.has(violation.subject)), []);
+  assert(fieldSpecifications.size > 0);
+  assert.deepEqual(report.violations.filter(violation => sourceTypes.has(violation.subject) || fieldSpecifications.has(violation.subject)), []);
 
   const missingType = structuredClone(selectedGraph);
   const sourceType = missingType.quads.find(quad => quad.subject === sourceTypeRows[0]!.subject && quad.predicate === P + "sourceType");
@@ -48,7 +50,7 @@ test("selected production CLI record specifications satisfy complete graph integ
     violation.code === "dangling-reference" && violation.subject === "urn:usf:type:MissingOperationalSupport:1"));
 
   const malformedIdentity = "urn:usf:cli-field-specification:field-integrity-badName:1";
-  const selectedField = selectedGraph.quads.find(quad => operationalFields.has(quad.subject)
+  const selectedField = selectedGraph.quads.find(quad => fieldSpecifications.has(quad.subject)
     && quad.predicate === P + "type" && quad.objectKind === "iri" && quad.object === T + "CliFieldSpecification");
   assert.ok(selectedField);
   const malformedField = structuredClone(selectedGraph);

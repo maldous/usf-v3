@@ -4,7 +4,7 @@ import { relative, resolve, sep } from "node:path";
 
 import { exitCodes, UsfError } from "../core/errors.ts";
 
-export const maximumCommandInputBytes = 4 * 1024 * 1024;
+export const maximumCommandInputBytes = 5 * 1024 * 1024;
 const inputPattern = /^\.usf\/inputs\/[^/\\\0]+\.json$/u;
 const readChunkBytes = 64 * 1024;
 

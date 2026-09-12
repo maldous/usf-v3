@@ -39,7 +39,14 @@ const bootstrapHandlers: CommandHandlers = {
     }
     return (await import("./commands/call.ts")).callCommandHandler(context);
   },
-  resolve: async (context) => (await import("./commands/resolve.ts")).resolveCommandHandler(context),
+  resolve: async (context) => {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:ordinary-resolve:1") {
+      const { executeTransitionCommand } = await import("./commands/transition.ts");
+      return executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract));
+    }
+    return (await import("./commands/resolve.ts")).resolveCommandHandler(context);
+  },
   realise: async (context) => {
     const parserContract = matchCanonicalParserContract(context.command, context.args);
     if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:realise-no-change:1") {
@@ -48,16 +55,38 @@ const bootstrapHandlers: CommandHandlers = {
     }
     return (await import("./commands/work-completion.ts")).realiseCommandHandler(context);
   },
-  apply: async (context) => (await import("./commands/apply.ts")).applyHandler(context),
+  apply: async (context) => {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:ordinary-apply:1") {
+      const { executeTransitionCommand } = await import("./commands/transition.ts");
+      return operationalMutation(context.repositoryRoot, () => executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract)));
+    }
+    return (await import("./commands/apply.ts")).applyHandler(context);
+  },
   check: async (context) => {
     const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:check-diagnose:1") {
+      const { completionDiagnosisCommandHandler } = await import("./commands/work-completion.ts");
+      return completionDiagnosisCommandHandler({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) });
+    }
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:ordinary-check:1") {
+      const { executeTransitionCommand } = await import("./commands/transition.ts");
+      return operationalMutation(context.repositoryRoot, () => executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract)));
+    }
     if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:check-input:1") {
       const { executeTransitionCommand } = await import("./commands/transition.ts");
       return executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract));
     }
     return (await import("./commands/apply.ts")).admissionCheckHandler(context);
   },
-  integrate: (context) => operationalMutation(context.repositoryRoot, async () => (await import("./commands/apply.ts")).integrateCommandHandler(context)),
+  integrate: async (context) => {
+    const parserContract = matchCanonicalParserContract(context.command, context.args);
+    if (parserContract?.identity === "urn:usf:cli-canonical-parser-contract:ordinary-integrate:1") {
+      const { executeTransitionCommand } = await import("./commands/transition.ts");
+      return operationalMutation(context.repositoryRoot, () => executeTransitionCommand({ ...context, args: forwardedCanonicalParserArgs(parserContract, context.args) }, canonicalParserCommandPath(parserContract)));
+    }
+    return operationalMutation(context.repositoryRoot, async () => (await import("./commands/apply.ts")).integrateCommandHandler(context));
+  },
   "bootstrap-carrier": async (context) => {
     const { bootstrapCarrierCommandHandler } = await import("./commands/bootstrap-carrier.ts");
     return context.args[0] === "adopt"

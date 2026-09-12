@@ -22,7 +22,7 @@ import type { CommandHandler } from "./dispatcher.ts";
 export interface ApplyInput { readonly candidate: CandidateSpec; }
 export type ApplyResult = { readonly status: "applied"; readonly basis: RealisationBasis; readonly workspace: string; readonly delta: readonly ByteDelta[] } | { readonly status: "refused"; readonly reasonCode: string };
 
-const maximumApplyInputBytes = 4 * 1024 * 1024;
+const maximumApplyInputBytes = 5 * 1024 * 1024;
 const digestPattern = /^sha256:[a-f0-9]{64}$/u;
 const ignoredInputPattern = /^\.usf\/inputs\/[A-Za-z0-9][A-Za-z0-9._-]{0,127}\.json$/u;
 const integrationGitOperations = new Set([

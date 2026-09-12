@@ -94,3 +94,42 @@ test("actual detached leader exit cannot leave descendant pipes holding validati
   assert(performance.now() - started < 5000, "bounded settlement precedes descendant failsafe");
   assert(child.stdout.destroyed && child.stderr.destroyed);
 });
+
+test("a startup timeout settles against an unresponsive child without inferring its death", async () => {
+  // The defect this issue was opened for was a startup-timeout race: the wall
+  // clock expires before the child has produced anything, and the child never
+  // answers a signal. Nothing may be inferred from successful delivery, so the
+  // observation records the signals actually sent, closes the handles it owns,
+  // and settles exactly once. A child that stays silent must not hold
+  // validation open, and must not be reported as having exited.
+  const fake = new ControlledChild();
+  const result = await observeIntegrationValidationChild(fake.child,
+    { ...timing, wallTimeMilliseconds: 5, terminationGraceMilliseconds: 5 });
+  assert.deepEqual(result, { exitCode: 1, withinLimit: true, timedOut: true, timeoutTerminationSignal: "SIGKILL" });
+  assert.deepEqual(fake.signals, ["SIGTERM", "SIGKILL"], "escalation is retained when nothing answers");
+  assert.equal(fake.unrefs, 1);
+  assert(fake.stdout.destroyed && fake.stderr.destroyed, "owned handles are closed at forced settlement");
+  assert.equal(fake.stdout.listenerCount("data"), 0);
+  // A late exit after forced settlement cannot settle a second time or revise
+  // the recorded timeout.
+  fake.emit("exit", 0); fake.emit("close", 0);
+  assert.equal(fake.unrefs, 1);
+});
+
+test("a startup timeout whose signal delivery fails reports no signal rather than a fabricated one", async () => {
+  // kill() returning false means the signal was never delivered. Recording
+  // SIGKILL anyway would invent signal evidence, which is the same class of
+  // error as inferring death from successful delivery -- just in the other
+  // direction. The observation must still settle rather than hang, must still
+  // close the handles it owns, and must report the timeout honestly with
+  // `timeoutTerminationSignal: "none"`, because no signal actually landed.
+  const fake = new ControlledChild();
+  fake.killResults.push(false, false);
+  const result = await observeIntegrationValidationChild(fake.child,
+    { ...timing, wallTimeMilliseconds: 5, terminationGraceMilliseconds: 5 });
+  assert.equal(result.timedOut, true, "an undeliverable signal does not make the timeout untrue");
+  assert.equal(result.timeoutTerminationSignal, "none", "no signal was delivered, so none is claimed");
+  assert.deepEqual(fake.signals, ["SIGTERM", "SIGKILL"], "escalation was still attempted in order");
+  assert(fake.stdout.destroyed && fake.stderr.destroyed);
+  assert.equal(fake.unrefs, 1);
+});

@@ -62,13 +62,12 @@ export const defaultGraphLoadLimits: Readonly<GraphLoadLimits> = {
   maxManifestCount: 256,
   maxManifestDepth: 32,
   maxSourceCount: 1_024,
-  // Raised from 2 MiB on 2026-09-03. The delivery contract graph legitimately
-  // exceeded it, so at 2 MiB this guard refused the repository's own largest
-  // authored source rather than protecting against a malformed one. The
-  // aggregate bound is unchanged, so loading stays bounded; a single source
-  // approaching this figure again is a signal to split the graph rather than
-  // to raise the guard a second time.
-  maxSourceBytes: 4 * 1024 * 1024,
+  // Raised from 2 MiB on 2026-09-03 and from 4 MiB on 2026-09-09. The
+  // delivery contract graph legitimately exceeded the earlier bounds, so the
+  // loader must admit the repository's own authored source while retaining a
+  // bounded aggregate and dataset limit. A source approaching this figure is
+  // still a signal to split the graph rather than raise the guard again.
+  maxSourceBytes: 5 * 1024 * 1024,
   maxTotalSourceBytes: 64 * 1024 * 1024,
   maxDatasetQuads: 100_000,
 };

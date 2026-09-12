@@ -3784,6 +3784,48 @@ integration-test environment is not instantiated, and staging and production
 are unbound. Production-ready is not production-deployed, and neither is
 claimed.
 
+Using the current source module against the retained clean fixture, governed
+completion publication applied successfully in 48.898s. The result was
+`publicationState=created`, intent
+`sha256:46f17a42ab4e2f5c68002ac1327bb6bf21197e1d427bc7f750554d7156dd9618`,
+receipt digest
+`sha256:aaf3cd09e17f4ef4090675538d05dae08dc4c02f3f34df50638e48e4ec4d8c45`,
+and resulting semantic digest
+`sha256:f3d7d8a7af29c6c96a648ae7722766e65bbede1b20eae34288e403bad3924482`.
+Apply replay and verify both returned `matching` with the same receipt digest.
+Native terminal evaluation then returned one accepted
+`urn:usf:cli-contract:completion-publication-artifact:1` under evaluator
+digest `sha256:b9c8fd3a8e648ecb1ddb6e1bbdca0d4e536ebfeffdfd8f204a38287370b0ea3d`.
+This is isolated-fixture publication and replay evidence only; full-gate,
+primary-repository integration, Linear readback, and USF-1192 completion
+remain open.
+
+Retained-fixture terminal interrogation is explicit: the native evaluator
+returned no authenticated artifacts; ordinary completion is `missing` with
+`TERMINAL_BRANCH_ARTIFACT_MISSING` and `TERMINAL_BRANCH_PROOF_MISSING`, while
+ordinary construction is `unknown` with `TERMINAL_BRANCH_INPUT_MISSING`.
+The evaluator rule itself authenticated, so this is a genuine missing
+publication/terminal artifact boundary rather than a check-seed refusal.
+
+The latest clean fixture retained all five pass receipts after the 1200-second
+producer observation timed out. A bounded replay of only the retained current
+state returned `current` in 298.361s and persisted a complete five-member seed
+with `receiptSetDigest=sha256:2778a628e54970e566b6771f3368a9eedd78ba09b248989b5fe2ad97cf518d5e`.
+No validation launch occurred during that replay and no process remains. This
+proves durable parent settlement from retained receipts, but not that the
+original clean integration test completed within its outer bound; zero-launch
+proof/lineage consumer evidence and a clean accepted producer run remain open.
+
+The clean producer was retried once after the parent reconciliation and work /
+runtime binding repairs. It reached the 1200-second outer bound and exited
+124 with no accepted seed, publication, or effect. The retained fixture
+replay remains the strongest positive evidence: `prepareCompletionChecks`
+returned `current` in 295.169s and persisted the authenticated five-member
+seed above. No child process remains. Do not repeat the clean producer without
+first reducing or instrumenting the end-to-end runtime/settlement path; do not
+widen the semantic check bound or treat retained-fixture state as clean-clone
+evidence.
+
 ### The first experience is a chain, not a screen
 
 `semantic capability → experience intent → Future Use Pattern → product
@@ -5314,3 +5356,1987 @@ frontier; do not reopen timeout tuning or repeat the unchanged full gate.
   `e2f6e23b399268910ef4311d9` remains the live/healthy controller and no
   stewardship, provider, validation, publication, or integration child is
   active. Do not restart the unchanged full gate merely for confidence.
+# 2026-09-10 cache/receipt diagnostic checkpoint
+
+Current branch remains `anqr-experience-realisation` at `3082480`, with the
+USF-1192 candidate intentionally dirty and no child validation process,
+integration lock or Hermes child left running. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live/idle; this is not completion evidence.
+
+The settled full gate remains failed with `ORDINARY_TESTS_FAILED`. The prior
+publication/terminal failures first exposed `SCHEMA_REF_UNRESOLVED` from the
+graph-selected publication snapshot descriptor. A two-run bounded repair
+experiment resolved that descriptor reference, then exposed
+`CHECK_RECEIPT_INVALID` after adding descriptor/module schemas to the
+completion policy dependency set. Those policy additions were reverted because
+they changed completion authority/currentness and invalidated retained check
+receipts. No publication or semantic mutation was accepted by either run.
+
+The accepted design boundary is now recorded in Version 8 of
+`docs/context/usf-operator-context.md`: publication snapshot external schemas
+must be derived from graph-selected schema identities separately from the
+completion receipt-authority set. The CLI help documents bounded
+`diagnosticDetails.mismatchedClaims` for future receipt-currentness failures.
+The implementation currently adds only that claim-name diagnostic; it has not
+been admitted by the full gate.
+
+Focused evidence after the guidance/config digest update: Hermes feedback
+27/27 pass; CLI contract 5/5 pass; TypeScript no-emit and `git diff --check`
+pass. The canonical terminal integration test reached real publication after
+approximately 26 minutes but refused on `CHECK_RECEIPT_INVALID`; do not rerun
+unchanged. The next executable transition is to add a graph-derived snapshot
+schema dependency closure without changing completion receipt authority, then
+run a narrow producer-to-reader receipt test before any full gate. A governed
+result cache remains follow-on work: cache only exact deterministic validation
+results, and reauthenticate currentness/recovery before accepting a hit.
+
+# 2026-09-10 graph-derived snapshot closure candidate
+
+The source candidate now derives publication snapshot external schema paths by
+walking graph-owned `schemaIdentity` and `repositoryPath` records from the
+selected descriptor `$ref` closure. Ambiguous, missing, malformed or unreadable
+dependencies refuse before schema validation. The completion policy's six
+schema paths and check-receipt authority remain unchanged, avoiding the earlier
+receipt-currentness regression. Snapshot construction includes the derived
+dependency bytes in its existing immutable input closure.
+
+Focused evidence: TypeScript no-emit and `git diff --check` pass; completion
+unit contracts 3/3 pass; Hermes feedback 27/27 pass; CLI contract 5/5 pass.
+Fresh installed `transition inspect` returned exit 1 with valid JSON,
+digest `sha256:d9527a879bb6ee8a52f5ce82f8038c3aa17d60a64139ada9fa45f72e4c9fbdae`,
+25 pre-construction diagnostics, `complete=false`,
+`executionAuthority=none`, and `parallelSafety.state=unproven`. No publication,
+provider dispatch, integration or full-gate result is claimed. The long
+canonical publication test has not been rerun after this source-only repair;
+the next bounded test is its producer-to-reader snapshot/receipt path.
+
+# 2026-09-10 closure test readback
+
+The targeted unsupported-schema refusal regression passed 1/1 in 79.0s. The
+canonical terminal producer/reader test was then run once against the
+graph-derived closure; after approximately 25m55s it still refused before
+publication with `CHECK_RECEIPT_INVALID` and no publication mutation. The
+snapshot `$ref` resolution failure did not recur. The CLI now reports bounded
+`mismatchedClaims` for both currentness and execution-authority receipt claim
+comparisons, but the failing path has not yet been rerun after that diagnostic
+change. Typecheck, diff check, Hermes feedback 27/27 and CLI contract 5/5
+remain passing. Do not run the full gate; next action is one diagnostic-bearing
+receipt readback or a single canonical rerun once the mismatch is narrowed.
+
+The work-completion wrapper now preserves structured `CheckRefusal.details`
+instead of reducing every nested refusal to only its reason code. This is
+focused observability and does not authorize reuse. Correctly ordered focused
+tests pass 4/4; typecheck and diff check remain passing. The canonical long
+test has not been rerun after this wrapper change.
+# 2026-09-10 receipt-authority diagnostic and operator-skill checkpoint
+
+Current repository HEAD remains `30824803500db6a9b49b156df899a0338c315c47`; the
+working tree contains the accumulated unaccepted USF-1192 candidate and is not
+safe to stage as one completion commit. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live/idle; no provider or publication effect
+was observed.
+
+The canonical terminal evaluation was run once after the bounded diagnostic
+detail change. It settled after `1544128.250053ms` and refused with
+`CHECK_RECEIPT_INVALID`. The exact claims were
+`validationAuthorityDependencies` and `validationAuthorityDependencyDigest`;
+both receipt and current authority contained 119 entries, with one entry
+different. No completion publication or accepted mutation occurred. This is a
+currentness failure, not permission to reuse the receipt or widen a timeout.
+
+Preflight remains green: TypeScript no-emit, `git diff --check`, and the four
+affected contract/transition tests passed in `18066.499838ms`. The CLI now emits
+bounded claim names, dependency counts, and path/digest mismatch records for
+this refusal. It still requires one fresh diagnostic-bearing run to expose the
+path identity because the settled test output rendered nested objects compactly.
+
+The operator skill was updated with the reusable rule that validator compilation
+cache and validation-result cache are separate: result reuse requires exact
+candidate, basis, runtime/schema/tool/authority closure, command, environment
+and policy currentness, followed by receipt/recovery reauthentication. Skills
+remain advisory and provider-neutral; `.usf/` remains temporal runtime state.
+
+Next executable transition: inspect the next bounded mismatch-bearing result,
+repair the shared authority-dependency derivation only if the identified path
+proves to be a construction/readback defect, then rerun focused and composed
+checks. Do not run the full repository gate until this receipt cohort passes
+native preflight, composed CLI validation, and exact currentness readback.
+# 2026-09-10 completion receipt authority-boundary acceptance
+
+The canonical terminal evaluator test was rerun after separating complete
+confined execution reads from immutable receipt-authority dependencies. The
+test passed 1/1 in `1608847.257775ms` (~26m48s), including publication setup,
+terminal evaluation, deliberate evaluator mutation and artifact-lineage
+refusals. The prior circular `CHECK_RECEIPT_INVALID` on
+`graph/cli-transition-definition-grants.nq` no longer occurs, and no invalid
+completion is accepted.
+
+Implementation boundary: the full graph-declared read closure remains mounted
+for the confined validator. For completion validation only, the persisted
+receipt authority dependency set omits the single graph-derived publication
+target; its source preimage/postimage is separately authenticated by the
+completion publication receipt. This is now recorded in the graph algorithm
+text and implemented through `authorityDependencyPaths`; no caller override,
+timeout increase, cache shortcut or parallel-safety claim was added.
+
+The final graph edit occurred after the successful test, so its receipts are
+not yet accepted as current evidence. Required next step is to regenerate the
+cohort against the final graph bytes, rerun focused/composed checks and fresh
+transition inspection, then decide whether the candidate is ready for one full
+gate. HEAD remains `30824803500db6a9b49b156df899a0338c315c47`; the worktree is
+intentionally dirty with the accumulated USF-1192 candidate. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live/idle.
+# 2026-09-10 final-byte frontier readback
+
+After the receipt-authority boundary and graph text update, final preflight
+passed again: `npx tsc --noEmit`, `git diff --check`, and the four affected
+contract/transition tests passed 4/4 in `17491.06188ms`. The canonical terminal
+test passed 1/1 in `1608847.257775ms` before the final graph edit; its source
+implementation is unchanged by the graph wording update and must be regenerated
+against the final graph bytes before gate admission.
+
+Fresh `transition inspect` settled in approximately 76.8s with exit 1 and
+valid JSON: graph digest
+`sha256:f42c5ff5e45cc9b27699a2a1c634f3aaad28ed61b47ac26f4f584f41e25b94db`,
+frontier digest
+`sha256:153583ffee56cfb2fe8d7e19a6fe4a6d3eed63f1af3c9e7ff2a69ef6141a4a24`,
+25 diagnostics, `complete=false`, `executionAuthority=none`, and
+`parallelSafety=unproven`. Remaining families are operational-rule resolution,
+invalid realisation basis, local construction refusal, and unauthenticated
+transition evaluators. The completion receipt circular-currentness diagnostic
+is removed from the long terminal cohort, but USF-1192 is not complete.
+
+No full repository gate, commit, push, terminal publication, provider contact,
+Linear completion, or USF-1189 cut-over is claimed. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live/idle with ready work 0; this is a
+runtime observation only.
+# 2026-09-10 operational evaluator frontier census
+
+Fresh installed `transition inspect` after the receipt-boundary slice settled
+with exit 1 and valid JSON in approximately 76.8s. Final graph digest is
+`sha256:f42c5ff5e45cc9b27699a2a1c634f3aaad28ed61b47ac26f4f584f41e25b94db` and
+frontier digest is
+`sha256:153583ffee56cfb2fe8d7e19a6fe4a6d3eed63f1af3c9e7ff2a69ef6141a4a24`.
+The 25 diagnostics partition as 13 operational-rule/evaluator-family records
+(seven unresolved field rules plus six unauthenticated transition evaluators),
+five `INVALID_REALISATION_BASIS`, one `LOCAL_CONSTRUCTION_REFUSED`, and one
+terminal obligation family represented by the remaining terminal diagnostic;
+the exact machine-readable output is retained at `/tmp/usf1192-inspect.json`
+for this session only and is not a repository dependency.
+
+Operational-support projection returned ten observations. The ordinary
+resolve/apply/check/integrate paths expose missing prerequisites with the
+shared field-rule derivations; completion, local-contribution and no-change
+paths refuse before authenticated operational derivation. This is not a
+provider, timeout, or parallel-safety result. No adapter-unmapped diagnostic
+was introduced by the receipt repair, but the remaining evaluator/basis
+authority cohort is not accepted.
+
+Current HEAD remains `30824803500db6a9b49b156df899a0338c315c47`; 83 tracked or
+untracked worktree entries remain in the accumulated candidate, so no commit
+or push was made. Hermes `e2f6e23b399268910ef4311d9` remains live/idle with
+ready work 0, which is only a runtime observation. Next highest-value cohort:
+derive one shared authenticated operational-rule/evaluator interface and
+remove that diagnostic family, then reinterrogate before any full gate.
+
+# 2026-09-10 semantic closure and stewardship lifecycle correction
+
+The supported construction-authority apply was completed from the persistent
+controller process that owns the stewardship claim. It returned
+`status=ok`, `publicationState=created`, receipt
+`sha256:c53bc24c804e965c1eaaa875b489108193cdb0a42e86c5bac4f7085a13d80015`,
+base digest `sha256:f42c5ff5e45cc9b27699a2a1c634f3aaad28ed61b47ac26f4f584f41e25b94db`,
+and resulting semantic digest
+`sha256:4d3f577a620bb3f1653293b95b42ff12031c454e1905dc1ed6e7e0ddcf857064`.
+
+Fresh installed `transition inspect` returned valid JSON, exit 1, with
+`diagnosticCount=0`, `complete=true`, `executionAuthority=none`, and
+`parallelSafety.state=unproven`; the remaining projection is
+`TRANSITION_PARALLEL_SAFETY_UNAUTHENTICATED` for the shared assessment rule.
+This is semantic closure only, not USF-1192 completion, terminal publication,
+integration, provider qualification, Linear completion, or USF-1189 cut-over.
+
+Stewardship learning: claim/recovery records bind to the exact long-lived
+controller process. Short-lived shells cannot reuse another process's claim and
+must refuse with `STEWARD_CLAIM_STALE`. The operator skill now records this
+rule and the distinction between semantic `complete=true` and execution
+authority. The persistent shell used for this checkpoint remains the owner of
+the active stewardship claim and must be released through its supported
+lifecycle before handover.
+
+Correction: the persistent shell exited after the apply attempt. Its claim is
+now read back as `status=dead` with `activeActivity=false` and
+`primaryMutation=idle`; no stewardship lock is held. The Hermes supervisor
+remains live. The next state-changing operation must use a newly supported
+claim/controller lifecycle and must not reuse the dead claim identifiers.
+
+Current accepted checkpoint is not yet committed or pushed. Full repository
+gate remains deferred because the accumulated candidate has not passed the
+final composed acceptance boundary. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live/idle with ready work 0.
+
+# 2026-09-10 fixture authority gate checkpoint
+
+The first full gate stopped before tests with
+`FIXTURE_PROCESS_CONSTRUCTION_AUTHORITY_INACTIVE` at basis
+`sha256:43572960502981234e31ea51919bbeca1ecb1f53ad50497084f87ed03ec1d558`.
+Through the supported persistent controller lifecycle, fixture construction
+evidence and proof passed; proof bundle was
+`sha256:8fc4e20a6dd939f9ff843a31e4602fc71a1b602727dd0fe108e9efefa65636` and
+publication created receipt `sha256:290b2076132f6c37cead8202c346eadee0639030961c2fd7e5b7711423f72c73`.
+
+The second full gate reached tests and failed only at
+`tests/integration/transition-installed-frontier.test.ts:81` because the
+current repository already contains valid construction authority, making the
+isolated pre-construction observation `complete=true`. A focused reproduction
+confirmed the result after approximately 157s. The test was made tolerant of
+the authority-present state by asserting semantic consistency with its returned
+diagnostics, but that rerun was terminated after the wrapper left its child
+running; no pass is claimed. The original expectation was restored once, then
+the dynamic consistency assertion was reintroduced; current source must be
+focused-verified before another full gate.
+
+The 1194 isolated suite passed 16/16 in 356.557ms. The 1195 recovery cohort
+passed 5/5 in 75.829s. Current `npx tsc --noEmit` and `git diff --check` pass.
+Hermes `e2f6e23b399268910ef4311d9` is live at cycle 1609, ready 0, with zero
+transactions and blockers. Stewardship is released and no validation process
+remains. Candidate is still uncommitted and unpushed; USF-1192 and its children
+remain In Progress. No terminal completion, execution authority, parallel-safety
+proof, provider qualification, or USF-1189 cut-over is claimed.
+
+# 2026-09-10 validation process settlement and operator guidance
+
+The latest full-gate wrapper did not provide a settled result: its owned test
+runner and a `work-completion` descendant remained alive after wrapper output
+returned. The exact owned tree was inspected with `pstree` and terminated with
+targeted `SIGTERM`; a subsequent process scan found no test or completion
+process. This run is classified as interrupted, not passed or failed, and no
+receipt or completion claim is inferred from wrapper output.
+
+Reusable operator guidance was added to the USF V3 operator skill: full-gate
+settlement is process-tree state, acceptance fixtures must derive authority
+preconditions from current semantic state, and imported graph/grant changes
+require dependent basis rederivation and reauthentication. The registered CLI
+already exposes the supported `hermes`, `transition inspect`, and `steward`
+lifecycle/help surfaces; no second CLI framework or undocumented `.usf/`
+control path was added.
+
+Current HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, with the accumulated USF-1192
+candidate intentionally dirty and uncommitted. `npx tsc --noEmit` and
+`git diff --check` pass. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live at cycle 1618, ready 0, with no
+transactions or blockers; stewardship is released. The latest fully observed
+gate failures remain the fixture-authority precondition and the installed
+frontier assertion cohort recorded above. USF-1192, USF-1194 and USF-1195
+remain In Progress. No full-gate pass, terminal publication, execution
+authority, parallel-safety proof, provider qualification, Linear completion,
+or USF-1189 cut-over is claimed.
+
+# 2026-09-10 fixture-boundary optimization and current blocker
+
+The installed-frontier fixture was corrected to exclude generated `artifacts/`
+and retained `evidence/` from its source copy. Investigation showed the former
+was approximately 965 MB and the copied mutable cache approximately 389 MB per
+fixture. The fixture now copies source, physical `node_modules`, and only the
+small `.usf/cache/pnpm-virtual-store` closure required by in-tree module links;
+the remaining cache mount is empty and owner-contained. This is a validation
+fixture correction, not a semantic or timeout relaxation.
+
+After this correction the focused installed-frontier test still exceeded its
+120s bound and exited 124. A direct installed `transition inspect` observation
+also exceeded a 45s bound with no output, so the active blocker is the current
+frontier/preflight execution path, not merely fixture copying. No further
+unchanged timing rerun or full gate was started. The lifecycle regression
+remains green at 1/1 in 17.296s.
+
+Current HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`; the accumulated candidate is
+uncommitted and unpushed. `git diff --check` and `npx tsc --noEmit` pass. All
+owned test and inspect processes were confirmed absent after cleanup. Hermes
+`e2f6e23b399268910ef4311d9` remains live/idle; stewardship is released.
+USF-1192, USF-1194 and USF-1195 remain In Progress. No full-gate pass,
+terminal publication, execution authority, parallel-safety proof, provider
+qualification, Linear completion, or USF-1189 cut-over is claimed.
+
+# 2026-09-10 preflight path remains active blocker
+
+The fixture was further corrected so no-effect snapshots record dependency
+mount identity but do not recursively hash immutable `node_modules` or cache
+contents. The installed-frontier focused test still exceeded its 120s bound
+and exited 124. This confirms the remaining delay is in the installed semantic
+transition/native preflight path, not fixture copying. No additional timeout
+was introduced and no full gate was run.
+
+The next executable transition is targeted decomposition/profile of
+`operationalSupportForCoverage` and its native preflight calls, preserving
+read-only currentness and the complete diagnostic DAG. Do not cache mutable
+authority or skip native inspectors. Current typecheck and diff checks pass;
+all owned processes are absent. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty and uncommitted/unpushed;
+Hermes remains live/idle and stewardship released. USF-1192/1194/1195 remain
+In Progress with no terminal or cut-over claim.
+
+# 2026-09-10 installed-frontier focused boundary
+
+The previously failing lifecycle process case now passes independently:
+`node --test --test-isolation=none --test-name-pattern='foreground
+start/status/stop, signal shutdown, and stale restart are isolated and
+bounded' tests/integration/lifecycle-process.test.ts` passed 1/1 in
+17.296s. This removes that full-gate failure family.
+
+The installed frontier case was rerun once after correcting its typed
+precondition assertion. It did not settle within the existing 300s command
+bound and exited 124 with no test result. The earlier 155.824s run identified
+the stale assertion at
+`tests/integration/transition-installed-frontier.test.ts:91`; after that
+assertion was corrected, the current remaining issue is an unsettled nested
+operation, not evidence that the case passed. No timeout was widened and no
+validation was skipped. No full-gate is acceptance-ready until this exact
+settlement boundary is understood and fixed.
+
+Current candidate remains uncommitted/unpushed at HEAD
+`30824803500db6a9b49b156df899a0338c315c47`; typecheck and `git diff --check`
+pass. Hermes remains live/idle and stewardship is released. USF-1192,
+USF-1194 and USF-1195 remain In Progress. No terminal publication,
+execution authority, parallel-safety proof, or USF-1189 cut-over is claimed.
+
+# 2026-09-10 construction-precondition blocker
+
+The installed-frontier fixture was rerun once after the source/cache/snapshot
+boundary corrections. It completed its installed observation phase but the
+governed construction evidence producer refused at
+`tests/integration/transition-installed-frontier.test.ts:126` with
+`CONSTRUCTION_ACTIVATION_PRECONDITION_INVALID` after 128.404s. The refusal is
+from the construction authority's exact activation-reason validation, not a
+timeout or process leak. The guard was not weakened and no evidence, proof, or
+authority publication was claimed.
+
+Next action: reconcile the fixture static prestate and current graph
+activation-reason set against the construction authority contract, then rerun
+the focused case once. Preserve the typed precondition refusal and all
+no-effect assertions. Current HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty and uncommitted/unpushed;
+typecheck and diff checks pass. Hermes remains live/idle and stewardship is
+released. USF-1192/1194/1195 remain In Progress; no full-gate pass, terminal
+publication, execution authority, parallel-safety proof, or USF-1189 cut-over
+is claimed.
+
+# 2026-09-10 installed CLI startup boundary
+
+The fixture now retains the exact graph-declared
+`evidence/semantic-first-bootstrap-admission.json`, current construction
+evidence, the physical `node_modules` tree and its small virtual-store link
+closure, plus owner-private candidate ancestry. Temporary stage markers showed
+the latest focused test stalls inside the first installed `transition inspect`
+subprocess, before construction evidence, proof, publication, or native
+preflight markers. The 300s bound expired with exit 124; all markers were
+removed and no owned processes remain.
+
+This is now classified as an installed CLI bootstrap/graph-load boundary. The
+next action is to profile or decompose that startup path while preserving the
+full semantic closure and no-effect contract. Do not weaken construction
+activation, omit semantic evidence, raise the bound, or rerun unchanged.
+Typecheck and `git diff --check` pass. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty and uncommitted/unpushed;
+Hermes remains live/idle and stewardship is released. USF-1192/1194/1195
+remain In Progress; no full-gate, terminal, execution-authority,
+parallel-safety, provider, or USF-1189 cut-over claim is made.
+
+# 2026-09-10 transition-inspect guidance checkpoint
+
+The installed CLI was measured at the current source boundary: semantic graph
+loading is fast, direct descriptor coverage derivation is approximately 8s,
+and composed `transition inspect` enters native operational preflight for all
+selected adapters. A bounded probe was used only to identify the boundary and
+was removed; no runtime instrumentation or temporary marker remains. The
+registered CLI help now states that `transition inspect` is a composed,
+read-only operation that may perform bounded native preflight, that refusal
+preserves the usable DAG and diagnostics, and that refusal, short elapsed time,
+or `ready=0` is not completion. The operator skill records the same reusable
+guidance, including exact immutable-only cache restrictions.
+
+Validation: `git diff --check`, `npx tsc --noEmit`, and the focused transition
+coverage/parser cohort passed 71/71 in 19.920s. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty and uncommitted/unpushed;
+Hermes supervisor `e2f6e23b399268910ef4311d9` remains live/idle, stewardship is
+released, and no owned child process remains. USF-1192/1194/1195 remain In
+Progress. This checkpoint does not claim installed-frontier acceptance, a full
+gate, terminal publication, execution authority, parallel-safety proof,
+provider qualification, or USF-1189 cut-over. Next executable action is to
+profile/decompose the installed preflight path and remove a complete diagnostic
+family before any expensive full gate.
+
+# 2026-09-10 fixture-vs-production precondition isolation
+
+Direct reproduction of `evidence construction` against the current repository
+graph succeeds and returns a current construction-evidence candidate. The clean
+installed-frontier fixture, however, still refuses at its evidence producer
+with `CONSTRUCTION_ACTIVATION_PRECONDITION_INVALID` after 128.404s. This
+isolates the discrepancy to fixture graph/currentness preparation, not the
+production construction guard. Do not weaken `expectedActivationReasons` or
+manufacture a grant; compare the fixture's static packet and graph closure
+with the direct current packet, then repair the fixture basis.
+
+No full gate was run after this discovery. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty and uncommitted/unpushed;
+typecheck and diff checks pass, and no owned processes remain. Hermes remains
+live/idle, stewardship is released, and USF-1192/1194/1195 remain In Progress.
+
+# 2026-09-10 native-preflight reauthentication optimization
+
+The native operational preflight bridge was reduced from four repeated
+binding-aware graph authentications per adapter to one before and one after the
+native inspector. The before/after graph digest, selected work/profile/manifest
+identity and native inspector currentness checks remain enforced; no authority,
+refusal, receipt or completion rule was weakened. This is a bounded composed-
+inspection improvement, not a parallel-safety or semantic-completion claim.
+
+Validation: `git diff --check`, `npx tsc --noEmit`, and
+`tests/contract/cli-transition-coverage.test.ts` passed 68/68 in 19.955s. A
+broader combined transition/unit run reached the known native inspection case
+(52.584s) and continued into its long tail; it was terminated as the exact
+owned test-tree interruption and is not reported as passing. No owned child
+remains. HEAD is still `30824803500db6a9b49b156df899a0338c315c47`, dirty and
+uncommitted/unpushed; Hermes remains live/idle and stewardship is released.
+USF-1192/1194/1195 remain In Progress. The next action is to re-run the
+installed-frontier case only after profiling the remaining native/preflight
+boundary; defer the full gate until that case and diagnostic movement are
+acceptance-ready.
+
+# 2026-09-10 installed-frontier recheck after preflight optimization
+
+The changed production-root CLI interrogation completed in 113.05s and
+returned JSON with 25 diagnostics: 13 `CLI_OPERATIONAL_RULE_UNRESOLVED`, 6
+`TRANSITION_EVALUATORS_UNAUTHENTICATED`, 5 `INVALID_REALISATION_BASIS`, and 1
+`LOCAL_CONSTRUCTION_REFUSED`; `TRANSITION_ADAPTER_UNMAPPED` is now absent.
+The result remains `complete=false`, `executionAuthority=none`, and
+`parallelSafety=unproven`.
+
+The clean installed-frontier fixture was then run with its existing 330s bound.
+It was interrupted at 334.61s while a repeated installed `transition inspect`
+subprocess was still running; the exact test tree and child were confirmed
+gone afterward. No semantic or runtime mutation was accepted. This is a
+current fixture-throughput blocker, not evidence to widen limits or weaken
+no-effect assertions. Focused coverage remains 68/68 in 19.955s and typecheck
+plus diff checks pass. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty/uncommitted/unpushed;
+Hermes is live/idle and stewardship is released. USF-1192/1194/1195 remain In
+Progress; full gate, terminal publication, execution authority, parallel-safety
+proof, provider qualification, and USF-1189 cut-over remain unclaimed.
+
+# 2026-09-10 native-observation deduplication experiment rejected
+
+A changed-scope experiment shared the identical read-only semantic operational
+inspector across ordinary adapters, while retaining an authenticated boundary
+around that shared observation. Production-root `transition inspect` completed
+in 107.69s versus the prior 113.05s, a reduction of approximately 5.4s. The
+installed-frontier fixture still did not reach acceptance, so this did not meet
+the material optimization threshold or demonstrate throughput benefit across
+the acceptance path. The experiment was removed; the two-boundary per-adapter
+currentness fix remains the durable implementation.
+
+After removal, `git diff --check` and `npx tsc --noEmit` pass and no owned test
+or inspect process remains. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty and uncommitted/unpushed;
+Hermes remains live/idle and stewardship is released. USF-1192/1194/1195
+remain In Progress. No full-gate, terminal publication, execution authority,
+parallel-safety, provider qualification, or USF-1189 cut-over claim is made.
+
+# 2026-09-11 fresh terminal cohort bounded observation
+
+The fresh command
+`timeout 360 node --test --test-isolation=process --test-name-pattern='canonical
+terminal evaluation refuses altered evaluator and artifact lineage'
+tests/integration/work-completion.test.ts` was run after the pushed USF-1195
+checkpoint. It reached the external 360-second bound with no test result; the
+captured log is `/tmp/usf1192-terminal-current.log`, containing only the Node
+runner interruption notice. The complete process tree was absent afterward.
+
+This is an incomplete observation, not a pass or semantic failure. The setup
+still performs genuine current receipt-set production before the read-only
+lineage assertions. Do not replay the unchanged cohort. The current frontier
+remains `complete=true`, diagnostics 0, `executionAuthority=none`,
+`parallelSafety=unproven`, and terminal satisfaction unverified. HEAD remains
+`180cf944e47c9e1673776dbdb10adbaa6ae8f5ac`, pushed and aligned with origin;
+the larger USF-1192 candidate remains dirty. No full gate, terminal publication,
+USF-1192 acceptance or USF-1189 cut-over claim is made.
+
+# 2026-09-11 USF-1195 checkpoint committed and pushed
+
+The isolated USF-1195 recovery slice was committed as
+`180cf944e47c9e1673776dbdb10adbaa6ae8f5ac` and pushed fast-forward to
+`origin/anqr-experience-realisation`. Only the integration recovery source,
+focused workspace/recovery tests, and matching graph timeout declarations were
+included. Focused validation passed 3/3 in 124.403s, covering absent intent,
+genuine SIGKILL process-group cleanup, and local Git integration recovery.
+
+This is an accepted dependency checkpoint, not USF-1195 or USF-1192 closure.
+The larger USF-1192 candidate remains dirty and uncommitted; the full gate is
+not passed, terminal completion is unverified, and execution authority and
+parallel safety remain unproven. Hermes remains live/idle and stewardship is
+released. Linear comments `85576b85-7890-478c-9c05-0434a38f00a9` on USF-1195
+and `012ce9a2-b578-43bb-8417-0d8a35e6bfc4` on USF-1192 record the same exact
+evidence and nonclaims.
+
+# 2026-09-11 current handover boundary after authority reconciliation
+
+The current installed semantic frontier was re-read after supported
+construction-authority reconciliation. Its captured result is
+`/tmp/usf1192-frontier-after-reconcile.json`, graph digest
+`sha256:68e5d1ad80dd02ff951d74dbc4cd3f49a056a4648bc2a49e5b2a66723b9033ef`:
+`complete=true`, `reasonCode=TRANSITION_COVERAGE_COMPLETE`, diagnostics 0,
+`executionAuthority=none`, `parallelSafety=unproven`, and terminal satisfaction
+`unverified`. This is semantic coverage/currentness only; it does not establish
+terminal publication, runtime execution, provider qualification, Linear
+completion, USF-1192 acceptance or USF-1189 cut-over.
+
+Current focused evidence is `npx tsc --noEmit` passed, `git diff --check`
+passed, the combined operator/parser/coverage contract cohort passed 74/74 in
+19.930s, and the USF-1195 recovery cohort passed 3/3 in 124.403s. The isolated
+terminal lineage case was bounded at 300s with no test result; its setup calls
+genuine current receipt construction before the read-only lineage assertions.
+Do not replay that unchanged case. The complete full-gate attempt remains an
+incomplete observation and is not a pass.
+
+HEAD remains `30824803500db6a9b49b156df899a0338c315c47`, aligned with
+`origin/anqr-experience-realisation`, with the accumulated candidate dirty and
+uncommitted. Hermes supervisor `e2f6e23b399268910ef4311d9` remains live/idle;
+stewardship is released; no test or gate process remains. USF-1192, USF-1194,
+USF-1195 and USF-1189 remain In Progress. The next highest-value action is a
+bounded tracked fixture/decomposition that separates genuine receipt-set setup
+from terminal lineage assertions, followed by the exact terminal result and
+only then one acceptance-bound full gate. No timeout widening, synthetic
+receipt, publication, completion or cut-over claim is made.
+
+# 2026-09-11 USF-1195 focused recovery checkpoint
+
+The independent USF-1195 recovery cohort passed 3/3 in 124402.555ms:
+`timeout 300 node --test --test-isolation=process
+--test-name-pattern='ordinary candidate recovery preserves genuine SIGKILL
+boundaries|prepares, fast-forwards and recovers one observed local Git
+integration' tests/unit/realisation/workspace.test.ts
+tests/unit/realisation/integration-recovery-inspection.test.ts`.
+It covers absent-intent inspection, genuine SIGKILL process-group cleanup and
+candidate-lock release (20719.040801ms), and observed local Git integration
+recovery without unrelated dirt (103486.97644ms). This is focused evidence
+only; USF-1195 still needs the authoritative full gate, governed integration/
+publication, commit/push and Linear acceptance. No test process remains.
+
+# 2026-09-11 construction authority reconciled after handover
+
+The live supervisor's session-bound environment was used only to recover the
+supported steward claim (`claimId` digest
+`sha256:c8ad5045f1fa7f018f7b0cd706f3dd643072814eb97d3c7cd4d6ff03970b51f4`,
+generation `sha256:f381fb5f6e9841c62d05206fb4f99c2c891f8982a8e20fc6df13c3c4990a35fc`).
+Fresh construction evidence and proof were generated for the exact current
+CLI transition work. Passing publication verification produced
+`evidence/construction-authority/f1540a593e26f23a7e0c6b381ed680adb1b50e4504c7c9979dbc6fd4f86e85fa.json`
+with receipt digest `sha256:c0b70e49f903997815a73fc53b7d4e9e63b56aff5e44a5ca8ce1b775a84f9e9c`.
+The first publish invocation correctly refused separate evidence/proof bundle
+arguments with `CONSTRUCTION_EVIDENCE_SCHEMA_INVALID`; retrying with the
+proof bundle, which embeds the exact evidence, verified and applied through
+the supported CLI. The resulting semantic graph digest is
+`sha256:68e5d1ad80dd02ff951d74dbc4cd3f49a056a4648bc2a49e5b2a66723b9033ef`.
+
+Fresh installed interrogation completed with output
+`/tmp/usf1192-frontier-after-reconcile.json`: `complete=true`,
+`reasonCode=TRANSITION_COVERAGE_COMPLETE`, `diagnostics=0`,
+`executionAuthority=none`, and `parallelSafety.state=unproven`. The prior
+25-diagnostic installed refusal was therefore resolved by current construction
+authority reconciliation. Stewardship was released through the supported
+CLI; no supervisor replacement occurred. This is semantic transition
+coverage, not execution authority, terminal completion, provider
+qualification, Linear completion, USF-1192 acceptance, or USF-1189 cutover.
+
+# 2026-09-11 terminal evaluator bounded observation
+
+After construction-authority reconciliation, the exact terminal evaluator
+case was run alone:
+`timeout 300 node --test --test-isolation=process
+--test-name-pattern='canonical terminal evaluation refuses altered evaluator
+and artifact lineage' tests/integration/work-completion.test.ts`.
+The log `/tmp/usf1192-terminal-evaluator-resume.log` ended with
+`Interrupted while running`; the process tree is absent and the log contains
+no test result or exit classification. This is an observation timeout/incomplete
+result, not a pass or failure. The current installed frontier remains the
+separate authoritative result in `/tmp/usf1192-frontier-after-reconcile.json`:
+`complete=true`, `TRANSITION_COVERAGE_COMPLETE`, zero diagnostics,
+`executionAuthority=none`, `parallelSafety=unproven`, with terminal
+`satisfaction=unverified`. Do not replay this expensive unchanged case or
+claim terminal proof/publication, USF-1192 acceptance, or USF-1189 cutover
+until a bounded terminal result is obtained.
+
+# 2026-09-11 stale publication fixture cleanup
+
+The retained `.usf/tmp/completion-publication-seed-copy-iHqvC5` and
+`.usf/tmp/completion-publication-seed-copy-pe8qRt` repositories were inspected
+individually and found to carry stale CLI-transition bases
+`sha256:a490f62c7e5f369967e4b527ab4ea4882060758630edf37f1dfa08fd92e46588`
+and `sha256:b3be3766b14657274d3f6ecb0bad8e7f9e6f1f8eb24920754ad0d1f5aefea0db`.
+Neither was current authority or referenced by a live process. Both were moved
+to system trash with `gio trash`; no active workspace, receipt or supervisor
+state was touched. This removed approximately 2 GB of stale ignored scratch.
+
+# 2026-09-11 interrupted acceptance-bound full gate
+
+The one acceptance-bound gate was started only after focused checks, graph
+inspection and the installed composed path were stable. It ran as
+`COREPACK_HOME="$PWD/.usf/cache/corepack" timeout 3600 corepack pnpm run check`
+with log `/tmp/usf1192-full-gate-20260911-010600.log`. It produced three named
+failures before the harness was interrupted after more than 59 minutes:
+the authorised real fixture supervisor lifecycle, concurrent real starts, and
+installed transition inspection. The long work-completion cases also recorded
+retained publication recovery at 1664105.616706ms; no gate exit file was
+written, so this is neither a pass nor an authenticated complete failure.
+
+No gate, test, Hermes, or child process remained after interruption. The
+candidate remains dirty and uncommitted at HEAD
+`30824803500db6a9b49b156df899a0338c315c47`; stewardship is released and Hermes
+remains live/idle. Focused typecheck, operator-observability/parser contracts
+(6/6), and `git diff --check` passed before the gate. The fresh installed
+frontier remains graph digest
+`sha256:a4750feb282ac94e4135106c97eddadda0a2592c2f86baafe588e1042671e957`,
+inspection digest
+`sha256:be8510dfdc03c9ccc03248ef7434aa21ac9b4df2eb9a94cf719be21a2f4499e1`,
+`complete=true`, diagnostics 0, `executionAuthority=none`, and
+`parallelSafety=unproven`.
+
+The next executable transition is to extract the three exact gate failure
+assertions and run their focused tests, repair only that bounded cohort, then
+re-interrogate the frontier before any new full gate. No completion,
+execution-authority, parallel-safety, publication, USF-1192, or USF-1189 claim
+is made. Operator skill and CLI help now state that interrupted gates and
+expensive unchanged inspections must be preserved/reconciled, not blindly
+replayed.
+
+# 2026-09-11 currentness reconciliation after interrupted gate
+
+Fresh verification rejected the previously retained construction bundle with
+`CONSTRUCTION_EVIDENCE_NOT_CURRENT`. New evidence and proof were generated
+through the CLI, then `publish construction-authority --apply` succeeded under
+recovered stewardship. The publication receipt is
+`sha256:455c6d04804d603b211fa970c181b21230e2f2499fc679db422e7ce70e9de5e2`;
+the resulting semantic digest is
+`sha256:4822b8086d1024588a960ddb1c5758967cc8a67210e45918910bb5b603d4ef56`.
+
+Fresh installed `transition inspect` then settled with `complete=true` and
+diagnostics 0. Its inspection is semantic closure only: `executionAuthority`
+is `none`, and `parallelSafety` is `unproven` with missing obligation
+`urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1`.
+
+The recovered claim was bound to the invoking CLI process; the subsequent
+release invocation refused `STEWARD_CLAIM_STALE` after that process boundary.
+Readback shows no active activity and no primary mutation, with a dead claim
+record and the Hermes supervisor still live. No lock, test, gate, child
+process, publication, completion, or Linear mutation was left ambiguous.
+
+The interrupted full gate remains incomplete at
+`/tmp/usf1192-full-gate-20260911-010600.log`; it has no exit file. Focused
+typecheck, operator-observability/parser contracts (6/6), and diff checks pass,
+but the full gate emitted three failures before interruption and is not a pass.
+The next action is to reconcile those exact lifecycle and installed-frontier
+failures, then run focused checks and only a new acceptance-bound full gate.
+USF-1192, USF-1194 and USF-1195 remain In Progress; USF-1189 remains blocked.
+
+# 2026-09-11 failure-cohort focused acceptance
+
+The three failures emitted by the interrupted full gate were rerun against the
+current tree. The authorised real fixture supervisor case passed 1/1 in
+`3037.276ms`; concurrent real starts passed 1/1 in `7125.330ms`; the installed
+frontier initially failed at `161945.600ms` because the fixture copied all
+historical construction receipts and publication correctly refused
+`CONSTRUCTION_PUBLICATION_PARTIAL_STATE`.
+
+The fixture was corrected to create an empty construction-authority evidence
+directory and retain only the explicitly required bootstrap evidence. The
+rerun passed 1/1 in `371863.154666ms`, with the clean fixture moving from 25
+diagnostics (13 operational, 5 invalid basis, 1 local construction, 6
+evaluator authentication) to 0 after its fresh construction publication.
+The current installed frontier remains `complete=true`, diagnostics 0,
+`executionAuthority=none`, `parallelSafety=unproven`.
+
+Typecheck, `git diff --check`, and the focused failure-cohort tests pass. The
+earlier full gate remains incomplete with no exit file and is not reused as a
+pass. No new full gate has yet been run after this fixture correction; the next
+action is deterministic preflight and one acceptance-bound full gate, provided
+the composed candidate is otherwise stable.
+The next action is bounded installed-frontier decomposition, not further timing
+experiments.
+
+# 2026-09-11 root-derived receipt-set bound
+
+The root-derived completion-check case was rerun with a 360s observation
+bound. It entered the genuine `pending-synced` interruption fixture for the
+graph-selected `urn:usf:validation:cli-transition-definition-adapter`
+obligation, then remained in the governed long validation/reconciliation path
+until the bound expired at 363.00s. The exact test tree and child were absent
+afterward; no semantic or runtime mutation was accepted as completion.
+
+Current frontier readback remains digest
+`sha256:21436628307455f3a99b4d82023d63881d8d205e524219de11da7b58037ca07a`,
+graph digest
+`sha256:1639a8def421b8bcec4b25bd50b6bc127ffed7dfd61cc599a9f30543ee6d77a`,
+25 diagnostics, `complete=false`, `executionAuthority=none`,
+`parallelSafety=unproven`, and no `TRANSITION_ADAPTER_UNMAPPED` entries.
+Typecheck and diff checks pass; focused transition coverage remains 68/68.
+HEAD remains `30824803500db6a9b49b156df899a0338c315c47`, dirty,
+uncommitted/unpushed; Hermes live/idle; stewardship released. USF-1192/1194/
+1195 remain In Progress. Full gate, terminal publication, execution authority,
+parallel-safety, provider qualification, USF-1192 acceptance, and USF-1189
+cut-over remain unclaimed. Next action is validation-obligation decomposition
+or exact current-result reuse analysis, preserving the full denominator.
+
+# 2026-09-10 retained-receipt refusal reconciliation
+
+The retained real-receipt replay contract was reconciled with the current
+governed refusal model. Malformed or missing manifests now assert
+`INVALID_WORKSPACE_MANIFEST`; conflicting extra or modified workspace content
+asserts `CANDIDATE_BASIS_MISMATCH`, all with exit code 4. The test preserves
+the bytes, directory identity, and replay/no-rebuild guarantees.
+
+Focused result: isolated `retained real receipt is reauthenticated before
+no-change completion effects` passed 1/1 in 57.99s. The adjacent
+`root-derived completion checks derive no-effect identity and reconcile a
+genuine retained set` case was observed alone with a 180s bound and remained
+interrupted; no owned process remains. This is a bounded check-path blocker,
+not evidence to widen semantic limits or weaken recovery. Typecheck and diff
+checks pass; transition coverage remains 68/68. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty/uncommitted/unpushed;
+Hermes live/idle; stewardship released. USF-1192/1194/1195 remain In
+Progress. Full gate, terminal publication, execution authority,
+parallel-safety, provider qualification, and USF-1189 cut-over remain
+unclaimed.
+
+# 2026-09-10 completion refusal contract accepted
+
+The retained-receipt replay test now accepts the current exact native refusal
+identities: `INVALID_WORKSPACE_MANIFEST` for malformed or absent retained
+manifests, and `CANDIDATE_BASIS_MISMATCH` for extra or changed workspace bytes.
+The isolated case passed 1/1 in 57.99s, including replay identity,
+no-reconstruction, byte preservation, and conflicting-content coverage.
+
+The root-derived completion-check case remains a separate genuine effectful
+validation path. Its isolated 180s observation was interrupted before result;
+no owned process remains. It must continue through real receipt reconciliation
+and cannot be replaced with a fixture shortcut. Typecheck and diff checks pass;
+transition coverage remains 68/68. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty/uncommitted/unpushed;
+Hermes live/idle; stewardship released. USF-1192/1194/1195 remain In
+Progress. No full-gate, terminal publication, execution authority,
+parallel-safety, provider qualification, or USF-1189 cut-over claim is made.
+
+# 2026-09-11 canonical CLI progression update
+
+The external `usf-v3-operator` skill now states the reusable CLI-first loop:
+interrogate the selected semantic closure, use only derived inputs and
+graph-admitted transitions, reuse only authenticated current receipts, and
+re-interrogate after each accepted state change. An unexplained transition is
+a CLI/semantic tooling gap, not permission to reconstruct a workflow.
+
+Current readback: `transition inspect` for
+`urn:usf:work:cli-transition-definition` returns bounded JSON with exit 1,
+`complete=true`, `TRANSITION_COVERAGE_COMPLETE`, zero diagnostics, and graph
+basis `sha256:68e5d1ad80dd02ff951d74dbc4cd3f49a056a4648bc2a49e5b2a66723b9033ef`.
+It still reports `executionAuthority=none`,
+`parallelSafety=unproven`, and terminal satisfaction unverified.
+
+The proof/publication/terminal contract cohort passed 11/11 in 30.250s, and
+the USF-1194 local contribution cohort passed 21/21 in 0.357s. These are
+focused acceptance evidence only. No full gate, terminal publication, Linear
+completion, USF-1192 acceptance, or USF-1189 cut-over is claimed. HEAD remains
+`180cf944e47c9e1673776dbdb10adbaa6ae8f5ac`; the accumulated candidate remains
+dirty and the Hermes supervisor remains live/idle.
+
+# 2026-09-11 child queue reconciliation
+
+USF-1193 was independently audited and remains In Progress. No
+issue-specific current work/binding or authenticated clean-clone completion
+bundle exists. Its ANQR-manifest transition inspection currently refuses
+`SCHEMA_REF_UNRESOLVED` at `#/$defs/operationalSupport/$ref`; this is a distinct
+schema-authority prerequisite and must not be silently folded into USF-1192.
+The retained ignored-state inventory and clean-clone proof remain unverified.
+
+USF-1197 is the active implementation lane for the tracked outer-to-confined
+completion receipt handoff. Its current work packet is dependency-ready but
+construction-proof-blocked because current construction evidence/proof are
+absent. The retained provenance still names an ignored prototype generator and
+is not acceptance evidence. One bounded worker owns only the declared fixture
+and integration-test paths; no main-tree or runtime mutation has occurred.
+
+# 2026-09-11 completion cohort full-gate incomplete
+
+The acceptance-bound full gate was launched once after the corrected installed
+frontier and focused cohort were green:
+`COREPACK_HOME="$PWD/.usf/cache/corepack" timeout 3600 corepack pnpm run check`.
+Its log is `/tmp/usf1192-full-gate-20260911-024200.log`; the companion exit
+marker exists but is empty, and the parent/child process tree is now absent.
+The log therefore records an incomplete/interrupted observation, not a pass or
+failure. It emitted passing results through the real completion receipt and
+publication recovery cases, including authenticated receipt reuse, restart
+reconciliation, refusal of conflicting state, and canonical publication
+resume at `before-source`; no final repository-gate result was produced.
+
+Immediately before the gate, focused validation passed: `npx tsc --noEmit`,
+`git diff --check`, operator/parser contracts 6/6, the real Hermes supervisor
+fixture 1/1, lifecycle concurrency 1/1, and the corrected installed frontier
+1/1 in 371863.154666ms. The installed frontier reduced fixture diagnostics
+from 25 to 0 after fresh construction authority. Current semantic inspection
+is `complete=true`, `diagnostics=0`, `executionAuthority=none`, and
+`parallelSafety=unproven` (re-run after this checkpoint before any claim).
+
+No gate/test process remains. Two lock files remain only under ignored
+temporary test repositories: `.usf/tmp/work-completion-test-UXXMzo` and
+`.usf/tmp/completion-publication-seed-copy-8MRaKs`; they are not active
+processes, but must be individually inspected before removal. The Hermes
+supervisor remains live/idle (`e2f6e23b399268910ef4311d9`, PID 2054583), with
+no ready implementation work; stewardship is released/dead with no active
+mutation. The branch remains at `30824803500db6a9b49b156df899a0338c315c47`,
+aligned with its remote, with the accumulated USF-1192 postimage dirty and
+uncommitted. USF-1192, USF-1194 and USF-1195 remain In Progress.
+
+Next executable transition: inspect the two temporary lock directories and
+remove only confirmed abandoned test scratch through supported lifecycle
+cleanup; then re-run the bounded installed frontier and reconcile the exact
+full-gate interruption before deciding whether the composed candidate is
+commit-ready. Do not restart the unchanged full gate, publish completion,
+claim execution authority or parallel safety, or begin USF-1189 cut-over.
+
+# 2026-09-11 handover frontier re-read
+
+The two confirmed abandoned test repositories were moved to the system trash
+with `gio trash`, and are absent from `.usf/tmp`; no gate, test, or frontier
+process remains. This removed approximately 2.0 GB of ignored test scratch.
+The active Hermes supervisor remains live/idle and was not restarted.
+
+A fresh installed interrogation was then run:
+`./bin/usf transition inspect --root
+urn:usf:work:cli-transition-definition --manifest
+graph/manifests/cli-transition-definition.json`.
+The captured output is `/tmp/usf1192-frontier-handover.json`. It completed
+after approximately 60 seconds with graph digest
+`sha256:4822b8086d1024588a960ddb1c5758967cc8a67210e45918910bb5b603d4ef56`,
+`complete=false`, `reasonCode=TRANSITION_SEMANTICS_INCOMPLETE`,
+`executionAuthority=none`, and `parallelSafety.state=unproven`. It reports 25
+current diagnostics: 13 `CLI_OPERATIONAL_RULE_UNRESOLVED`, 5
+`INVALID_REALISATION_BASIS`, 1 `LOCAL_CONSTRUCTION_REFUSED`, and 6
+`TRANSITION_EVALUATORS_UNAUTHENTICATED`. This supersedes the earlier fixture
+observation of 25-to-0 after fresh construction authority; that observation
+was valid for its isolated fixture, but does not establish current installed
+authority. The current frontier must be repaired/reconciled before a commit,
+publication, or USF-1192 acceptance claim.
+
+The full-gate result remains incomplete: log
+`/tmp/usf1192-full-gate-20260911-024200.log`, empty exit marker, and no final
+exit status. Next action is to reconcile the stale construction/evaluator
+authority through the supported CLI, then re-run focused preflight and inspect;
+do not launch another full gate until the current 25-diagnostic frontier is
+reduced and the composed candidate is stable. Linear USF-1192 has the matching
+checkpoint comment `a4243f56-b0fa-4272-be8c-4a852709444b`.
+
+# 2026-09-11 skill and CLI reuse checkpoint
+
+The provider-neutral operator skill and tracked operator context now state the
+installed validation-reuse contract: receipt reuse is keyed by the exact
+candidate, basis, validation resource, authority/tool/schema/environment and
+execution-policy closure, and is allowed only after native reauthentication.
+Stale, partial, interrupted, unknown or conflicting records reconcile or
+refuse; validator compilation reuse is not execution evidence. The guidance
+also requires stewardship claimId and generation to remain in the same shell
+as guarded operations.
+
+Registered help exposes the same contract for `check` and `transition inspect`,
+with a regression assertion in `tests/contract/operator-observability.test.ts`.
+`npx tsc --noEmit`, the parser/help focused tests (6/6), and `git diff --check`
+pass. Native readback authenticated no-change in 13.098s and returned typed
+`WORK_COMPLETION_CHECK_RECEIPT_MISSING` for four missing obligations in
+35.426s. The composed installed inspection still stalls without output under
+its bounded probe; no process survives, and no new frontier digest is claimed.
+
+Next executable transition: isolate the composed inspector's repeated native
+preflight path and remove one demonstrated diagnostic family or adapter gap.
+Current HEAD remains `30824803500db6a9b49b156df899a0338c315c47`; the candidate
+tree is intentionally dirty and not yet a full-gate acceptance boundary.
+
+# 2026-09-11 composed frontier settled
+
+The fresh installed command
+`./bin/usf transition inspect --root urn:usf:work:cli-transition-definition
+--manifest graph/manifests/cli-transition-definition.json` completed with a
+242301-byte JSON result after the bounded native preflight path settled. The
+current graph digest is
+`sha256:a4750feb282ac94e4135106c97eddadda0a2592c2f86baafe588e1042671e957`
+and the interrogation digest is
+`sha256:be8510dfdc03c9ccc03248ef7434aa21ac9b4df2eb9a94cf719be21a2f4499e1`.
+It reports `diagnostics: 0` and semantic `complete: true`, while explicitly
+reporting `executionAuthority: none` and `parallelSafety.state: unproven` with
+the semantic basis and missing parallel-assessment obligation. This removes
+the previously observed unmapped/operational diagnostic frontier, but it does
+not prove execution, terminal publication, parallel safety, or USF-1192/1189
+completion. Hermes remains live (PID 2054583, cycle 1655, ready 0); stewardship
+is released. The JSON is retained at `/tmp/usf1192-frontier-1789051162` only as
+temporary observation, not as semantic authority.
+
+# 2026-09-11 governed validation reuse guidance
+
+The canonical `check` help now states the existing exact receipt-reuse
+boundary: complete receipts may be reused only after reauthentication against
+the current candidate, basis, validation, environment, execution policy,
+tool/schema/authority closure and recovery state. Interrupted, unknown, stale,
+partial or conflicting records remain native reconciliation/refusal cases.
+No second cache command, ignored result manifest or wrapper script is required.
+
+The operator skill and tracked operator context were updated with the same
+provider-neutral rule so repeated agents do not rediscover or weaken it. CLI
+help/parser/observability, typecheck and `git diff --check` validation passed;
+the focused contract run passed 74/74 in 19.623s. This documentation/help
+slice does not reduce the current semantic frontier: 25 diagnostics remain,
+with `executionAuthority=none` and `parallelSafety=unproven`. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty and uncommitted; no full
+gate, publication, provider qualification, USF-1192 acceptance or USF-1189
+cut-over claim is made.
+
+# 2026-09-11 construction-authority progression checkpoint
+
+The selected work was re-derived through the supported CLI. The current
+`INVALID_REALISATION_BASIS` was traced to the current candidate having no
+authenticated construction evidence/proof and therefore a `proofblocked`
+permission state. Governed construction evidence was generated at
+`.usf/candidates/construction-authority/usf1192-current-evidence.json` with
+evidence IRI `urn:usf:evidence:construction:8ba0286c5929a8a292f4823a14a4245f6df50422aa078ffce742d51f68274a29` and basis
+`sha256:cee877877c6e8086cf92c24b6a1e2d4a39b38c104c36d40ef63d0a5f6ca8b824`.
+
+The matching proof was generated at
+`.usf/candidates/construction-authority/usf1192-current-proof.json` with proof
+result IRI `urn:usf:proof-result:construction:67501ceb2056ceeecd0dc0be0893c120b300232c4c2d9d9081a3757a632b792b` and bundle digest
+`sha256:4c05ddccd3c7c12b5b9be335ac47739029ad99b87f4e1623eba91a1be1e28fe2`.
+`publish ... --verify` passed with receipt digest
+`sha256:d29502741a4d0eff0e059e49574efcc22018ec07de5183f688d4ae1f2042f99d`.
+
+Apply was refused first by `STEWARD_ACTIVITY_BUSY`, then by
+`STEWARD_CLAIM_STALE`; steward status reports no active activity, a live
+supervisor PID 2054583, and a released stale claim record. No semantic or
+primary mutation was accepted. Do not take over or fabricate the supervisor
+claim; the next transition is supported stewardship reconciliation with the
+live supervisor, followed by rerunning the exact verified bundle.
+
+# 2026-09-11 construction authority accepted and terminal inspection bound
+
+After explicit stewardship recovery, the exact verified construction bundle
+was applied successfully through the CLI. Publication state was `created`,
+receipt digest `sha256:d29502741a4d0eff0e059e49574efcc22018ec07de5183f688d4ae1f2042f99d`,
+and resulting semantic digest
+`sha256:a4750feb282ac94e4135106c97eddadda0a2592c2f86baafe588e1042671e957`.
+The claim was released cleanly; steward status is `released`, activity and
+primary mutation are idle, and Hermes remains live.
+
+The supported no-change realisation then succeeded with candidate
+`sha256:697192427a8c6406d58868bfc89f2a82b83f3ff78fbb8b7c192a5d76b2df0b26`
+and workspace `.usf/workspaces/697192427a8c6406d58868bfc89f2a82b83f3ff78fbb8b7c192a5d76b2df0b26`.
+A fresh composed `transition inspect` against this current authority was
+bounded at 180 seconds without output; the process tree is absent afterward.
+This is the active terminal-inspection performance/refusal boundary. No
+completion, execution authority, parallel-safety, terminal publication, or
+full-gate claim follows from the successful construction or realisation.
+
+# 2026-09-11 cache-guidance regression assertion
+
+The CLI registry contract now asserts that `check --candidate` documents
+automatic reuse only after reauthentication and that the root adapter treats
+interrupted, unknown, stale and conflicting state as reconciliation/refusal,
+not blind cache misses. The assertion prevents the operator guidance from
+silently disappearing from the installed CLI.
+
+Focused result: `node --test --test-isolation=none
+tests/contract/operator-observability.test.ts` passed 3/3 in 55.653ms;
+`npx tsc --noEmit` and `git diff --check` passed. Current frontier remains
+digest `sha256:21436628307455f3a99b4d82023d63881d8d205e524219de11da7b58037ca07a`,
+25 diagnostics, `executionAuthority=none`, `parallelSafety=unproven`, and no
+unmapped adapters. This remains a guidance/CLI-contract checkpoint, not an
+acceptance boundary; no full gate, publication, or completion claim is made.
+
+# 2026-09-10 native inspection context de-duplication
+
+`prepareRootInspectionContext` now derives the selected packet, basis and
+completion authority from its already-loaded semantic graph instead of loading
+and deriving the same graph a second time through `prepareNoChangeContext`.
+Later native checks still perform their explicit currentness re-reads. This
+removes one redundant intra-invocation derivation without changing authority,
+receipt, refusal or replay semantics.
+
+Validation: `git diff --check` and `npx tsc --noEmit` pass. The targeted
+work-completion suite exposed a separate retained-workspace refusal contract
+mismatch (`INVALID_WORKSPACE_MANIFEST` returned where the test expects the
+older `WORK_COMPLETION_REALISATION_REFUSED` wrapper) and later exceeded its
+120s observation bound; it is not counted as passing. The focused transition
+coverage result remains 68/68, and the production frontier remains 25
+diagnostics with no unmapped adapters. HEAD remains
+`30824803500db6a9b49b156df899a0338c315c47`, dirty/uncommitted/unpushed;
+Hermes live/idle; stewardship released. USF-1192/1194/1195 remain In
+Progress. No full-gate, terminal publication, execution authority,
+parallel-safety, provider qualification, or USF-1189 cut-over claim is made.
+# 2026-09-11 timeout and reuse guidance checkpoint
+
+Fresh readback at HEAD `180cf944e47c9e1673776dbdb10adbaa6ae8f5ac` confirms the
+branch is aligned with `origin/anqr-experience-realisation` and has an
+intentionally dirty accumulated USF-1192 candidate. The live Hermes
+supervisor is unchanged (PID 2054583, supervisor
+`e2f6e23b399268910ef4311d9`, live/idle); stewardship is released. Two
+continuation-owned bounded `transition inspect` processes were terminated after
+they produced no output, and the process tree was verified absent. This is an
+incomplete observation, not a completion or failure result; no semantic,
+provider, Linear, Git or publication mutation occurred.
+
+The installed CLI help already documents exact current receipt reuse for
+`check --candidate`, including candidate/basis/validation/environment/
+execution-policy/tool/schema/authority/recovery reauthentication and typed
+refusal for interrupted, unknown, stale or conflicting state. The operator skill
+now additionally states that timeout budgets remain semantic-policy-derived and
+workload-sensitive, that raising a local guard is not an optimization, and that
+identical expensive work must use the existing authenticated receipt boundary
+rather than a second cache. `npx tsc --noEmit`, `git diff --check`, and
+`tests/contract/operator-observability.test.ts` passed 3/3 in 101ms after the
+readback. No full gate was run: the current candidate has not reached an
+acceptance-ready boundary.
+
+Next executable transition: use the current supported lifecycle to reconcile
+the active USF-1192 failed-check/terminal fixture cohort, with one bounded
+producer-to-reader receipt round trip and interruption/replay evidence. Do not
+rerun an unchanged long inspection or full gate, reuse the stale tracked
+`.usf`-generated receipt fixture, claim execution authority/parallel safety, or
+close USF-1192/1194/1195/1189 without fresh governed evidence.
+
+# 2026-09-11 USF-1197 construction candidate checkpoint
+
+The selected USF-1197 work packet was freshly read through the CLI with
+semantic digest `sha256:61570eea8ac4222a33b81470823b144a7399f173554ee8`.
+Supported `evidence construction` and `prove construction` produced current
+owner-private candidates. `publish construction-authority --verify` passed
+with receipt digest
+`sha256:fd67cf403f1f65d1663912ffb37cb44b566476e6ea5461394a8c92f486d45853`,
+but correctly returned `publicationState=verified-without-publication` and
+resulting digest `sha256:f201d72ed5cb5db37daeb022457f8cf03650c94ee8325cb4b50cf60b08e66b2c`.
+
+The work packet remains construction-ineligible with
+`BOOTSTRAP_EXCEPTION_NOT_DECLARED`, missing admitted construction evidence and
+proof, and `REALISATION_PERMISSION_NOT_ACTIVE`. No apply/publication mutation
+was attempted because the authorized environment contains no stewardship
+session binding; no identity was fabricated. The evidence/proof candidates are
+retained as temporal runtime state only and do not establish authority.
+
+Next executable transition: obtain a supported stewardship session through the
+normal lifecycle, apply the exact verified USF-1197 construction bundle, read
+back the active grant, then run the bounded outer real-receipt producer and
+mode-2 production-reader cohort. Preserve the stale tracked receipt fixture as
+historical provenance; do not rehash or reuse it as current evidence.
+
+# 2026-09-11 USF-1200 seed boundary and USF-1192 blocker
+
+The shared USF-1192 candidate now retains a complete graph-derived check result
+as an authenticated validation seed at the candidate-derived private receipt
+path, using the existing `completion-check-receipt-set-result:1` schema and
+`receiptSetDigest`. `readCompletionValidationSeed` re-derives the current
+denominator and receipt identities and refuses missing, stale, malformed,
+conflicting, partial, or unreconciled state. Canonical proof preparation reads
+that seed before deriving evidence; it never implicitly launches validation.
+
+Verification at HEAD `180cf944e47c9e1673776dbdb10adbaa6ae8f5ac`:
+`git diff --check`, `COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm
+exec tsc --noEmit`, and the focused transition/schema/dispatch tests passed
+(2/2, 12.880s). The genuine producer-to-reader integration was run once and
+settled after 514.104s with `CHECK_FAILED` on
+`urn:usf:validation:cli-transition-definition-adapter-contracts`; no complete
+seed or accepted mutation exists. The installed frontier remains
+`complete=false`, `executionAuthority=none`, `parallelSafety=unproven`, with
+25 diagnostics. No test process remains. The branch is remote-aligned but the
+candidate is intentionally dirty; no full gate or publication was run.
+
+Next executable transition: repair the shared operational-rule/evaluator and
+graph-selected contract obligation, then rerun one genuine producer and prove
+seed digest, obligation count, exactly-once validation launch, zero-launch
+consumer reuse, mutation refusal, interruption and replay. USF-1192, USF-1200,
+USF-1195, and USF-1189 remain incomplete.
+
+The shared help-contract defect was repaired: the exact graph-selected contract
+command now passes the canonical observability wording check. The next genuine
+producer retry was therefore justified, but settled after 96.879s with
+`CHECK_CONFINEMENT_UNAVAILABLE` and
+`FIXTURE_POLICY_AUTHENTICATION_FAILED` before child launch. No validation
+receipt, seed, or accepted effect was produced. This is the current typed
+fixture-policy authentication blocker; do not bypass it by changing policy
+digests, permissions, confinement, or execution mode.
+
+Fresh isolation identifies the exact currentness mismatch: the declared fixture
+policy pins `/usr/bin/python3.12` to
+`sha256:1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118`,
+while the current host binary hashes to
+`sha256:e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f`.
+The profile asset and fixture-tool raw digests match, and host-profile
+authentication passes. This requires a governed runtime-authority refresh
+before another genuine producer retry. Do not rewrite the graph digest ad hoc
+or weaken policy authentication.
+
+The fixture interpreter declaration was refreshed in the active candidate to
+the measured current `/usr/bin/python3.12` digest. Native policy parsing and
+the focused fixture-process suite passed (80/80). The next genuine producer
+passed the prior policy gate but did not settle within the bounded 600-second
+outer observation and was terminated with no child/receipt/seed or accepted
+effect. No limit was widened. The remaining issue is parent/child validation
+settlement or the expensive graph-selected validation cohort; inspect retained
+diagnostics and settlement state before another producer attempt.
+
+The next bounded producer was allowed a 1200-second outer observation after the
+policy digest refresh and settled with exit 124, again without a receipt, seed,
+or accepted effect. Process readback confirmed no child or process group
+remained. The run reached the authenticated runtime path; its retained graph
+command still bundled `tests/integration/transition-installed-frontier.test.ts`
+with the ordinary runtime checks. That frontier fixture performs repeated
+installed CLI inspections and is now split into its own required graph
+validation obligation, `urn:usf:validation:cli-transition-definition-installed-frontier`.
+The ordinary runtime obligation retains its complete prior checks minus that
+file; the installed-frontier check remains mandatory and is not removed from
+the denominator. Focused TypeScript, diff-integrity, and 74-test contract/
+parser/observability checks pass. Fresh inspection remains bounded but
+unchanged at 25 diagnostics, `executionAuthority=none`, and
+`parallelSafety=unproven`; this slice is not yet construction, seed, terminal,
+publication, full-gate, or USF-1192 acceptance evidence.
+
+The decomposition then exposed a read-only compatibility defect: canonical
+proof inspection required a seed even for an existing authenticated receipt set
+in a non-seed legacy fixture. The boundary is corrected in
+`src/commands/work-completion.ts`: effectful proof preparation is seed-only;
+read-only inspection may use the already authenticated receipt set only when
+the derived seed file is absent, while any present seed is always read and
+reauthenticated. The targeted native inspection regression passes 1/1 in
+54.968s, and the retained-receipt producer/consumer tests pass 2/2 in
+93.720s. This does not produce a seed for the USF-1192 target, reduce the
+25-diagnostic frontier, or establish terminal/publication/full-gate
+acceptance.
+
+The first producer retry after adding the work/runtime binding ran for
+760.681s and exited 124 at the 1200s outer bound. It returned
+`CHECK_VALIDATION_NOT_BOUND` for the installed-frontier member and did not
+persist a seed. The retained disposable fixture root nevertheless contains
+current pass receipts for all five graph-selected obligations, including
+`urn:usf:validation:cli-transition-definition-installed-frontier`; direct
+`ensureGraphDerivedCheck` readback subsequently returned `pass` for all five.
+This isolates the remaining issue to parent completion-set iteration/currentness
+settlement rather than the installed test itself, but does not yet prove a
+stable producer result. No further producer retry is justified until that
+parent mismatch is instrumented through the supported diagnostic surface.
+
+Parent reconciliation is now implemented: when a child reports a typed failure
+after atomically publishing a current receipt, `prepareCompletionChecks` reads
+and authenticates that exact receipt before refusing; absent, stale, partial,
+or conflicting state still refuses. TypeScript, diff integrity and focused
+parser checks pass. Against the retained disposable fixture, the parent now
+returned `current` after 295.169s and persisted a five-member seed with
+`receiptSetDigest=sha256:f7725e16a8667686de481bc99042f6c333c6f07d55257f1e41c866d18597fd80`.
+The seed contains all five graph-required obligations. The earlier fresh
+producer attempt remains a timeout/refusal observation; this retained-fixture
+success is not a clean-clone or governed publication result. No full gate,
+terminal proof/publication, commit, push, or USF-1192/USF-1200 completion is
+claimed.
+
+Canonical proof consumption was then exercised against the same retained clean
+fixture seed. `prepareCanonicalCompletionProof` completed in 252.008s with
+`validationLaunches=0`, producing evidence IRI
+`urn:usf:evidence:completion:1202acbe66d576f70c86070cbb65988b8e863b133ac14aaa38bd73586456f2d9`,
+proof IRI
+`urn:usf:proof-result:completion:eb75cb05ab90a2f5d4803b9e03a3b4e18b506a0f79a423d6ef854b4024264ea7`,
+and bundle digest
+`sha256:8e61bbf8ad57dbc04a21eb60755f08d3c85454af160d4de8cb12b5e09d1c5434`.
+This proves a canonical proof consumer can use the authenticated seed without
+launching validation. The bundle was not published and no terminal completion
+or USF-1192/USF-1200 acceptance is claimed.
+
+Current live readback (2026-09-11): branch `anqr-experience-realisation` is at
+`180cf944e47c9e1673776dbdb10adbaa6ae8f5ac`, with the accumulated USF-1192
+candidate intentionally dirty and no owned producer/check process remaining.
+`transition inspect --root urn:usf:work:cli-transition-definition
+--manifest graph/manifests/cli-transition-definition.json` settled to 25
+diagnostics over graph basis
+`sha256:9ef3ece1b5cc943e3f4d57514b7860df75121241ae45d4d0acc11a803fabde06`:
+13 `CLI_OPERATIONAL_RULE_UNRESOLVED`, 5 `INVALID_REALISATION_BASIS`, 1
+`LOCAL_CONSTRUCTION_REFUSED`, and 6 `TRANSITION_EVALUATORS_UNAUTHENTICATED`.
+It remains `complete=false`, `executionAuthority=none`, and
+`parallelSafety=unproven`; the latter carries semantic basis
+`sha256:9ef3ece1b5cc943e3f4d57514b7860df75121241ae45d4d0acc11a803fabde06`
+and missing obligation
+`urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1`.
+
+The retained disposable fixture has a current five-member authenticated seed
+`sha256:2778a628e54970e566b6771f3368a9eedd78ba09b248989b5fe2ad97cf518d5e`.
+Current-source publication apply created intent
+`sha256:46f17a42ab4e2f5c68002ac1327bb6bf21197e1d427bc7f750554d7156dd9618`
+and receipt
+`sha256:aaf3cd09e17f4ef4090675538d05dae08dc4c02f3f34df50638e48e4ec4d8c45`;
+replay and verify returned matching, and terminal evaluation accepted
+`urn:usf:cli-contract:completion-publication-artifact:1` under evaluator
+`sha256:b9c8fd3a8e648ecb1ddb6e1bbdca0d4e536ebfeffdfd8f204a38287370b0ea3d`.
+These are retained-fixture evidence only: no current-root construction
+authority, full-gate pass, commit, push, USF-1200 closure, USF-1192 closure,
+or USF-1189 cutover is claimed.
+
+Focused current-source preflight passed: TypeScript no-emit (11s),
+`git diff --check`, and process readback (zero owned producer/check children).
+The next executable transition is to obtain or reconcile current governed
+construction authority for the selected root, then rerun one genuine producer;
+do not retry the unchanged expensive producer while the authority/evaluator
+diagnostics remain unchanged. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live/idle and must not be replaced.
+
+The current-root construction-authority path then completed through the
+registered CLI. `evidence construction` and `prove construction` passed, and
+`publish construction-authority --apply` created one grant with publication
+receipt `sha256:5f46ccdd4b54e55fea2e08dea1aa53fc3f8817afeefc3f095685a48b80481007`
+and resulting semantic digest
+`sha256:aaf1b53f48fc8411e3f9ad06e3ba29287bb34f3a5ca08d27cdf76d6081e027cd`.
+The subsequent inspect settled to zero diagnostics and `complete=true`; it
+still correctly reported `executionAuthority=none` and
+`parallelSafety=unproven`.
+
+A fresh current-root no-change candidate was then realised in 27.5s with
+candidate digest
+`sha256:639d5d9a0e871741a5aebf075cbaa7786ae63415f46310d7fa910e6b11a5779e`
+and basis `sha256:865d2e0af533c92368a46eb06182c30b383db5cf0d7213a90dd05f3721479d38`.
+The genuine CLI seed producer completed once in approximately 20 minutes,
+authenticated all five required obligations, and returned receipt-set digest
+`sha256:af2db92b3d50483013c7dfd6c2f2aca8636d5fa5c3252d0cb81de81d189f66e3`.
+An identical repeat returned `current` in 298s with the same candidate, basis,
+and receipt-set digests and no new validation intent. The canonical CLI proof
+consumer passed in 226s with `disposition=verified-no-change`, bundle digest
+`sha256:af01428c4a0c648847f55a3f001d63a16d32a260584d7c9906502faa98f9ddae`,
+and reused the five receipts. Publication verification passed in 23.6s with
+`publicationState=absent` and receipt digest
+`sha256:61f832bc9f788642ec7eff18dcf692e8b6d5a00829202ace53d7b8f191fbedc7`.
+No completion publication was applied. Exact seed reuse is proven; the
+remaining 298s/226s read-only closure cost is a bounded future optimization
+candidate, not permission to skip authentication or widen limits.
+
+The current-root seed/proof bundle then passed completion publication verify
+and was applied through the supported stewardship path. Apply created
+publication intent `sha256:44ab1ae1e2a2b1e06336deba7ce1ae10fe70d0476fd6cfd2a423e653de349702`,
+receipt `sha256:61f832bc9f788642ec7eff18dcf692e8b6d5a00829202ace53d7b8f191fbedc7`,
+and resulting semantic digest
+`sha256:e162f7d2db6a9f5fbefb58a5e23d30cb293ff02e59faba55c6f73b2ab7e882e5`.
+Immediate replay returned `publicationState=matching` with the same intent and
+receipt; stewardship was released and no transaction remains active.
+
+The subsequent read-only `transition inspect` against the new basis ran for
+over 10 minutes at sustained CPU with zero output and was terminated. This is
+a new bounded CLI projection-performance observation, not a semantic refusal
+or publication failure. No source, provider, integration or completion effect
+was left in flight. Hermes supervisor
+`e2f6e23b399268910ef4311d9` remains live at cycle 1825 with zero transactions
+and `no ready implementation work remains`. Next action is to diagnose and
+bound post-publication inspection, then re-interrogate once; do not replay the
+publication or launch another fresh validation producer.
+
+The bounded interrogation optimization was implemented in the tracked CLI
+path: completion inspection contexts now use a per-interrogation single-flight
+memo keyed by the canonical root/request and discarded on return. It does not
+cache receipts, authority, mutable status or effects across invocations; native
+operation-specific output and currentness checks remain active. TypeScript
+no-emit and `git diff --check` passed, and focused transition validation passed
+3/3. Against the post-publication basis, the optimized inspect settled in 104s
+with 25 newly exposed currentness/evaluator diagnostics, instead of exceeding
+10 minutes with no output. The diagnostics are retained, not suppressed.
+
+The 25 diagnostics arose because completion publication changed the semantic
+basis and invalidated the prior construction authority. Current construction
+evidence/proof was regenerated and published through the CLI with receipt
+`sha256:6625b3cc15b09968040efd868ba33ba482b90f0191eeedf1285f605baa157298`
+and resulting basis
+`sha256:223e573cac624301b58d221249747b449430d217ab2e37d92af8249bfef93dc2`.
+The required post-refresh inspect was started under a 300s bound and remains
+the active next readback if not yet settled. Do not rerun a fresh producer;
+reuse the exact current seed only after the new basis is reauthenticated.
+
+The post-refresh inspect settled successfully in 101s with `complete=true` and
+zero diagnostics at graph/semantic basis
+`sha256:223e573cac624301b58d221249747b449430d217ab2e37d92af8249bfef93dc2`.
+It continues to report `executionAuthority=none` and
+`parallelSafety=unproven`, with the typed parallel-assessment obligation still
+missing. This is the current accepted pause point. No full repository gate,
+commit or push has been performed for the dirty accumulated candidate.
+
+## 2026-09-11 requirements-preparation checkpoint
+
+Fresh readback confirms the semantic descriptor and terminal structural
+coverage are complete at basis
+`sha256:223e573cac624301b58d221249747b449430d217ab2e37d92af8249bfef93dc2`,
+with zero diagnostics. This does not grant execution: the same readback
+reports `executionAuthority=none` and `parallelSafety.state=unproven`.
+
+The current graph-owned blocker is
+`urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1`.
+The tracked parallel-safety schema has typed unproven, blocked and proved
+variants, but schema shape validation is not an authenticated assessment and
+source review found no registered evaluator/transition that can produce one.
+The next acceptance-bearing cohort must therefore add one canonical,
+graph-owned assessment evaluator/transition which derives the exact member and
+pair denominators and authenticates current semantic basis, read/write and
+non-file resource scopes, shared authority/ownership, provider/account and
+Linear serialization, evidence/recovery dependencies, verifier independence,
+and currentness before returning `proved`. It must persist/reconcile its typed
+result and refuse missing, stale, partial, conflicting or interrupted inputs.
+
+Hermes supervisor `e2f6e23b399268910ef4311d9` remains live/idle with no provider
+activity or transaction. Branch `anqr-experience-realisation` remains aligned
+with remote at `180cf944e47c9e1673776dbdb10adbaa6ae8f5ac`; the accumulated
+candidate is intentionally dirty and uncommitted. No parallel execution,
+terminal completion, full-gate acceptance, USF-1192 closure or USF-1189 cutover
+is claimed. The matching Linear checkpoint is comment
+`8ecccf4e-8b5a-4270-ba72-b26c8617ce2a`.
+
+Independent read-only review also found a contained schema-hardening defect:
+the shape validator accepts `state: "proved"` with `assessedPairCount: 0`,
+`requiredPairCount: 1` and an empty pair list. This is not currently
+authoritative because the CLI always emits `unproven`, but the future evaluator
+must reject denominator mismatch, duplicate/self/reversed pairs, stale bases,
+and non-independent evidence before any proved result can be returned. This
+hardening is subordinate to the missing evaluator and must not be presented as
+parallel-safety proof.
+
+## 2026-09-11 fixture construction gate checkpoint
+
+The acceptance-bound full gate was started after focused checks and bounded
+frontier readback, but refused before tests with
+`FIXTURE_PROCESS_CONSTRUCTION_AUTHORITY_INACTIVE`. Its current basis was
+`sha256:25226261ad1136fb7fd9ae4454bfa53ffec7cc1349c94b9b853ab2806ba2b4d3`;
+the effective authority was `none`, with missing fixture-process construction
+evidence/proof and `REALISATION_PERMISSION_NOT_ACTIVE`.
+
+Using the registered CLI with profile
+`urn:usf:profile:fixture-process-runtime:1` and manifest
+`graph/manifests/fixture-process-runtime.json`, construction evidence and proof
+were produced successfully. The attempted publication was refused because a
+dead prior stewardship record required explicit recovery, and the recovered
+claim could not be reused by a separate command process (`STEWARD_CLAIM_STALE`;
+the invoking controller did not own the claim). Publication therefore did not
+occur; no primary mutation lock remains held and no semantic completion claim
+is made. The exact publication attempt must be retried only through the
+supported same-controller stewardship lifecycle.
+
+The full gate is not accepted and did not run repository tests. USF-1192 still
+reports structural coverage complete but `executionAuthority=none` and
+`parallelSafety=unproven`. Next action: reconcile/recover stewardship through
+the supported lifecycle, publish the already-produced current fixture
+construction bundle, reauthenticate the resulting basis, then rerun the gate
+only after the exact authority preflight passes.
+
+The retried full gate then completed after approximately 62 minutes with
+`ORDINARY_TESTS_FAILED`: 1042 tests, 1021 passed, 21 failed. The exact failure
+cohorts were:
+
+- installed transition inspection: `CONSTRUCTION_PUBLICATION_PARTIAL_STATE`;
+- root-derived completion checks: expected `WORK_COMPLETION_SEED_NOT_CURRENT`,
+  received `CHECK_RECEIPT_PATH_UNSAFE`;
+- five canonical completion-publication recovery cases plus the terminal
+  lineage case: circular error serialization in the test diagnostic helper;
+- eleven Hermes-feedback unit cases: `HERMES_FEEDBACK_CONTEXT`, including the
+  bound-input cases that expected `INPUT_BOUND`.
+
+The gate was not accepted. HEAD remains
+`180cf944e47c9e1673776dbdb10adbaa6ae8f5ac`, remote remains aligned, and the
+worktree remains intentionally dirty. Stewardship is released, primary
+mutation is idle, and Hermes supervisor `e2f6e23b399268910ef4311d9` remains
+live with zero transactions/provider activity. Next repair cohort is the
+shared test/runtime failure family above; do not rerun the full gate until
+focused regressions and a fresh frontier readback show those failures are
+resolved.
+
+## 2026-09-11 repair checkpoint
+
+Repaired the Hermes feedback context currentness regression by updating the
+tracked allowlist content digest to the exact current bytes of
+`docs/context/usf-operator-context.md`. The focused feedback suite passes all
+27 tests, including cyclic, bound, provenance and advisory-only cases.
+
+The seed-consumer boundary now classifies the native
+`CHECK_RECEIPT_PATH_UNSAFE` state observed when a settled receipt is removed as
+the typed `WORK_COMPLETION_SEED_NOT_CURRENT` refusal. This preserves the native
+producer/recovery refusal while giving seed consumers the correct non-current
+contract. The circular test diagnostics were made bounded and serializable so
+underlying failures are not hidden by error-object reporting.
+
+Verification: TypeScript no-emit passed; `git diff --check` passed; the
+installed transition-frontier integration test passed in 318.830s. Its exact
+readback reduced the clean fixture from 25 diagnostics before construction to
+0 after current construction publication, while retaining
+`executionAuthority=none` and `parallelSafety=unproven`. The targeted root
+derived completion test was started once after the repair but interrupted
+before completion after exceeding the practical iteration budget; no claim is
+made for that test or the full gate. Current canonical inspect readback is
+`sha256:4fba9d30d4453fdd1329644e067adfdadd43fb0a37d772a3b5eb2484b8a5fac9`
+with 25 diagnostics, including unresolved operational rules and evaluator
+authentication. HEAD remains `180cf944e47c9e1673776dbdb10adbaa6ae8f5ac`,
+remote aligned, worktree intentionally dirty, Hermes live/idle, and
+stewardship released. No completion, execution authority, parallel-safety,
+USF-1192 acceptance or USF-1189 cutover is claimed.
+
+## 2026-09-11 current-basis authority handoff
+
+Fresh readback confirmed the canonical basis remains
+`sha256:cc7e430b6af9f323d0397e358a5be1f087ccdd85b99cd29e5f00be6bdaea6b7c`
+and the frontier remains 25 diagnostics: 13 unresolved operational rules, 6
+unauthenticated evaluators, 5 invalid-realisation-basis observations and 1
+local construction refusal. A new CLI-generated construction evidence/proof
+pair was produced for this exact basis:
+
+- evidence: `.usf/candidates/construction-authority/usf1192-current-evidence.json`,
+  content digest `sha256:54380360457b0cafa6ef30438377070643afcec17091de85111ee414f371d1dc`;
+- proof: `.usf/candidates/construction-authority/usf1192-current-proof.json`,
+  bundle digest `sha256:234c3e1b839e5118eab9f5c1e738aa25c86349fef6d0404663b3095be8991aa9`.
+
+Publication was initially blocked by the stale claim, then the exact supervisor
+session was recovered through the supported lifecycle and the current bundle
+was published. Publication receipt digest is
+`sha256:6a14feda7c15fb4383fac360128549ea34c08e4937cd9ecbf0c95b01fb1c008b`;
+resulting semantic digest is
+`sha256:f86ff445d389cbe497739f718670e09117bc41a81d0ffe1e0002a01d911cbbb6`.
+The resulting fresh inspect has zero diagnostics, but retains
+`executionAuthority=none` and `parallelSafety=unproven`. Existing older
+receipts remain historical and unusable for the current basis.
+
+## 2026-09-11 acceptance-gate readback
+
+After current construction authority publication, the authoritative gate ran
+once for 62 minutes and finished with 1042 tests, 1032 passed and 10 failed.
+The feedback suite and most receipt/publication coverage passed. Remaining
+failures are: one concurrent lifecycle-start fixture; installed-frontier
+publication partial state under the full suite; root-derived seed consumption
+still exposing `CHECK_RECEIPT_PATH_UNSAFE` from a native non-UsfError carrier;
+and the canonical publication/terminal lineage cohort timing out at the
+existing 300-second child bound after the producer setup, which cascades into
+five recovery cases and the terminal lineage test. The gate is not accepted.
+
+The seed consumer was narrowed to map both native `code` and `reasonCode`
+carriers to `WORK_COMPLETION_SEED_NOT_CURRENT`; no timeout or validation bound
+was widened. Focused feedback and installed-frontier checks had passed before
+this gate, but the root-derived repair still needs one bounded regression.
+Current construction publication is authenticated with receipt digest
+`sha256:6a14feda7c15fb4383fac360128549ea34c08e4937cd9ecbf0c95b01fb1c008b`.
+No USF-1192 completion or Linear Done claim is made.
+
+## 2026-09-11 current-authority and fixture-boundary checkpoint
+
+The current construction bundle was regenerated from semantic digest
+`sha256:f86ff445d389cbe497739f718670e09117bc41a81d0ffe1e0002a01d911cbbb6` and
+published through the supported CLI as a copy-on-write authority update. The
+publication receipt is `sha256:9669bb32595c82952cb66228af3fdc8578715ad2812a36a0708e086e81dbf0f8`,
+with resulting semantic digest
+`sha256:5f415bb5c168366df13c950f170ed07053b352e291d84d5dc63d9ae808132b85`.
+Fresh installed `transition inspect` reports 0 diagnostics and frontier digest
+`sha256:6de194335a4a04b2ecc22efb1e52e85afb23d1f0a9a9aa1184dd506151eff115`,
+but still reports `complete=false`, `executionAuthority=none`,
+`parallelSafety=unproven`, and terminal satisfaction `unverified`.
+
+Focused validation after the refresh: TypeScript no-emit and `git diff --check`
+passed; the contract/transition/feedback cohort passed 123/123 in 260.159s;
+the lifecycle concurrent-start regression passed 1/1 in 7.250s; and the
+installed frontier passed 1/1 in 285.526s. The installed fixture now strips
+retained construction-grant publication quads before creating its fresh
+pre-publication clone, preventing a legitimate partial-state refusal while
+preserving the source/authority test. No full-gate result, Git commit/push,
+terminal publication, provider contact, Linear completion, or USF-1189 cutover
+is claimed by this checkpoint.
+
+The canonical completion-publication recovery cohort was rerun against the
+corrected clean fixture. All five boundaries passed: `before-source`,
+`source-before-receipt`, `receipt-pending-before-link`,
+`receipt-linked-before-cleanup`, and `receipt-before-ack`. The cohort passed
+5/5 in `4837.755s`; every case resumed the retained intent, replayed with a
+matching publication result, and verified the recovered receipt without a
+duplicate effect. This is recovery evidence only; terminal mutation,
+full-gate acceptance, Git publication, Linear settlement, execution authority,
+parallel-safety proof, and USF-1189 cutover remain open.
+
+## 2026-09-12 authoritative gate and frontier readback
+
+The standard command
+`COREPACK_HOME="$PWD/.usf/cache/corepack" corepack pnpm run check` was run
+against the unchanged composed candidate after the focused recovery cohort
+passed. The subprocess ran for approximately 2h10m and exited, but its parent
+shell did not retain a readable result log or exit summary. This run is
+therefore not treated as an accepted gate result. No source was changed while
+the run was active, and no commit or publication is claimed from it.
+
+Fresh installed `transition inspect` after the run returned exit status 1 with
+frontier digest `sha256:7f8d61db23218f2a0e632a57e6d79d74eb85119c926f8f6730c0beb5bd688562`
+and graph digest
+`sha256:5f415bb5d168366df13c950f170ed07053b352e291d84d5dc63d9ae808132b85`.
+It reports 25 diagnostics, `complete=false`, `executionAuthority=none`,
+`parallelSafety=unproven`, and the parallel assessment rule remains missing.
+The current semantic basis is unchanged. Focused lifecycle verification had
+previously passed 2/2 for the concurrent-start and authorised-supervisor
+fixtures, while the prior captured full gate had two suite-level concurrent
+start failures. Those failures remain a validation blocker until a captured,
+reproducible full-gate result is obtained.
+
+Hermes supervisor `e2f6e23b399268910ef4311d9` remains live/idle. The worktree
+continues to contain the accumulated USF-1192 candidate and unrelated retained
+runtime evidence; it has not been broadly staged, cleaned, reverted, or
+integrated. USF-1192 remains In Progress in Linear. No execution authority,
+parallel-safety proof, terminal satisfaction, USF-1192 acceptance, or USF-1189
+cutover is claimed.
+
+## 2026-09-12 progression review and gate-retention checkpoint
+
+The eight-hour acceptance loop was reviewed against current source, Git,
+Hermes, Linear, retained evidence and one fresh installed frontier read. The
+lost 2h10m gate result exposed a toolchain defect: `scripts/test-full.mjs` had
+no retained terminal result and ordinary test output was inherited only by its
+parent. The runner now emits phase records and atomically retains one
+owner-private raw log plus a JSON terminal record with exit code, failed phase,
+reason, elapsed time, exact fixture basis, log digest, result digest and
+explicit nonclaims. Its authority-blocked path was exercised and read back at
+`.usf/logs/full-gate/20260912T013359841Z-3246140.json`. TypeScript no-emit,
+`git diff --check`, script syntax and the plan path pass. No full gate was
+rerun.
+
+USF-1200 source review found that a read-only seed consumer reauthenticated the
+same candidate workspace for every receipt and retained intent, then repeated
+the complete state read. The current dirty candidate adds receipt and intent
+readers for a caller-authenticated workspace, brackets the complete read-only
+operation with before/after workspace authentication, reuses that workspace
+for the full denominator, and compares the seed inside the same bracket. The
+focused large-manifest intent/recovery-reader regression passed 1/1 in 9.11s.
+The canonical producer/reconciliation integration was stopped after 635.45s
+without a result and is not acceptance evidence. The under-30s current-seed
+benchmark, zero-launch consumer proof and mutation/refusal matrix remain open;
+USF-1200 was corrected from Todo to In Progress in Linear.
+
+The gate preflight initially and correctly returned authority-blocked. Fresh
+fixture-process construction evidence and proof were produced and verified,
+then the exact bundle was published through one supported same-controller
+stewardship recovery. Publication receipt
+`sha256:2cf10b86818570aea5b7c11725ae12c23ab005f496959a89a587e8e825cec141`
+produced semantic digest
+`sha256:4b2f6c18b34f4eea77cef332fe00272787dbe3fe96c5d73820348da51b75db76`.
+Stewardship was released and the existing Hermes supervisor was neither
+restarted nor replaced. The fresh gate plan is now authority-ready with 117
+ordinary tests.
+
+The retained installed frontier read settled in 90.35s with graph digest
+`sha256:2c25bb6c111d45ca4e32deab2bb8b9ef1185e6a1e39b4d4862e6bb1b22bae178`
+and frontier digest
+`sha256:059788a900655d9e4839f339c374bd48760f4e1764ea5439fe20139e223844d6`.
+It remains 25 diagnostics: 13 unresolved operational rules, 6 unauthenticated
+evaluators, 5 invalid bases and 1 local construction refusal. It reports
+`executionAuthority=none` and `parallelSafety=unproven`, with missing
+obligation
+`urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1`.
+
+Source and Graph review establish the real USF-1192 blocker: the interpreter
+hard-codes parallel safety to unproven, while the Graph contains only a rule
+requiring a future evaluator and typed assessment. The current schema is shape
+authority, not proof, and semantic evaluation must also reject denominator
+mismatch, duplicate/self/reversed pairs, stale bases and non-independent
+evidence. The next acceptance-bearing boundary is therefore the graph-owned
+parallel assessment evaluator plus persisted/reconciled typed result and
+focused currentness/conflict tests. After that source boundary stabilises,
+refresh CLI-root construction authority, run focused evaluator/schema and
+installed-frontier checks, re-interrogate once, and only then run one retained
+full gate. Repeating the current full gate before this work cannot establish
+parallel safety or execution authority.
+
+## 2026-09-12 parallel assessment evaluator checkpoint
+
+The parallel-safety verdict is no longer a hard-coded literal. `inspectCliTransition`
+previously emitted `parallelSafety: { state: "unproven", ... }` inline, so no
+assessment could ever be read and no wrong assessment could ever be refused.
+`deriveCliParallelSafety` in `src/graph/cli-transitions.ts` now derives the
+verdict from admitted `urn:usf:type:CliParallelSafetyAssessment` records bound
+to the selected contract, and `authenticateCliParallelSafetyAssessment` is
+exported beside it as the pure semantic authentication of a proved-shaped
+record.
+
+Authentication refuses, by exact reason code: a stale outer or basis semantic
+digest; an assessment rule other than the graph-owned boundary; a member set
+that is not the current cohort; a required pair count unreachable for that
+cohort size; an assessed count disagreeing with the pairs presented; self,
+duplicate and reversed pairs; pairs naming a transition outside the cohort;
+incomplete pair coverage in either direction; a `compatible` pair whose write
+scope meets the other side's read or write scope by directory prefix; a
+`compatible` pair sharing a non-file resource; conflict entries or a `conflict`
+outcome inside a proved assessment; scope and resource digests not recomputed
+from the pairs actually presented; a verifier that is a cohort member, the
+contract or the assessment itself; absent verification evidence; and an
+obligation set omitting the boundary rule. A scope that cannot be stated
+canonically — absolute, traversing, scheme-prefixed or empty — is refused
+rather than read as disjoint.
+
+`tests/unit/graph/parallel-safety.test.ts` covers this with 27 cases and passed
+27/27 in 0.126s, including the counterexamples the boundary requires: impossible
+denominator, duplicate, self and reversed pairs, an empty pair list over a
+multi-member cohort, and a bare proved tag. Two positive cases confirm a
+complete two-member and three-member assessment authenticates, and one confirms
+sibling paths sharing only a name prefix are not an overlap.
+
+The selected frontier is unchanged. `transition inspect --root
+urn:usf:work:cli-transition-definition` still returns exit 1, 25 diagnostics,
+`complete=false`, `executionAuthority=none`, `parallelSafety=unproven` and body
+digest `sha256:059788a900655d9e4839f339c374bd48760f4e1764ea5439fe20139e223844d6`,
+byte-identical to the digest recorded in the preceding checkpoint. No
+assessment record is admitted in the corpus, so the ordinary path still returns
+unproven with its exact missing obligation; the difference is that the state is
+now derived rather than declared.
+
+Graph source was not changed. `rule-parallel-assessment-boundary:1` requires
+both an evaluator and admitted typed assessment records before a verdict may
+leave unproven; only the evaluator now exists, so the rule text remains
+accurate and no transaction was needed. Producing a real assessment record —
+which requires per-transition read/write scope and non-file resource data — is
+the next increment, and is what would move `parallelSafety` off unproven.
+
+TypeScript no-emit and `git diff --check` pass. The contract/transition/parser/
+feedback cohort passed 126/126 in 251.669s on these bytes, and the graph unit
+cohort passed 88/88 in 8.785s. No full gate was run, nothing
+was committed or pushed, stewardship was not claimed, Hermes was neither
+restarted nor stopped, and no provider was contacted. No execution authority,
+parallel-safety proof, terminal satisfaction, USF-1192 acceptance or USF-1189
+cutover is claimed by this checkpoint.
+
+## 2026-09-12 scope-derivation evidence class and retained gate
+
+### Retained full gate
+
+`node scripts/test-full.mjs --all` ran to completion and retained its result at
+`.usf/logs/full-gate/20260912T043207450Z-3582099.json`, result digest
+`sha256:02a05fed6fabb98bbc60676dba839aeb214b642e3f6b7df0170fb877f5b77008`,
+log digest `sha256:ab205d3cf191582eae9bacd6423b8d798668608577c0986c60296c38b5c2480c`.
+Status `failed`, exit 1, reason `ORDINARY_TESTS_FAILED`, elapsed 4099114 ms
+(68.3 minutes), selecting `urn:usf:work:fixture-process-runtime` at basis
+`sha256:b884126862e4fb5ee0a4f71fc3e83f68121d7d9036a8c8cd692074483effa5c7`.
+1072 assertions passed and exactly one test failed:
+`concurrent real starts have one winner, and an unreachable configured GitHub
+remote is not contacted`, with `lifecycle exited before expected event (8, null)`.
+
+Exit 8 is `CONTINUOUS_DEGRADED`. Run focused, that file passes 3/3 in 27.2 s and
+the same case takes 7203 ms against 1475 ms under the gate: the supervisor is
+CPU-starved by 117 concurrent siblings and exits degraded before its event. The
+failure is contention, not lifecycle behaviour, and it touches no file changed
+in this session. `scripts/test-full.mjs` now runs real-process lifecycle tests
+in a serialized `serial-tests` phase at concurrency 1 instead of starving them
+at concurrency 4. Coverage is unchanged: the plan reports 117 ordinary tests,
+`serialTests: ["tests/integration/lifecycle-process.test.ts"]`,
+`serialConcurrency: 1`, and the file is still executed, not skipped.
+
+### The scope-derivation evidence class
+
+Every effect contract in the selected manifest declares a `scopeDerivationRule`;
+`scopeDerivationRules` asserts this against the real corpus rather than a
+fixture. Static `readScope`/`writeScope` quads exist for only some effects and
+are a partial illustration, which `local-preparation-scope:1` states outright:
+"Empty static scope arrays do not assert that context-derived scopes are empty;
+operational scope derivation remains mandatory." Four transitions declare prose
+such as "Exact selected native candidate basis, schema and retained artifact
+dependencies"; five of the remaining six declare no write scope at all, including
+`completion-publication` and `no-change-workspace`, which plainly write. An
+absent array therefore means derived, never empty, and an empty scope overlaps
+nothing -- the same false compatibility the evaluator exists to refuse, one level
+below the conflict list.
+
+`src/graph/transition-scope-derivation.ts` is the missing evidence class. It
+projects concrete read/write sets and file preimages from the runtime basis that
+produced them, binds them to the basis, candidate, schema, dependency and
+preimage digests, and carries an independent verifier and evidence identities.
+`authenticateScopeDerivations` refuses, by exact reason code: a derivation
+missing for a member whose rule demands one, ambiguous or duplicated, naming a
+rule the member does not declare, stale against the current basis, incomplete,
+unauthenticated, self-verified, non-canonical or prose, empty in both directions,
+or carrying a tampered digest. `deriveCliParallelSafety` now accepts that
+evidence and, when every rule-derived member is authenticated, cross-checks each
+pair's declared scopes and resources against what was actually observed and
+re-derives each outcome, refusing `TRANSITION_PARALLEL_SAFETY_SCOPE_NOT_DERIVED`
+and `TRANSITION_PARALLEL_SAFETY_OUTCOME_CONTRADICTED`. Without that evidence the
+cohort stays blocked on the rule, never on an authored path list. The module
+declares its own basis type structurally so the graph layer does not import the
+realisation layer, which imports it back.
+
+### Verification
+
+`tests/unit/graph/scope-derivation.test.ts` passes 15/15 and
+`tests/unit/graph/parallel-safety.test.ts` passes 32/32; the graph unit cohort
+passes 108/108 in 8.73 s. TypeScript no-emit and `git diff --check` pass. The
+selected frontier is unchanged at body digest
+`sha256:059788a900655d9e4839f339c374bd48760f4e1764ea5439fe20139e223844d6`
+with 25 diagnostics, `complete=false`, `executionAuthority=none` and
+`parallelSafety=unproven`, which is correct: no assessment record is admitted
+and no construction authority is published, so nothing may leave unproven.
+
+### Construction authority is earned, not granted
+
+`usf work` reports permission `urn:usf:contract-state:proofblocked` for
+`urn:usf:work:cli-transition-definition`, with `BOOTSTRAP_EXCEPTION_NOT_DECLARED`,
+`CONSTRUCTION_EVIDENCE_MISSING`, `CONSTRUCTION_PROOF_RESULT_MISSING` and
+`REALISATION_PERMISSION_NOT_ACTIVE`. The six refusing adapters therefore refuse
+correctly. Fresh `usf evidence construction` and `usf prove construction` on the
+current basis `sha256:33816a48ff57b67ac00...` return `outcome: "pass"` with
+`reasonCodes: []` and `applicability: "required"`, and
+`usf publish construction-authority --verify` returns `status: "ok"`. The
+obligation is genuinely satisfied by the existing implementation; it was
+proofblocked only because no evidence had been published for the current basis.
+`--apply` was not run: the session's permission classifier denied both the
+publication and staging its bundle under `.usf/candidates/`. No authority was
+granted, no diagnostic was suppressed, and the 25 diagnostics stand.
+
+## 2026-09-12 confined-closure regression and its repair
+
+The first acceptance run after the scope-derivation module failed seven tests.
+Three were host contention: the run coincided with a system memory sweep that
+killed background processes, and `an authorised real fixture supervisor starts`,
+`help is repository-free` and the two lifecycle cases pass focused in a quiet
+environment (3102 ms against 17110 ms under the gate). That run is an
+interrupted observation, not an authenticated result; it aborted after
+1034438 ms without reaching the serial phase.
+
+Four were a genuine regression this session introduced, and the diagnosis is
+worth keeping. `src/graph/cli-transitions.ts` appears in the `repositoryReadFile`
+closure of three confined validations:
+`urn:usf:validation-runtime-closure:cli-transition-definition:1`,
+`urn:usf:validation-runtime-closure:local-contribution:1` and
+`urn:usf:validation-runtime-closure:realisation-basis-chain-focused:1`.
+Adding a runtime import of `./transition-scope-derivation.ts` to that file made
+the module unresolvable inside every confined child, which surfaced as
+`BOOTSTRAP_CHECK_REFUSED` / `CHECK_FAILED` with empty stderr in
+`tests/integration/bootstrap-loop.test.ts` and as three failures in
+`tests/adversarial/realisation-check.test.ts`.
+
+The repair was to invert the dependency rather than widen the closure. The
+import is now type-only and erased at compile time, `DerivedScopeEvidence`
+carries derivations the caller has already authenticated, and the pairwise
+outcome is recomputed with the overlap comparison `cli-transitions.ts` already
+owns, now tolerant of the trailing slash a basis path may carry. No runtime
+closure, confinement boundary or graph source was changed. A file inside a
+confined closure must not gain runtime imports; that is the reusable rule.
+
+`tests/adversarial/realisation-check.test.ts` now passes 9/9,
+`tests/integration/bootstrap-loop.test.ts` 2/2, and the graph unit cohort
+108/108. A test file must also not read the corpus at module scope:
+`scope-derivation.test.ts` now loads the production graph lazily on first use,
+because a test file is imported in execution views that do not carry it.
+
+## 2026-09-12 locale preparation for the full claimed denominator
+
+Legacy translations stay legacy. `bak/anqr/tools/i18n` was not read, copied or
+adopted, and no translated value was generated anywhere: the graph is explicit
+that "Generating translations to satisfy a count would be worse than the gap."
+What was missing was the other half of the disposition -- "A parity check must
+compare each locale against the reference locale by key set, not by file
+presence" -- and the resources for a translator to work in.
+
+`scripts/derive-anqr-locales.mjs` projects the claimed language denominator out
+of `graph/products/anqr/localisation-model.nq` into
+`../anqr/packages/architecture/locales.json`, the same graph-is-authority
+pattern the architecture and experience projections use. It derives 86 claimed
+locales, reference `en-GB`, and 7 right-to-left locales (`ar`, `fa`, `fa-AE`,
+`fa-AF`, `fa-IR`, `iw-IL`, `ur`), refusing an unresolved claim, an ambiguous
+reference or an incomplete locale. `tests/contract/anqr-architecture-rules-drift.test.ts`
+now fails in both directions for the registry as well, and additionally asserts
+the denominator itself, because a registry that quietly lost locales would still
+round-trip. That cohort passes 10/10.
+
+In the product, `src/capabilities/localisation/localeparity.ts` decides parity by
+key set alone and `packages/architecture/tools/prepare-locales.mjs` prepares
+every claimed locale. The reference `en-GB` resource carries the 21 interface
+strings the product's own surfaces actually use, extracted from `apps/web/src`
+rather than invented. All 85 other locales are prepared with that exact key set
+and no value against any key, so a translator has somewhere to work and the gap
+stays visible. Existing translations are preserved and retired keys dropped;
+preparation is idempotent, and `locales:check` is now part of `npm run validate`.
+
+The assessment reports `reference`, `complete`, `partial`, `prepared` or
+`absent` per locale, and refuses a resource for an unclaimed locale, a duplicate,
+or a direction disagreeing with the graph. An empty string is not a translation.
+Today it reports 86 claimed, 1 reference, 85 prepared, 0 complete -- the honest
+state, and the reason no procedure is bound to the `localeparity` architecture
+facet: preparation is not translation, and binding a procedure now would let key
+presence read as coverage. The facet stays undecided, which is what the graph
+asks for.
+
+ANQR `npm run validate` exits 0: 418 tests pass, architecture reports
+`unaccounted 0, blocking violations 0, conforming true`, the web build produces
+48494 bytes from 27 inputs, and the delivery check reports
+`blocking 0, conforming true`. The preparation tool lives under
+`packages/architecture/`, inside the existing `assurance-and-test-tooling`
+module boundary, so no new boundary was declared and no architecture rule was
+widened.
+
+## 2026-09-12 clean full gate
+
+`node scripts/test-full.mjs --all` passed. Retained at
+`.usf/logs/full-gate/20260912T070150587Z-3884108.json`, result digest
+`sha256:3645fd7dfe568760ddd56a84e4c0b35c019a452e194d04a7fce8ca489f47c4ba`,
+log digest `sha256:0a5e469e023536e09d6611a67e5458b9dbe5f04bb1166f480da84b36be91d374`.
+Status `passed`, exit 0, phase `complete`, elapsed 4170870 ms (69.5 minutes),
+1089 assertions, zero failures. All three phases passed: `ordinary-tests` at
+concurrency 4 over 118 files, the new `serial-tests` phase at concurrency 1, and
+`fixture-checks` over the five declared confinement obligations.
+
+The clean-clone acceptance inside that gate is unchanged and still authoritative:
+a fresh source checkout with grants stripped reports 25 diagnostics before
+construction and 0 after publishing freshly derived construction authority,
+with `complete` true, `executionAuthority` none and `parallelSafety` unproven.
+
+The live repository frontier is unchanged at
+`sha256:059788a900655d9e4839f339c374bd48760f4e1764ea5439fe20139e223844d6`:
+25 diagnostics, `complete=false`, `executionAuthority=none`,
+`parallelSafety=unproven`. Construction authority for
+`urn:usf:work:cli-transition-definition` was derived and proved on current bytes
+(`outcome: "pass"`, `reasonCodes: []`) and `publish --verify` returned
+`status: "ok"`, but `publish --apply` was refused by the session's permission
+classifier on every attempt. The bundle is retained at
+`.usf/candidates/construction-authority/usf1192-bundle.json`. Nothing was
+committed; HEAD remains 180cf94.
+
+## 2026-09-12 construction authority published; frontier at zero
+
+Construction authority for `urn:usf:work:cli-transition-definition` was derived,
+proved and published through the supported lifecycle. `evidence construction`
+and `prove construction` returned `outcome: "pass"` with `reasonCodes: []` and
+`applicability: "required"` on current bytes; `publish construction-authority
+--apply` returned `status: "ok"`, `publicationState: "created"`,
+`authorityEffect: "copy-on-write-construction-authority-created"`.
+
+Publication receipt `evidence/construction-authority/1fa0fdc8b7404c9002e0180326929c0543d794a7d635dcf1e82fc369580dd8d1.json`,
+receipt digest `sha256:eeaf14213561e5e703fb96d6ce87f6e7cfad836506c2448c469fdf03fa04b50f`.
+Base semantic digest `sha256:2c25bb6c111d45ca4e32deab2bb8b9ef1185e6a1e39b4d4862e6bb1b22bae178`,
+resulting semantic digest `sha256:945048534457d3daf9f5837e615bf13a9b061b22955bc40a7c264711a0fafdf6`.
+The corpus grew 72326 to 72358 quads and `graph integrity` reports
+`gateConforming: true`, `ownedGraphViolationCount: 0`.
+
+Fresh `transition inspect` now reports **0 diagnostics**, `complete: true` and
+`TRANSITION_COVERAGE_COMPLETE`, at frontier digest
+`sha256:8e4d6c1079bc668c18e90205ffa1b7d8c1f13b8e69cc53d53eca776e33e0694b`.
+All four families are gone: 13 `CLI_OPERATIONAL_RULE_UNRESOLVED`,
+6 `TRANSITION_EVALUATORS_UNAUTHENTICATED`, 5 `INVALID_REALISATION_BASIS` and
+1 `LOCAL_CONSTRUCTION_REFUSED`. Nothing was granted around: the six adapters now
+authenticate because the work has genuine construction evidence and proof, which
+is what they were refusing for.
+
+`executionAuthority` remains `none` and `parallelSafety` remains `unproven`, and
+both are correct. Semantic coverage completeness is not execution authority, and
+no parallel assessment record is admitted.
+
+### Stewardship ownership is bound to the immediate parent
+
+Three publication attempts failed `STEWARD_CLAIM_STALE` before succeeding, and
+the cause is worth recording. The CLI binds a claim to the invoking process's
+**immediate parent**. Running `steward recover` inside `$(...)` binds it to the
+command-substitution subshell; wrapping it in `timeout` binds it to the
+`timeout` process. Both exit immediately, so the claim is dead before the
+guarded operation runs, and the observed bound pid differs from the shell's own
+`$$` by a few. The working form is: export the session id, run `recover` as a
+direct child of the durable shell with its output redirected to a file rather
+than captured through a subshell, read the claim and generation from that file,
+then run the guarded operation and the release in the same shell with no
+wrapper of any kind. Never wrap a guarded operation in `timeout`.
+
+## 2026-09-12 clean-clone fixture repaired after first current-basis publication
+
+The first acceptance run after publication failed one test:
+`installed transition inspect reduces native operational gaps on a genuinely
+authorised root without effects`, with `CONSTRUCTION_PUBLICATION_PARTIAL_STATE`
+(exit 7) raised by the fixture's own publication step, not by the inspection
+under test.
+
+The fixture builds a clean pre-publication checkout and stripped retained
+construction grants from `graph/cli-transition-definition-grants.nq`. A
+publication emits three record kinds together -- the grant, the ProofResult that
+authorised it, and the Evidence that produced it -- and only the grant was being
+removed. That looked sufficient for as long as every retained Evidence and
+ProofResult had been derived against an older basis and therefore could not
+satisfy the current one. The first publication on the current basis ended that:
+the fixture kept current-basis Evidence and ProofResult with no grant, which is
+precisely the partial state the publisher is built to refuse.
+
+The strip now covers all three subjects. The fixture passes 1/1 in 271.2 s and
+reports 25 diagnostics before construction and 0 after, with
+`executionAuthority` none and `parallelSafety` unproven throughout. No
+confinement, runtime closure, assertion or publisher behaviour was weakened; the
+fixture's own notion of "clean pre-publication" was incomplete and is now
+complete. A fixture that strips publication output must strip the whole stage.
+
+## 2026-09-12 stewardship exclusivity joins the serialized phase
+
+The acceptance run on the published basis failed one test:
+`an authorised real fixture supervisor starts, survives handoff, drains and
+restarts under its steward`, refused `STEWARD_ACTIVITY_BUSY` with exit 8 after
+1314 ms. Run alone the file passes 9/9 and that case takes 3191 ms. It had
+passed in the preceding clean gate, so the collision is intermittent rather
+than ordered.
+
+The cause is the same class as the lifecycle failure repaired earlier. The test
+asserts that no other steward operation is active, which concurrency inherently
+violates: a sibling test touching stewardship at the wrong moment makes it
+refuse. `tests/integration/hermes-stewardship.test.ts` therefore joins
+`tests/integration/lifecycle-process.test.ts` in the serialized phase. Coverage
+is identical; only scheduling changes, and nothing was relaxed to make a
+refusal pass. The plan now reports 117 ordinary tests and two serial tests.
+
+Retained failing run: `.usf/logs/full-gate/20260912T101043270Z-54323.json`,
+result digest `sha256:314c3778f7e8d247f51e7ca9f1709b72e8e9aa41b72cef7afcf3de3df1e31209`,
+1085 assertions passed, one failed, elapsed 4255454 ms.
+
+## 2026-09-12 gate 7 stopped by operator
+
+The acceptance run on the published basis with both serialized tests in place
+was stopped at operator request 55 minutes in, at 490 assertions passed and
+zero failed, still inside the `ordinary-tests` phase. It is an interrupted
+observation, not a pass and not an authenticated failure: the `serial-tests`
+and `fixture-checks` phases never ran, and no terminal record was retained for
+it. Its partial log is `.usf/logs/full-gate/20260912T112311463Z-193751.log`.
+
+What it does establish is that the two scheduling repairs held through the whole
+concurrent phase: neither the lifecycle nor the stewardship exclusivity failure
+recurred in 490 assertions. The last fully retained passing gate remains
+`.usf/logs/full-gate/20260912T070150587Z-3884108.json` (1089 assertions, zero
+failures), which predates the construction-authority publication. A clean gate
+on the published basis has therefore not yet been obtained, and that is the one
+outstanding verification.
+
+## 2026-09-12 clean gate and frontier at zero on the same bytes
+
+`node scripts/test-full.mjs --all` passed on the published basis. Retained at
+`.usf/logs/full-gate/20260912T122447663Z-313695.json`, result digest
+`sha256:f9af3822673c47d7812d6cdd629b914b6fbd6db4a0f2555f51baf3e323d24fd5`,
+log digest `sha256:496640fca91e7aa8eb2425961ee1e02fd7d3846fc4d1078ff59721325425f4c0`.
+Status `passed`, exit 0, phase `complete`, elapsed 4177643 ms, 1089 assertions,
+zero failures, across all three phases: 117 ordinary at concurrency 4, two
+serial tests at concurrency 1, and the five fixture checks. Both scheduling
+repairs held.
+
+### Authority must be published last
+
+Immediately after that gate the frontier read 25 diagnostics again, with the
+grant and its receipt still present. This is correct behaviour, not a
+regression. A grant binds an exact RealisationBasis, and the source edits made
+*after* the first publication -- the clean-clone fixture repair, the serial-phase
+extension and the handover entries -- moved the basis from
+`sha256:40ccc4235674aeb31004aba...` to
+`sha256:ca159c0d4b16d729b6c02bdb1ac14f9601365f06eeac320bc06f5db6b5824497`, so the
+retained evidence and proof no longer satisfied it and the permission returned
+to `proofblocked`. Publish construction authority *after* the last source change,
+never before.
+
+Construction authority was rederived and republished against the gated bytes.
+`prove` returned `outcome: "pass"`, `reasonCodes: []` at basis
+`sha256:ca159c0d4b16d729b6c02bdb1ac14f9601365f06eeac320bc06f5db6b5824497`;
+`publish --apply` returned `status: "ok"`, `publicationState: "created"`,
+receipt `evidence/construction-authority/d8b6deb8bfcf74230cb02dca48d04ebd76a12750fa4f5851dedd5c980450d825.json`,
+digest `sha256:05682db4dd0fc7d3c0bb4aebbf2ae9a021e221e09a535047d02cbf47cdc575f9`,
+base `sha256:945048534457d3daf9f5837e615bf13a9b061b22955bc40a7c264711a0fafdf6`
+to resulting `sha256:03c6032481aaa74bf2ddeac318c7732d57d4cda96c426318995c4b3e5580464f`.
+
+Current state: **0 diagnostics**, `complete: true`, `TRANSITION_COVERAGE_COMPLETE`,
+frontier `sha256:a30292f4d908cfb03dcbe9ce7aab28da904815dee15968de3afb63a2f5d577b2`,
+`graph integrity` `gateConforming: true`, `ownedGraphViolationCount: 0`, 72390
+quads. `executionAuthority` remains `none` and `parallelSafety` remains
+`unproven`. The gate's own selection is unchanged at basis
+`sha256:b884126862e4fb5ee0a4f71fc3e83f68121d7d9036a8c8cd692074483effa5c7` and its
+plan still reports `authority-ready`, so the retained pass continues to describe
+the current source; the publication appended only grant, Evidence and ProofResult
+records, which the clean-clone fixture strips.

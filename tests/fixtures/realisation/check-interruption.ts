@@ -70,16 +70,16 @@ syncBuiltinESMExports();
 const sourceRoot = resolve(import.meta.dirname, "../../..");
 const native = await import(pathToFileURL(resolve(sourceRoot, "src/commands/check.ts")).href);
 let result;
-if (boundary === "preflight") {
-  try {
+try {
+  if (boundary === "preflight") {
     const { withCandidateLock } = await import(pathToFileURL(resolve(sourceRoot, "src/realisation/index.ts")).href);
     const disposition = await withCandidateLock(root, candidateDigest, () => native.authenticateGraphDerivedCheckIntent(root, candidateDigest, validationId));
     result = { status: "authenticated", disposition };
-  } catch (error) {
-    result = { status: "refused", reasonCode: (error as { reasonCode?: string }).reasonCode };
+  } else {
+    result = await (boundary === "legacy" ? native.runGraphDerivedCheck : native.ensureGraphDerivedCheck)(root, candidateDigest, validationId);
   }
-} else {
-  result = await (boundary === "legacy" ? native.runGraphDerivedCheck : native.ensureGraphDerivedCheck)(root, candidateDigest, validationId);
+} catch (error) {
+  result = { status: "refused", reasonCode: (error as { reasonCode?: string }).reasonCode, message: error instanceof Error ? error.message : String(error), details: (error as { details?: unknown }).details };
 }
 if (boundary === "before-ack" && result.status === "pass") stopAtBoundary();
 const expectedReturn = ["pre-spawn-manifest-drift", "legacy", "ensure", "preflight"].includes(boundary!);

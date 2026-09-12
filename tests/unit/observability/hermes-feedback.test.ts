@@ -126,3 +126,7 @@ test("bounds cyclic, accessor, oversized cohort and non-JSON inputs", () => {
   assert.throws(() => helper().propose(Array(1001).fill(null)), /COHORT_BOUND/);
   assert.throws(() => helper().observe(new Date()), /NON_JSON/);
 });
+test("uses the governed 5 MB feedback snapshot bound", () => {
+  assert.throws(() => helper().observe({ payload: "x".repeat(5_000_001) }), /INPUT_BOUND/);
+  assert.throws(() => helper().observe({ payload: "x".repeat(2_000_001) }), /HERMES_FEEDBACK_EVENT_SCHEMA/);
+});

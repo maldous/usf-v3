@@ -52,7 +52,7 @@ function normalizeOperations(basis: RealisationBasis, input: unknown, wire: bool
     const encoding = op.encoding ?? "utf8";
     if (op.kind === "write") {
       bytes += Buffer.byteLength(op.content!, "utf8");
-      if (bytes > 1048576 || (encoding === "base64" && Buffer.from(op.content!, "base64").toString("base64") !== op.content)) return refuse("LOCAL_OPERATIONS_BOUNDS");
+      if (bytes > 5 * 1024 * 1024 || (encoding === "base64" && Buffer.from(op.content!, "base64").toString("base64") !== op.content)) return refuse("LOCAL_OPERATIONS_BOUNDS");
     }
     if (wire && op.expectedDigest !== (preimage ?? undefined)) return refuse("LOCAL_PREIMAGE_MISMATCH");
     return { kind: op.kind, path: op.path, ...(op.kind === "write" ? { content: op.content!, encoding, ...(op.mediaType === undefined ? {} : { mediaType: op.mediaType }) } : {}), ...(preimage === null ? {} : { expectedDigest: preimage }) } as FileOperation;

@@ -1,12 +1,27 @@
 #!/usr/bin/env node
 
-import { globSync } from "node:fs";
+import { closeSync, globSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync, writeSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 const repositoryRoot = process.cwd();
 const usf = resolve(repositoryRoot, "bin/usf");
 const specialTest = "tests/adversarial/fixture-process-confinement.test.ts";
+// These assert exclusivity, which concurrency inherently violates.
+//
+// The lifecycle tests require a real supervisor to reach a named event within a
+// bound; run against 116 concurrent siblings, several of them minutes of solid
+// CPU, it is starved and exits CONTINUOUS_DEGRADED before the event. The
+// stewardship tests require that no other steward operation is active; a
+// sibling test touching stewardship makes them refuse STEWARD_ACTIVITY_BUSY.
+// Neither outcome says anything about the behaviour under test, and both pass
+// when run alone. They keep their full coverage in a serialized phase rather
+// than being skipped or relaxed.
+const serialTests = Object.freeze([
+  "tests/integration/lifecycle-process.test.ts",
+  "tests/integration/hermes-stewardship.test.ts",
+]);
 const ordinaryPatterns = Object.freeze([
   "tests/unit/**/*.test.ts",
   "tests/contract/**/*.test.ts",
@@ -45,6 +60,54 @@ const expectedValidationRoutes = Object.freeze({
 const expectedValidationObligations = Object.freeze(Object.keys(expectedValidationRoutes).sort());
 const digestPattern = /^sha256:[0-9a-f]{64}$/u;
 const maxBuffer = 16 * 1024 * 1024;
+let retainedLog = null;
+
+function digest(bytes) {
+  return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+}
+
+function observedWrite(stream, bytes) {
+  stream.write(bytes);
+  if (retainedLog !== null) writeSync(retainedLog.handle, bytes);
+}
+
+function observedJson(value, stream = process.stdout) {
+  observedWrite(stream, `${JSON.stringify(value)}\n`);
+}
+
+function progress(phase, details = {}) {
+  observedJson({ schema: "urn:usf:full-gate-progress:1", phase, ...details });
+}
+
+function beginRetention(mode) {
+  const directory = resolve(repositoryRoot, ".usf/logs/full-gate");
+  mkdirSync(directory, { recursive: true, mode: 0o700 });
+  const runId = `${new Date().toISOString().replaceAll(/[^0-9A-Za-z]/gu, "")}-${process.pid}`;
+  const logPath = resolve(directory, `${runId}.log`);
+  const reportPath = resolve(directory, `${runId}.json`);
+  return Object.freeze({ mode, runId, logPath, reportPath, handle: openSync(logPath, "wx", 0o600) });
+}
+
+function finishRetention(retention, terminal) {
+  observedJson(terminal, terminal.status === "passed" ? process.stdout : process.stderr);
+  closeSync(retention.handle);
+  retainedLog = null;
+  const rawLog = readFileSync(retention.logPath);
+  const report = Object.freeze({
+    ...terminal,
+    runId: retention.runId,
+    logPath: `.usf/logs/full-gate/${retention.runId}.log`,
+    logDigest: digest(rawLog),
+    nonClaims: Object.freeze(["semantic-completion", "publication", "deployment"]),
+  });
+  const withDigest = Object.freeze({ ...report, resultDigest: digest(JSON.stringify(report)) });
+  const pending = `${retention.reportPath}.pending`;
+  const bytes = `${JSON.stringify(withDigest, null, 2)}\n`;
+  writeFileSync(pending, bytes, { flag: "wx", mode: 0o600 });
+  renameSync(pending, retention.reportPath);
+  if (readFileSync(retention.reportPath, "utf8") !== bytes) throw new GateError("FULL_GATE_RESULT_NOT_RETAINED");
+  process.stdout.write(`${JSON.stringify({ schema: "urn:usf:full-gate-retention:1", reportPath: `.usf/logs/full-gate/${retention.runId}.json`, resultDigest: withDigest.resultDigest })}\n`);
+}
 
 class GateError extends Error {
   constructor(code, details = {}) {
@@ -77,11 +140,27 @@ function ordinaryTests() {
   const matched = ordinaryPatterns.flatMap((pattern) => globSync(pattern, { cwd: repositoryRoot }));
   const unique = [...new Set(matched)].sort();
   if (!unique.includes(specialTest)) fail("FIXTURE_PROCESS_SPECIAL_TEST_MISSING");
-  const ordinary = unique.filter((path) => path !== specialTest);
-  if (ordinary.length + 1 !== unique.length || ordinary.some((path) => path === specialTest)) {
+  for (const path of serialTests) if (!unique.includes(path)) fail("SERIAL_TEST_MISSING", { path });
+  const ordinary = unique.filter((path) => path !== specialTest && !serialTests.includes(path));
+  if (ordinary.length + 1 + serialTests.length !== unique.length
+    || ordinary.some((path) => path === specialTest || serialTests.includes(path))) {
     fail("FIXTURE_PROCESS_SPECIAL_TEST_EXCLUSION_INVALID");
   }
   return Object.freeze(ordinary);
+}
+
+async function runSerialTests() {
+  const child = spawn(process.execPath, ["--test", "--test-concurrency=1", ...serialTests], {
+    cwd: repositoryRoot,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  child.stdout.on("data", (chunk) => observedWrite(process.stdout, chunk));
+  child.stderr.on("data", (chunk) => observedWrite(process.stderr, chunk));
+  const exitCode = await new Promise((accept, reject) => {
+    child.once("error", reject);
+    child.once("close", (code) => accept(code ?? 1));
+  }).catch((error) => fail("SERIAL_TEST_LAUNCH_FAILED", { message: error instanceof Error ? error.message : "unknown" }));
+  if (exitCode !== 0) fail("SERIAL_TESTS_FAILED", { exitCode });
 }
 
 function runCapturedJson(arguments_, label) {
@@ -151,17 +230,24 @@ function assertActiveConstruction(work) {
   }
 }
 
-function runOrdinaryTests(paths) {
-  const result = spawnSync(process.execPath, [
+async function runOrdinaryTests(paths) {
+  const child = spawn(process.execPath, [
     "--test",
     "--test-concurrency=4",
     ...paths,
   ], {
     cwd: repositoryRoot,
-    stdio: "inherit",
+    stdio: ["ignore", "pipe", "pipe"],
   });
-  if (result.error !== undefined) fail("ORDINARY_TEST_LAUNCH_FAILED", { message: result.error.message });
-  if (result.status !== 0) fail("ORDINARY_TESTS_FAILED", { exitCode: result.status });
+  child.stdout.on("data", (chunk) => observedWrite(process.stdout, chunk));
+  child.stderr.on("data", (chunk) => observedWrite(process.stderr, chunk));
+  const exitCode = await new Promise((accept, reject) => {
+    child.once("error", reject);
+    // `close` follows stdio closure, so the retained raw log includes every
+    // byte emitted by the child before its terminal result is recorded.
+    child.once("close", (code) => accept(code ?? 1));
+  }).catch((error) => fail("ORDINARY_TEST_LAUNCH_FAILED", { message: error instanceof Error ? error.message : "unknown" }));
+  if (exitCode !== 0) fail("ORDINARY_TESTS_FAILED", { exitCode });
 }
 
 function realiseNoChange(work) {
@@ -228,10 +314,10 @@ function runFixtureChecks(candidate) {
       ...(typeof output?.reasonCode === "string" ? { reasonCode: output.reasonCode } : {}),
       ...(typeof output?.receiptPath === "string" ? { receiptPath: output.receiptPath } : {}),
     };
-    process.stdout.write(`${JSON.stringify(summary)}\n`);
+    observedJson(summary);
     if (!passed) {
       failures.push(summary);
-      if (result.stderr.length > 0) process.stderr.write(result.stderr);
+      if (result.stderr.length > 0) observedWrite(process.stderr, result.stderr);
     }
   }
   if (failures.length > 0) fail("FIXTURE_PROCESS_CHECKS_FAILED", { failures });
@@ -249,7 +335,9 @@ function plan(paths, work) {
     status: authorityReady ? "authority-ready" : "authority-blocked",
     ordinaryTestCount: paths.length,
     directFixtureTestExcluded: specialTest,
+    serialTests,
     ordinaryConcurrency: 4,
+    serialConcurrency: 1,
     selection,
     realisationBasisDigest: work.basis.basisDigest,
     construction: work.construction,
@@ -268,9 +356,52 @@ try {
   if (mode === "--plan") {
     process.stdout.write(`${JSON.stringify(plan(paths, work), null, 2)}\n`);
   } else {
-    assertActiveConstruction(work);
-    if (mode === "--all") runOrdinaryTests(paths);
-    runFixtureChecks(realiseNoChange(work));
+    const startedAt = new Date().toISOString();
+    const started = performance.now();
+    let phase = "authority-preflight";
+    const retention = beginRetention(mode);
+    retainedLog = retention;
+    let failure = null;
+    try {
+      progress(phase, { mode, ordinaryTestCount: paths.length, realisationBasisDigest: work.basis.basisDigest });
+      assertActiveConstruction(work);
+      if (mode === "--all") {
+        phase = "ordinary-tests";
+        progress(phase, { status: "started", ordinaryTestCount: paths.length, concurrency: 4 });
+        await runOrdinaryTests(paths);
+        progress(phase, { status: "passed", ordinaryTestCount: paths.length });
+        phase = "serial-tests";
+        progress(phase, { status: "started", serialTests, concurrency: 1 });
+        await runSerialTests();
+        progress(phase, { status: "passed", serialTests });
+      }
+      phase = "fixture-checks";
+      progress(phase, { status: "started", validationObligations: work.validationObligations });
+      runFixtureChecks(realiseNoChange(work));
+      progress(phase, { status: "passed", validationObligations: work.validationObligations });
+      phase = "complete";
+    } catch (error) {
+      failure = error instanceof GateError
+        ? { reasonCode: error.code, ...error.details }
+        : { reasonCode: "FULL_GATE_INTERNAL_ERROR" };
+    }
+    const terminal = Object.freeze({
+      schema: "urn:usf:full-gate-result:1",
+      status: failure === null ? "passed" : "failed",
+      exitCode: failure === null ? 0 : 1,
+      mode,
+      phase,
+      startedAt,
+      completedAt: new Date().toISOString(),
+      elapsedMilliseconds: Math.round(performance.now() - started),
+      ordinaryTestCount: paths.length,
+      selection,
+      realisationBasisDigest: work.basis.basisDigest,
+      validationObligations: work.validationObligations,
+      ...(failure ?? {}),
+    });
+    finishRetention(retention, terminal);
+    if (failure !== null) process.exitCode = 1;
   }
 } catch (error) {
   const failure = error instanceof GateError

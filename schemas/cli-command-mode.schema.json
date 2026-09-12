@@ -1,0 +1,117 @@
+{
+  "$defs": {},
+  "$id": "urn:usf:cli-command-mode:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "adapterIdentity": {
+      "description": "Exact graph-declared adapterIdentity; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "commandPath": {
+      "description": "Exact graph-declared commandPath; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "commandTopic": {
+      "description": "Exact graph-declared commandTopic; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "derivationRule": {
+      "description": "Exact graph-declared derivationRule; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "effectContract": {
+      "description": "Exact graph-declared effectContract; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "externalContact": {
+      "description": "Exact graph-declared externalContact; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "forContract": {
+      "description": "Exact graph-declared forContract; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "identity": {
+      "description": "Exact actual command-mode subject identity; not an asserted alias.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "inputContract": {
+      "description": "Exact graph-declared inputContract; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "recoveryContract": {
+      "description": "Exact graph-declared recoveryContract; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "requiredOption": {
+      "description": "Exact graph-declared requiredOption; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "resultSchema": {
+      "description": "Exact graph-declared resultSchema; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+      "type": "string"
+    },
+    "text": {
+      "description": "Exact graph-declared text; structural observation, not an admission verdict.",
+      "maxLength": 4096,
+      "minLength": 1,
+      "type": "string"
+    },
+    "version": {
+      "description": "Exact graph-declared version; structural observation, not an admission verdict.",
+      "maximum": 1048576,
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "adapterIdentity",
+    "commandPath",
+    "commandTopic",
+    "derivationRule",
+    "effectContract",
+    "externalContact",
+    "forContract",
+    "identity",
+    "inputContract",
+    "recoveryContract",
+    "requiredOption",
+    "resultSchema",
+    "text",
+    "version"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "urn:usf:graph-manifest:2",
+  "version": 2,
+  "imports": [
+    "graph/manifests/cli-schema-primitives.json"
+  ],
+  "sources": [
+    {
+      "path": "graph/cli-command-mode-schema.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:cli-command-mode-schema",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    },
+    {
+      "path": "graph/v3-convention.nq",
+      "format": "application/n-quads",
+      "graph": "urn:usf:graph:v3-convention",
+      "role": "contract",
+      "validationProfile": "bootstrap-nquads-v1"
+    }
+  ]
+}

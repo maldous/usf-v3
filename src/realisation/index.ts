@@ -189,7 +189,7 @@ export interface AuthenticatedNoChangeWorkspace {
 }
 
 const manifestName = ".usf-workspace.json";
-export const maximumWorkspaceManifestBytes = 2 * 1024 * 1024;
+export const maximumWorkspaceManifestBytes = 5 * 1024 * 1024;
 const forbiddenTopLevel = new Set([".git", ".usf", ".env"]);
 const digestPattern = /^sha256:[a-f0-9]{64}$/;
 const digestHexPattern = /^[a-f0-9]{64}$/;

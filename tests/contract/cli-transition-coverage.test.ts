@@ -3,15 +3,25 @@ import test from "node:test";
 import { existsSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { createJsonSchemaValidator } from "../../src/schema/index.ts";
-import { assembleCliTransitionSchemaModules, classifyCliTransitionSchemaModule, deriveCliExternalSchemaReferences, deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliParserCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, inspectCliOperationalSupportAdmission, lookupCliTransitionSchemaModule, resolveCliTransitionSchemaModule, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
+import { assembleCliTransitionSchemaModules, classifyCliTransitionSchemaModule, deriveCliExternalSchemaReferences, deriveCliTerminalAssessment, deriveCliTransitionContext, deriveCliTransitionCoverage, deriveCliTransitionInventory, deriveCliParserCoverage, deriveCliRecordSpecifications, deriveCliSchemas, deriveCliRecord, inspectCliOperationalSupportAdmission, lookupCliTransitionSchemaModule, resolveCliTransitionSchemaModule, verifyCliDescriptorSchema } from "../../src/graph/cli-transitions.ts";
 import { transitionAdaptersForCoverage } from "../../src/commands/transition.ts";
 import { canonicalParserContracts } from "../../src/commands/canonical-parser-contracts.ts";
 import type { AuthenticatedCliTransitionSchemaModule, CliCanonicalParserSource, CliFieldSpecification, CliOperationalSupport, CliOperationalSupportDefinition, CliRecordDerivation, CliRecordSpecification, CliTransitionAdapter, CliRecordSpecifications, CliTransitionSchemaModule, CliTransitionSchemaModules } from "../../src/graph/cli-transitions.ts";
+import { loadSemanticGraph } from "../../src/graph/index.ts";
 import type { SemanticGraph } from "../../src/graph/index.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../src/graph/nquads.ts";
 
 const P = "urn:usf:predicate:", T = "urn:usf:type:";
 const work = "urn:test:work", profile = "urn:test:profile:1", contract = "urn:test:contract:1";
+
+test("installed inventory projection clears only graph-authenticated classifications", () => {
+  const graph = loadSemanticGraph(process.cwd(), "graph/manifests/cli-transition-definition.json");
+  const inventory = deriveCliTransitionInventory(graph, [
+    ["check"], ["check", "diagnose"], ["transition", "inspect"], ["resolve", "ordinary"], ["unclassified"],
+  ]);
+  assert.equal(inventory.complete, false, "the unclassified path keeps the inventory incomplete");
+  assert.deepEqual(inventory.leaves.map(item => item.path), [["unclassified"]]);
+});
 
 test("partitioned specifications retain multiplicity and bind named-source provenance", () => {
   const f = terminalFixture(), owner = "urn:usf:contract:cli-transition-definition:1";
@@ -41,7 +51,7 @@ test("partitioned specifications retain multiplicity and bind named-source prove
 });
 
 function terminalFixture() {
-  const quads = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","profile-authority","v3-convention"].flatMap(name =>
+  const quads = ["cli-schema-primitives","cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","profile-authority","v3-convention"].flatMap(name =>
     parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   const graph = { quads } as SemanticGraph;
@@ -386,19 +396,20 @@ test("qualified schema modules select only exact module roots and retain legacy 
   assert.deepEqual(resolveCliTransitionSchemaModule(withParallelGap, "parallelSafety")?.specifications.operationalGaps, [operationalGap]);
   const report = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
     { leaves: [], complete: false }, [], withParallelGap);
-  assert(report.diagnostics.some(diagnostic => diagnostic.reasonCode === operationalGap.reasonCode && diagnostic.subject === operationalGap.subject),
-    "qualified module operational gaps remain visible rather than converting to unavailable coverage");
+  assert.equal(report.diagnostics.some(diagnostic => diagnostic.reasonCode === operationalGap.reasonCode && diagnostic.subject === operationalGap.subject), false,
+    "proved-only parallel fields are not active obligations for an unproven assessment");
+  assert.equal(report.parallelSafety.state, "unproven");
+  assert.deepEqual(report.parallelSafety.missingObligations, ["urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1"]);
   const missingParallel = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
     { leaves: [], complete: false }, [], { ...modules, parallelSafety: undefined });
   assert(missingParallel.diagnostics.some(diagnostic => diagnostic.reasonCode === "CLI_TRANSITION_SCHEMA_MODULE_UNAVAILABLE"
     && diagnostic.subject === "urn:usf:contract:cli-transition-definition:1" && diagnostic.field === "parallelSafety"));
   const actualParallel = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
     { leaves: [], complete: false }, [], modules);
-  for (const gap of actualParallelGaps) {
-    assert(actualParallel.diagnostics.some(diagnostic => diagnostic.reasonCode === gap.reasonCode
-      && diagnostic.subject === gap.subject && diagnostic.field === gap.field),
-    "every admitted parallel module gap remains a coverage diagnostic");
-  }
+  assert.equal(actualParallel.diagnostics.some(diagnostic => actualParallelGaps.some(gap => diagnostic.reasonCode === gap.reasonCode
+    && diagnostic.subject === gap.subject && diagnostic.field === gap.field)), false,
+  "proved-only parallel module gaps remain module provenance, not active unproven-variant defects");
+  assert.equal(actualParallel.parallelSafety.state, "unproven");
   const legacyRoot = deriveCliTransitionCoverage(f.graph, { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/test.json" },
     { leaves: [], complete: false }, []);
   assert.equal(legacyRoot.diagnostics.some(diagnostic => diagnostic.reasonCode === "CLI_TRANSITION_SCHEMA_MODULE_UNAVAILABLE"), false);
@@ -488,7 +499,7 @@ test("canonical parser coverage refuses absent or incomplete generated schema re
 });
 
 test("canonical parser coverage refuses exact binding, fallback, selector and bounds changes", () => {
-  const f = parserCoverageFixture(), first = f.source.contracts.find(binding => binding.canonicalSelectorTokens[0] === "check")!,
+  const f = parserCoverageFixture(), first = f.source.contracts.find(binding => binding.identity === "urn:usf:cli-canonical-parser-contract:check-input:1")!,
     second = f.source.contracts.find(binding => binding.canonicalSelectorTokens[0] === "evidence")!;
   const changed = (binding: typeof first) => ({ ...f.source, contracts: f.source.contracts.map(current => current.identity === first.identity ? binding : current) });
   const expectMismatch = (source: CliCanonicalParserSource, expected: string) => {
@@ -516,7 +527,7 @@ test("canonical parser coverage refuses exact binding, fallback, selector and bo
   duplicateCommandPath.quads.push({ ...commandPath, graph: "urn:test:parser-command-path-duplicate" });
   const duplicateCommandPathResult = f.run(f.source, duplicateCommandPath);
   assert.equal(duplicateCommandPathResult.status, "partial");
-  assert.equal(duplicateCommandPathResult.matchedSelectors.length, 5);
+  assert.equal(duplicateCommandPathResult.matchedSelectors.length, f.source.contracts.length);
   assert.deepEqual(duplicateCommandPathResult.diagnostics, []);
   const conflictingCommandPath = structuredClone(f.graph);
   conflictingCommandPath.quads.push({ ...commandPath, object: "check conflicting", graph: "urn:test:parser-command-path-conflict" });
@@ -660,7 +671,9 @@ test("generated publication snapshot bounds cohort members without conflating bu
 
 test("terminal census exposes real completion and recovery obligations, not merely sinks", () => {
   const f = terminalFixture(), before = JSON.stringify(f.graph), result = f.run();
-  for (const id of ["urn:usf:proof:cli-transition-definition:completion", "urn:usf:evidence-requirement:cli-transition-definition:completion", "urn:usf:validation:cli-transition-definition", "urn:usf:rule:local-preparation-replay:1"]) {
+  const validationIds = f.graph.quads.filter(q => q.subject === "urn:usf:contract:cli-transition-definition:1" && q.predicate === P + "completionValidationObligation" && q.objectKind === "iri").map(q => q.object).sort();
+  assert(validationIds.length > 0);
+  for (const id of ["urn:usf:proof:cli-transition-definition:completion", "urn:usf:evidence-requirement:cli-transition-definition:completion", ...validationIds, "urn:usf:rule:local-preparation-replay:1"]) {
     assert(result.nodes.some(n => n.identity === id), id);
   }
   assert(result.edges.some(e => e.predicate === P + "requiresEvidence"));
@@ -1619,7 +1632,7 @@ test("terminal diagnostics refuse record and observed-target overflow instead of
 
 test("selective receipt adapter maps the complete native recovery closure without authority", () => {
   const graph = { quads: [
-    ...["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name)),
+    ...["cli-schema-primitives","cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name)),
     ...parseStrictNQuads(readFileSync(new URL("../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"),
     ...parseStrictNQuads(readFileSync(new URL("../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"),
   ] } as SemanticGraph;

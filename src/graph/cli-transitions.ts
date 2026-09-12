@@ -2,6 +2,11 @@ import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import type { SemanticGraph } from "./index.ts";
 import { canonicalQuadDigest } from "./nquads.ts";
 import { deriveLinearBindingDeclaration, LinearBindingError, type LinearBindingAuthority } from "./linear-binding.ts";
+// Type-only: this file is inside three confined validation runtime closures,
+// and a runtime import would force all three to be widened to carry a second
+// module. The derived scopes arrive already authenticated from a caller that
+// does have that module in scope.
+import type { CliTransitionScopeDerivation } from "./transition-scope-derivation.ts";
 
 const EXTERNAL_SCHEMA_RULE = "urn:usf:rule:ordinary-boundary-external-schema:1";
 
@@ -371,7 +376,7 @@ export function deriveCliRecordSpecifications(graph: SemanticGraph, selection: {
   };
   const single = (s: string, p: string, kind: "iri" | "literal" = "iri"): string => { const vs = many(s, p, kind); if (vs.length !== 1) bad(s, p); return vs[0] ?? ""; };
   const typed = (s: string, t: string): void => { if (!many(s, "type").includes(T + t)) bad(s, "type"); };
-  const number = (s: string, p: string, maximum = 1048576): number => { const v = single(s, p, "literal"); if (!/^(0|[1-9][0-9]*)$/.test(v) || !Number.isSafeInteger(Number(v)) || Number(v) > maximum) { bad(s, p); return 0; } return Number(v); };
+  const number = (s: string, p: string, maximum = p === "maximumLength" ? 5 * 1024 * 1024 : 1048576): number => { const v = single(s, p, "literal"); if (!/^(0|[1-9][0-9]*)$/.test(v) || !Number.isSafeInteger(Number(v)) || Number(v) > maximum) { bad(s, p); return 0; } return Number(v); };
   typed(selection.contractIdentity, "SemanticContract");
   const roots = [...index.keys()].filter(s => many(s, "forContract").includes(selection.contractIdentity) && many(s, "type").includes(T + "CliFieldSpecificationAmendment"));
   const ids = sorted(roots.flatMap(s => many(s, "recordSpecification")));
@@ -590,6 +595,57 @@ export interface CliTransitionInventory {
   readonly complete: boolean;
   readonly parserSource?: CliCanonicalParserSource;
 }
+
+export type CliInventoryClassification = "transition-adapter" | "generic-interrogation" | "group-only" | "non-participating";
+
+/**
+ * Project only graph-authenticated inventory classifications. Missing or
+ * malformed classifications remain leaves so coverage cannot be made complete
+ * by omission. This projection has no execution authority.
+ */
+export function deriveCliTransitionInventory(
+  graph: SemanticGraph,
+  paths: readonly (readonly string[])[],
+): CliTransitionInventory {
+  const predicate = (name: string) => `urn:usf:predicate:${name}`;
+  const contract = "urn:usf:contract:cli-transition-definition:1";
+  const entryType = "urn:usf:type:CliInventoryClassification";
+  const allowed = new Set<CliInventoryClassification>(["transition-adapter", "generic-interrogation", "group-only", "non-participating"]);
+  const values = (subject: string, name: string, kind?: "iri" | "literal") => graph.quads
+    .filter(row => row.subject === subject && row.predicate === predicate(name) && (kind === undefined || row.objectKind === kind))
+    .map(row => row.object);
+  const subjects = new Set(graph.quads.map(row => row.subject));
+  const entries = new Map<string, CliInventoryClassification>();
+  let complete = true;
+  for (const entry of subjects) {
+    const entryPaths = values(entry, "cliInventoryPath", "literal");
+    const classifications = values(entry, "cliInventoryClassification", "literal");
+    if (entryPaths.length === 0 && classifications.length === 0) continue;
+    const owners = values(entry, "cliInventoryOwner", "iri");
+    const bases = values(entry, "cliInventoryBasis", "iri");
+    const types = values(entry, "type", "iri");
+    if (entryPaths.length !== 1 || classifications.length !== 1 || owners.length !== 1 || owners[0] !== contract
+      || bases.length === 0 || !types.includes(entryType) || !allowed.has(classifications[0] as CliInventoryClassification)
+      || bases.some(base => !subjects.has(base)) || entries.has(entryPaths[0]!)) {
+      complete = false;
+      continue;
+    }
+    const path = entryPaths[0]!;
+    // The installed registry path is the mechanically enumerated denominator;
+    // the graph entry supplies ownership and semantic basis, so a separate
+    // commandPath quad is not required for a registry leaf.
+    if (!path || path.split(" ").length > 16) {
+      complete = false;
+      continue;
+    }
+    entries.set(path, classifications[0] as CliInventoryClassification);
+  }
+  const leaves = paths
+    .filter(path => !entries.has(path.join(" ")))
+    .map(path => Object.freeze({ path: [...path], owner: null, parserOwner: null }));
+  if (entries.size !== paths.length) complete = false;
+  return Object.freeze({ leaves: Object.freeze(leaves), complete, parserSource: undefined });
+}
 export interface CliCanonicalParserBinding {
   readonly identity: string;
   readonly version: string;
@@ -699,7 +755,19 @@ export function deriveCliParserCoverage(graph: SemanticGraph, contract: string |
       exact(binding.namedCommand, "type", "iri", t + "RegisteredCliCommand");
       exact(binding.namedCommand, "forContract", "iri", contract!);
       exact(binding.namedCommand, "adapterIdentity", "iri", binding.adapterIdentity);
-      exact(binding.namedCommand, "commandPath", "literal", canonicalParserCommandPath(binding));
+      const commandPath = canonicalParserCommandPath(binding);
+      const topic = graph.quads
+        .filter(q => q.subject === binding.namedCommand && q.predicate === p + "topic" && q.objectKind === "iri")
+        .map(q => q.object)
+        .find(topicIdentity => graph.quads.some(q => q.subject === topicIdentity && q.predicate === p + "commandPath"
+          && q.objectKind === "literal" && q.object === commandPath));
+      if (topic === undefined) exact(binding.namedCommand, "commandPath", "literal", commandPath);
+      else {
+        exact(topic, "type", "iri", t + "CliCommandMode");
+        exact(topic, "forContract", "iri", contract!);
+        exact(topic, "commandPath", "literal", commandPath);
+        exact(topic, "adapterIdentity", "iri", binding.adapterIdentity);
+      }
       exact(binding.fallbackRegion.identity, "type", "iri", t + "CliCanonicalParserFallbackRegion");
       exact(binding.fallbackRegion.identity, "sourceDispatchSurfaceToken", "literal", binding.fallbackRegion.sourceDispatchSurfaceToken);
       exact(binding.fallbackRegion.identity, "complementOf", "iri", binding.identity);
@@ -733,6 +801,9 @@ export type CliOperationalSupport = Readonly<{
   readonly transitionIdentity: string;
   readonly implementation: "authenticated";
   readonly lockAvailability: "not-observed";
+  /** Present only for refused support; current support must leave both absent. */
+  readonly refusalClass?: "stale" | "unsafe" | "mixed" | "unclassified";
+  readonly refusalCode?: string;
   readonly derivations: readonly Readonly<{
     fieldIdentity: string;
     outputPath: readonly string[];
@@ -747,6 +818,296 @@ export type CliOperationalSupport = Readonly<{
   | Readonly<{ outcome: "refused"; refusalClass: "stale" | "unsafe" | "mixed" | "unclassified"; refusalCode: string }>
 );
 export type CliParallelSafetyAssessment = Readonly<Record<string, CliRecordValue>> & { readonly state: "unproven" | "blocked" | "proved" };
+
+/** The exact rule that owns every parallel-safety verdict below. */
+const PARALLEL_ASSESSMENT_RULE = "urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1";
+
+export interface CliParallelSafetyEvaluation {
+  readonly assessment: CliParallelSafetyAssessment;
+  readonly diagnostics: readonly CliTransitionDiagnostic[];
+}
+
+/**
+ * Canonical repository-relative scope path. Absolute paths, traversal and empty
+ * segments are refused rather than normalized away: a scope that cannot be
+ * stated canonically cannot be compared, and an uncomparable scope must never
+ * read as non-overlapping.
+ */
+function canonicalScopePath(value: string): string | null {
+  if (value.length === 0 || value.length > 4096 || value.startsWith("/") || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)) return null;
+  const parts = value.split("/").filter(part => part.length > 0 && part !== ".");
+  // A segment is a path segment or it is not a path at all. Prose descriptions
+  // of a dependency closure -- "the exact selected candidate basis, schema and
+  // retained artifact dependencies" -- are a legitimate thing for a contract to
+  // say and an illegitimate thing to compare for overlap, so they are refused
+  // here rather than silently treated as one opaque directory that collides
+  // with nothing.
+  if (parts.length === 0 || parts.some(part => part === ".." || !/^[A-Za-z0-9._<>-]+$/.test(part))) return null;
+  return parts.join("/");
+}
+
+/** Directory-prefix overlap. `a/b` contains `a/b/c`; `a/b` and `a/bc` are disjoint. */
+function scopesOverlap(left: readonly string[], right: readonly string[]): boolean {
+  const trim = (value: string) => value.endsWith("/") ? value.slice(0, -1) : value;
+  return left.some(one => right.some(other => {
+    const a = trim(one), b = trim(other);
+    return a === b || a.startsWith(b + "/") || b.startsWith(a + "/");
+  }));
+}
+
+/** Unordered pair key, so a reversed pair can never be counted as a second pair. */
+function pairKey(left: string, right: string): string {
+  return canonicalJson(left <= right ? [left, right] : [right, left]);
+}
+
+/**
+ * The scope-derivation rules declared by a cohort's effects. A non-empty result
+ * means at least one member's read/write scope is produced by a rule at runtime,
+ * so the static readScope/writeScope quads are a partial illustration and their
+ * absence means "derived", not "empty".
+ */
+export function cliTransitionScopeDerivationRules(graph: SemanticGraph, members: readonly string[]): readonly string[] {
+  const p = "urn:usf:predicate:";
+  const values = (subject: string, field: string) =>
+    graph.quads.filter(q => q.subject === subject && q.predicate === p + field && q.objectKind === "iri").map(q => q.object);
+  return sorted(members.flatMap(member => values(member, "effectContract").flatMap(effect => values(effect, "scopeDerivationRule"))));
+}
+
+/**
+ * Derive the cohort's parallel-safety assessment.
+ *
+ * Topology decides nothing here. The default verdict is `unproven`, and the
+ * only path off it is an admitted assessment record that survives every check
+ * below: the member and pair denominators, unordered-pair uniqueness and exact
+ * coverage, the current semantic basis, the normalized scope and resource
+ * digests, an independent verifier with current evidence, and the complete
+ * obligation set. A payload that merely validates against the proved schema
+ * variant is shape-valid and unproven; `proved` is earned, never declared.
+ */
+/** Derived scopes already authenticated by `authenticateScopeDerivations`. */
+export interface DerivedScopeEvidence {
+  readonly authenticated: ReadonlyMap<string, CliTransitionScopeDerivation>;
+  readonly refusals: readonly string[];
+}
+
+export function deriveCliParallelSafety(
+  graph: SemanticGraph, contract: string | null, members: readonly string[], semanticBasis: string,
+  modules?: CliTransitionSchemaModules, derived?: DerivedScopeEvidence,
+): CliParallelSafetyEvaluation {
+  const p = "urn:usf:predicate:", t = "urn:usf:type:";
+  const diagnostics: CliTransitionDiagnostic[] = [];
+  const values = (subject: string, field: string, kind: "iri" | "literal" = "iri") =>
+    graph.quads.filter(q => q.subject === subject && q.predicate === p + field && q.objectKind === kind).map(q => q.object);
+  const cohort = sorted([...new Set(members)]);
+  const unproven = (reasonCodes: readonly string[], missingObligations: readonly string[] = [PARALLEL_ASSESSMENT_RULE]): CliParallelSafetyEvaluation =>
+    ({ assessment: { state: "unproven" as const, members: cohort, semanticBasis, assessmentRule: PARALLEL_ASSESSMENT_RULE,
+      missingObligations: [...missingObligations], reasonCodes: [...reasonCodes] }, diagnostics });
+  const blocked = (subject: string, reasonCodes: readonly string[], missingObligations: readonly string[] = []): CliParallelSafetyEvaluation => {
+    for (const reasonCode of reasonCodes) diagnostics.push({ subject, field: "parallelSafety", reasonCode });
+    return { assessment: { state: "blocked" as const, members: cohort, semanticBasis, assessmentRule: PARALLEL_ASSESSMENT_RULE,
+      conflicts: [], evidence: [], missingObligations: [...missingObligations], reasonCodes: [...reasonCodes] }, diagnostics };
+  };
+
+  // An assessment belongs to exactly one contract. Zero is the ordinary state
+  // and is not a defect; more than one is an ownership ambiguity that must not
+  // be resolved by preferring either.
+  const admitted = contract === null ? [] : sorted(graph.quads
+    .filter(q => q.predicate === p + "type" && q.objectKind === "iri" && q.object === t + "CliParallelSafetyAssessment"
+      && values(q.subject, "forContract").includes(contract))
+    .map(q => q.subject));
+  if (admitted.length === 0) return unproven(["TRANSITION_PARALLEL_SAFETY_UNAUTHENTICATED"]);
+  if (admitted.length > 1) return blocked(contract!, ["TRANSITION_PARALLEL_SAFETY_ASSESSMENT_AMBIGUOUS"]);
+
+  const subject = admitted[0]!;
+  const resolution = modules === undefined ? null : resolveCliTransitionSchemaModule(modules, "parallelSafety");
+  if (resolution === null) return blocked(subject, ["CLI_TRANSITION_SCHEMA_MODULE_UNAVAILABLE"]);
+  const derivation = deriveCliRecord(graph, { recordIdentity: resolution.record.id, subjectIdentity: subject }, resolution.specifications);
+  if (!derivation.valid || derivation.value === null) {
+    diagnostics.push(...derivation.gaps);
+    return blocked(subject, ["TRANSITION_PARALLEL_SAFETY_ASSESSMENT_INVALID"]);
+  }
+  const value = derivation.value;
+  const state = value.state;
+  if (state === "unproven" || state === "blocked") {
+    // A self-declared non-proved assessment is reported as it stands. Its own
+    // reasons are preserved; nothing here upgrades it.
+    return { assessment: value as CliParallelSafetyAssessment, diagnostics };
+  }
+  if (state !== "proved") return blocked(subject, ["TRANSITION_PARALLEL_SAFETY_ASSESSMENT_INVALID"]);
+
+  // A member whose effect derives its scope at runtime cannot be assessed by
+  // comparing authored path lists: the static readScope/writeScope quads are a
+  // partial illustration, and their absence means "derived", never "empty". An
+  // empty scope trivially overlaps nothing, so accepting one here is the same
+  // false-compatibility this evaluator exists to refuse -- one level below the
+  // conflict list. Such a cohort needs scopes produced by the declared rule,
+  // carried with their own derivation evidence.
+  const ruleDerived = cliTransitionScopeDerivationRules(graph, cohort);
+  if (ruleDerived.length > 0 && value.state === "proved") {
+    // Without derived scopes there is nothing comparable to analyse, so the
+    // cohort stays blocked on the rule rather than on an authored path list.
+    if (derived === undefined) return blocked(subject, ["TRANSITION_PARALLEL_SAFETY_SCOPE_RULE_DERIVED"], ruleDerived);
+    if (derived.refusals.length > 0) return blocked(subject, derived.refusals, ruleDerived);
+    const authentication = { authenticated: derived.authenticated };
+    // Every rule-derived member must carry an authenticated derivation; a
+    // partially derived cohort is not a smaller cohort.
+    if (cohort.some(member => !authentication.authenticated.has(member))) {
+      return blocked(subject, ["TRANSITION_SCOPE_DERIVATION_MISSING"], ruleDerived);
+    }
+    // Every member now has an authenticated derived scope. The assessment may
+    // not understate them: each pair's declared scopes must be exactly what the
+    // derivation observed, and each outcome must be what analysing those scopes
+    // actually yields. This is what stops a proved record describing a smaller
+    // world than the one the transitions run in.
+    const mismatches: string[] = [];
+    for (const pair of (Array.isArray(value.pairs) ? value.pairs : []) as readonly Readonly<Record<string, unknown>>[]) {
+      const left = authentication.authenticated.get(String(pair.left));
+      const right = authentication.authenticated.get(String(pair.right));
+      if (left === undefined || right === undefined) { mismatches.push("TRANSITION_PARALLEL_SAFETY_PAIR_UNADMITTED"); continue; }
+      const same = (declared: unknown, observed: readonly string[]) =>
+        canonicalJson(Array.isArray(declared) ? [...declared].sort() : null) === canonicalJson([...observed].sort());
+      if (!same(pair.leftRead, left.readSet) || !same(pair.leftWrite, left.writeSet)
+        || !same(pair.rightRead, right.readSet) || !same(pair.rightWrite, right.writeSet)
+        || !same(pair.leftResources, left.resources) || !same(pair.rightResources, right.resources)) {
+        mismatches.push("TRANSITION_PARALLEL_SAFETY_SCOPE_NOT_DERIVED");
+        continue;
+      }
+      const contended = scopesOverlap(left.writeSet, right.writeSet) || scopesOverlap(left.writeSet, right.readSet)
+        || scopesOverlap(right.writeSet, left.readSet) || left.resources.some(resource => right.resources.includes(resource));
+      if ((contended ? "conflict" : "compatible") !== pair.outcome) mismatches.push("TRANSITION_PARALLEL_SAFETY_OUTCOME_CONTRADICTED");
+    }
+    if (mismatches.length > 0) return blocked(subject, sorted([...new Set(mismatches)]));
+  }
+  const failures = authenticateCliParallelSafetyAssessment(value, { members: cohort, semanticBasis, subject, contract });
+  if (failures.length > 0) return blocked(subject, failures);
+  return { assessment: value as CliParallelSafetyAssessment, diagnostics };
+}
+
+/**
+ * Semantic authentication of a proved-shaped assessment, independent of how it
+ * was obtained. Returns the exact reasons it may not be believed; an empty
+ * result is the only thing that earns `proved`.
+ */
+export function authenticateCliParallelSafetyAssessment(
+  value: Readonly<Record<string, unknown>>,
+  selection: { readonly members: readonly string[]; readonly semanticBasis: string; readonly subject: string; readonly contract: string | null },
+): readonly string[] {
+  const { semanticBasis, subject, contract } = selection;
+  const cohort = sorted([...new Set(selection.members)]);
+  const failures: string[] = [];
+  const record = value;
+  const list = (field: string): readonly string[] => {
+    const raw = record[field];
+    return Array.isArray(raw) && raw.every(item => typeof item === "string") ? raw as readonly string[] : [];
+  };
+  // Currentness first: a stale basis makes every later comparison meaningless.
+  if (record.semanticBasis !== semanticBasis) failures.push("TRANSITION_PARALLEL_SAFETY_BASIS_STALE");
+  if (record.assessmentRule !== PARALLEL_ASSESSMENT_RULE) failures.push("TRANSITION_PARALLEL_SAFETY_RULE_UNADMITTED");
+
+  // Member denominator: exact set equality with the current cohort, not a count.
+  const declaredMembers = sorted([...new Set(list("members"))]);
+  if (canonicalJson(declaredMembers) !== canonicalJson(cohort) || list("members").length !== cohort.length) {
+    failures.push("TRANSITION_PARALLEL_SAFETY_MEMBER_DENOMINATOR_MISMATCH");
+  }
+
+  const basis = record.basis !== null && typeof record.basis === "object" && !Array.isArray(record.basis)
+    ? record.basis as Readonly<Record<string, unknown>> : null;
+  if (basis === null) failures.push("TRANSITION_PARALLEL_SAFETY_BASIS_MISSING");
+
+  const rawPairs = Array.isArray(record.pairs) ? record.pairs : [];
+  const pairs = rawPairs.filter((pair): pair is Readonly<Record<string, unknown>> =>
+    pair !== null && typeof pair === "object" && !Array.isArray(pair));
+  if (pairs.length !== rawPairs.length) failures.push("TRANSITION_PARALLEL_SAFETY_PAIR_INVALID");
+
+  // The required denominator is every unordered pair of distinct members. A
+  // count that cannot arise from any cohort of this size is rejected outright
+  // rather than compared.
+  const requiredPairs = new Set<string>();
+  for (let i = 0; i < cohort.length; i += 1) {
+    for (let j = i + 1; j < cohort.length; j += 1) requiredPairs.add(pairKey(cohort[i]!, cohort[j]!));
+  }
+  const seenPairs = new Set<string>();
+  const memberSet = new Set(cohort);
+  for (const pair of pairs) {
+    const left = pair.left, right = pair.right;
+    if (typeof left !== "string" || typeof right !== "string" || !memberSet.has(left) || !memberSet.has(right)) {
+      failures.push("TRANSITION_PARALLEL_SAFETY_PAIR_UNADMITTED");
+      continue;
+    }
+    if (left === right) { failures.push("TRANSITION_PARALLEL_SAFETY_PAIR_SELF"); continue; }
+    const key = pairKey(left, right);
+    if (seenPairs.has(key)) { failures.push("TRANSITION_PARALLEL_SAFETY_PAIR_DUPLICATE"); continue; }
+    seenPairs.add(key);
+    const scope = (field: string): readonly string[] | null => {
+      const raw = pair[field];
+      if (!Array.isArray(raw) || raw.some(item => typeof item !== "string")) return null;
+      const canonical = (raw as readonly string[]).map(canonicalScopePath);
+      return canonical.some(entry => entry === null) ? null : canonical as readonly string[];
+    };
+    const leftWrite = scope("leftWrite"), rightWrite = scope("rightWrite");
+    const leftRead = scope("leftRead"), rightRead = scope("rightRead");
+    if (leftWrite === null || rightWrite === null || leftRead === null || rightRead === null) {
+      failures.push("TRANSITION_PARALLEL_SAFETY_SCOPE_UNCANONICAL");
+      continue;
+    }
+    const conflicts = Array.isArray(pair.conflicts) ? pair.conflicts : [];
+    // A write that meets any other side's read or write set is a conflict. A
+    // pair that declares itself compatible over one is contradicting its own
+    // scopes, which is exactly the claim this evaluator exists to refuse.
+    const overlapping = scopesOverlap(leftWrite, rightWrite) || scopesOverlap(leftWrite, rightRead) || scopesOverlap(rightWrite, leftRead);
+    const sharedResources = (Array.isArray(pair.leftResources) ? pair.leftResources as readonly unknown[] : [])
+      .some(resource => (Array.isArray(pair.rightResources) ? pair.rightResources as readonly unknown[] : []).includes(resource));
+    // A declared conflict is reported once. A pair that declares itself
+    // compatible is checked against everything that would contradict it, and
+    // every contradiction is reported rather than only the first.
+    if (pair.outcome !== "compatible") failures.push("TRANSITION_PARALLEL_SAFETY_CONFLICT_PRESENT");
+    else {
+      if (overlapping) failures.push("TRANSITION_PARALLEL_SAFETY_SCOPE_OVERLAP_UNDECLARED");
+      if (sharedResources) failures.push("TRANSITION_PARALLEL_SAFETY_RESOURCE_CONTENTION_UNDECLARED");
+      if (conflicts.length !== 0) failures.push("TRANSITION_PARALLEL_SAFETY_CONFLICT_PRESENT");
+    }
+  }
+  // Coverage is exact in both directions: no required pair unassessed, and no
+  // assessed pair outside the requirement.
+  if (seenPairs.size !== requiredPairs.size || [...requiredPairs].some(key => !seenPairs.has(key))) {
+    failures.push("TRANSITION_PARALLEL_SAFETY_PAIR_COVERAGE_INCOMPLETE");
+  }
+  if (Array.isArray(record.conflicts) && record.conflicts.length !== 0) failures.push("TRANSITION_PARALLEL_SAFETY_CONFLICT_PRESENT");
+
+  if (basis !== null) {
+    if (basis.requiredPairCount !== requiredPairs.size) failures.push("TRANSITION_PARALLEL_SAFETY_PAIR_DENOMINATOR_IMPOSSIBLE");
+    if (basis.assessedPairCount !== seenPairs.size || basis.assessedPairCount !== basis.requiredPairCount) {
+      failures.push("TRANSITION_PARALLEL_SAFETY_PAIR_DENOMINATOR_MISMATCH");
+    }
+    if (basis.semanticDigest !== semanticBasis) failures.push("TRANSITION_PARALLEL_SAFETY_BASIS_STALE");
+    // Digests are recomputed from the pairs actually presented, so a digest
+    // cannot stand in for scopes and resources it was not derived from.
+    const scopeSource = pairs.map(pair => ({ left: pair.left, right: pair.right,
+      leftRead: pair.leftRead, leftWrite: pair.leftWrite, rightRead: pair.rightRead, rightWrite: pair.rightWrite }));
+    const resourceSource = pairs.map(pair => ({ left: pair.left, right: pair.right,
+      leftResources: pair.leftResources, rightResources: pair.rightResources }));
+    if (basis.scopeDigest !== canonicalDigest(scopeSource)) failures.push("TRANSITION_PARALLEL_SAFETY_SCOPE_DIGEST_MISMATCH");
+    if (basis.resourceDigest !== canonicalDigest(resourceSource)) failures.push("TRANSITION_PARALLEL_SAFETY_RESOURCE_DIGEST_MISMATCH");
+    // Independence is structural: a member, the contract or the assessment
+    // itself cannot verify its own claim.
+    const verifier = basis.verifier;
+    if (typeof verifier !== "string" || verifier === subject || verifier === contract || memberSet.has(verifier)) {
+      failures.push("TRANSITION_PARALLEL_SAFETY_VERIFIER_NOT_INDEPENDENT");
+    }
+    const evidence = Array.isArray(basis.verificationEvidence) ? basis.verificationEvidence : [];
+    if (evidence.length === 0) failures.push("TRANSITION_PARALLEL_SAFETY_VERIFICATION_EVIDENCE_MISSING");
+    const obligations = Array.isArray(basis.obligations) ? basis.obligations as readonly unknown[] : [];
+    if (!obligations.includes(PARALLEL_ASSESSMENT_RULE)) failures.push("TRANSITION_PARALLEL_SAFETY_OBLIGATIONS_INCOMPLETE");
+    if (typeof basis.currentnessRule !== "string" || basis.currentnessRule.length === 0) {
+      failures.push("TRANSITION_PARALLEL_SAFETY_OBLIGATIONS_INCOMPLETE");
+    }
+    if (typeof basis.realisationBasis !== "string" || basis.realisationBasis.length === 0) {
+      failures.push("TRANSITION_PARALLEL_SAFETY_BASIS_MISSING");
+    }
+  }
+
+  return sorted([...new Set(failures)]);
+}
 export interface CliTransitionDiagnostic { readonly reasonCode: string; readonly subject: string; readonly field: string }
 export interface CliOperationalSupportDefinition {
   readonly identity: string;
@@ -1184,7 +1545,16 @@ export function deriveCliTransitionCoverage(
     for (const module of ["parserCoverage", "parallelSafety", "operationalSupport"] as const) {
       const resolution = resolveCliTransitionSchemaModule(modules, module);
       if (resolution === null) issue("CLI_TRANSITION_SCHEMA_MODULE_UNAVAILABLE", contract ?? root, module);
-      else diagnostics.push(...resolution.specifications.operationalGaps);
+      else {
+        // Parallel-safety specifications contain conditional fields for the
+        // proved variant. The coverage report currently emits the explicit
+        // unproven variant, so those proved-only operational gaps are retained
+        // in the module provenance and represented by missingObligations, but
+        // are not misreported as active CLI transition defects. A future
+        // authenticated proved assessment must select and validate that
+        // variant before its field obligations become coverage diagnostics.
+        if (module !== "parallelSafety") diagnostics.push(...resolution.specifications.operationalGaps);
+      }
     }
   }
   const parserCoverage = deriveCliParserCoverage(graph, contract, inventory.parserSource, specifications, modules);
@@ -1349,6 +1719,12 @@ export function deriveCliTransitionCoverage(
   const equal = declaredBranchClosure;
   issue("TRANSITION_TERMINAL_OBLIGATIONS_UNAUTHENTICATED", root, "terminalArtifact/recovery");
   for (const reasonCode of assessment.reasonCodes) issue(reasonCode, root, "terminalClosure");
+  // Bind every selected named-source quad, including referenced semantics not projected above.
+  const graphDigest = canonicalQuadDigest(graph.quads);
+  // Parallel safety is assessed from admitted records against this exact basis.
+  // Its refusals are ordinary coverage diagnostics; the DAG above never decides it.
+  const parallelSafety = deriveCliParallelSafety(graph, contract, ids, graphDigest, modules);
+  diagnostics.push(...parallelSafety.diagnostics);
   // A shared field is supported only when every selected descriptor instance is covered.
   const remainingDiagnostics = diagnostics.filter(diagnostic => {
     if (diagnostic.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED") return !authenticatedEvaluators.has(diagnostic.subject);
@@ -1357,13 +1733,8 @@ export function deriveCliTransitionCoverage(
     return users === undefined || users.size === 0 || supporters === undefined || [...users].some(id => !supporters.has(id));
   });
   const uniqueDiagnostics = [...new Map(remainingDiagnostics.map(d => [canonicalJson(d), d])).values()].sort((a, b) => canonicalJson(a) < canonicalJson(b) ? -1 : canonicalJson(a) > canonicalJson(b) ? 1 : 0);
-  // Bind every selected named-source quad, including referenced semantics not projected above.
-  const graphDigest = canonicalQuadDigest(graph.quads);
   const body = { schema: "urn:usf:cli-transition-interrogation:1" as const, ...selection, graphDigest, work, contract, profile, profileCandidates: profiles, requiredGraphRefs, descriptors, waves,
-    topologicalOnly: true, parallelSafety: { state: "unproven" as const, members: ids, semanticBasis: graphDigest,
-      assessmentRule: "urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1",
-      missingObligations: ["urn:usf:cli-field-specification:rule-parallel-assessment-boundary:1"],
-      reasonCodes: ["TRANSITION_PARALLEL_SAFETY_UNAUTHENTICATED"] },
+    topologicalOnly: true, parallelSafety: parallelSafety.assessment,
     terminalClosure: { declared, derived, equal, assessment }, operationalSupport: operationalObservations, parserCoverage,
     diagnostics: uniqueDiagnostics, complete: uniqueDiagnostics.length === 0,
     reasonCode: uniqueDiagnostics.length === 0 ? "TRANSITION_COVERAGE_COMPLETE" as const : "TRANSITION_SEMANTICS_INCOMPLETE" as const, executionAuthority: "none" as const };

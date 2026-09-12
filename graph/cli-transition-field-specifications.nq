@@ -255,7 +255,7 @@
 <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-local-preparation-operation:1> <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:localPreparationOperations> <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-local-preparation-request:1> <urn:usf:graph:cli-transition-field-specifications> .
-<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:text> "Genuinely external proposed file bytes/deletions; at most 64 operations and 1048576 aggregate UTF-8 transport bytes, validated before any output." <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:text> "Genuinely external proposed file bytes/deletions; at most 64 operations and 5242880 aggregate UTF-8 transport bytes, validated before any output." <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-record:1> <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-request-operations:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-field-specifications> .
@@ -277,7 +277,7 @@
 <urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-local-preparation-write:1> <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-field-specifications> .
-<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:maximumLength> "1048576" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:maximumLength> "5242880" <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:minimumCardinality> "1" <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:minimumLength> "0" <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:cli-field-specification:field-local-preparation-write-content:1> <urn:usf:predicate:outputProperty> "content" <urn:usf:graph:cli-transition-field-specifications> .
@@ -2355,3 +2355,50 @@
 <urn:usf:cli-field-specification:field-terminal-policy-version:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:predicate:terminalBranchSourceDigest> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-field-specifications> .
 <urn:usf:predicate:terminalBranchSourceDigest> <urn:usf:predicate:text> "Source-row digest for a terminal branch obligation observation. Native source authentication is required; an asserted digest or structural projection is not acceptance. The output property remains sourceDigest." <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-ordinary-effect-success:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:outputProperty> "appliedWorkspace" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:appliedWorkspace> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-record:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-ordinary-effect-success:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:text> "Optional in the shared result shape, required exactly when the selected producer declares this payload binding. Native authentication and reference agreement remain mandatory." <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-applied-workspace:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-ordinary-applied-workspace-reference:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:predicate:appliedWorkspace> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-ordinary-effect-success:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:outputProperty> "checkedSet" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:checkedSet> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-record:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-ordinary-effect-success:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:text> "Optional in the shared result shape, required exactly when the selected producer declares this payload binding. Native authentication and reference agreement remain mandatory." <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:field-ordinary-effect-success-checked-set:1> <urn:usf:predicate:recordSpecification> <urn:usf:cli-field-specification:record-ordinary-checked-set-reference:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:predicate:checkedSet> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:type> <urn:usf:type:CliFieldSpecification> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:sourceRecord> <urn:usf:cli-field-specification:record-artifact:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:outputProperty> "resultFieldSpecification" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:sourcePredicate> <urn:usf:predicate:resultFieldSpecification> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:valueKind> <urn:usf:cli-field-specification:kind-iri:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:minimumCardinality> "0" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:maximumCardinality> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:collection> "false" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:minimumLength> "1" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:maximumLength> "4096" <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:derivationRule> <urn:usf:cli-field-specification:rule-predicate-values:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:derivationDependency> <urn:usf:cli-field-specification:record-artifact:1> <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:cli-field-specification:artifact-result-field-specification:1> <urn:usf:predicate:text> "Exact field-specification identity locating this artifact payload in its producer success result. No inferred property-name or schema-name matching." <urn:usf:graph:cli-transition-field-specifications> .
+<urn:usf:predicate:resultFieldSpecification> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:cli-transition-field-specifications> .

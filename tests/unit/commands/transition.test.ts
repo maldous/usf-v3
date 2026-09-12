@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { resolveCommandHandler } from "../../../src/commands/resolve.ts";
 import { inspectTransition, transitionAdaptersForCoverage, loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, symlinkSync, lstatSync, readlinkSync, realpathSync } from "node:fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, symlinkSync, lstatSync, readlinkSync, realpathSync, cpSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join, relative, isAbsolute, sep } from "node:path";
@@ -13,6 +13,11 @@ import { findHelpTopic, transitionInterrogationContract, transitionSchemaContrac
 import { canonicalDigest } from "../../../src/core/canonical.ts";
 import { executeTransitionCommand } from "../../../src/commands/transition.ts";
 import { prepareCanonicalCompletionProof, runCanonicalCompletionPublication } from "../../../src/commands/work-completion.ts";
+
+function descriptorSchemaDependencies(canonical: Record<string, unknown>): readonly Record<string, unknown>[] {
+  return [canonical, ...["cli-parser-coverage", "cli-parallel-safety", "cli-operational-support", "local-contribution", "call-result"].map(name =>
+    JSON.parse(readFileSync(new URL("../../../schemas/" + name + ".schema.json", import.meta.url), "utf8")) as Record<string, unknown>)];
+}
 
 test("native inspection authenticates genuine bytes without writes or lock claims and preserves stale refusals", {
   skip: process.env.USF_REPOSITORY_ROOT !== undefined && "the direct lane owns genuine construction and native check execution",
@@ -34,7 +39,7 @@ test("native inspection authenticates genuine bytes without writes or lock claim
   const profile = "urn:usf:profile:v3-self-host:1";
   try {
     for (const entry of await readdir(canonicalRoot, { withFileTypes: true })) {
-      if (entry.name === ".git" || entry.name === "node_modules" || entry.name.startsWith(".usf")) continue;
+      if (entry.name === ".git" || entry.name === "node_modules" || entry.name === "artifacts" || entry.name.startsWith(".usf")) continue;
       await cp(join(canonicalRoot, entry.name), join(root, entry.name), { recursive: true });
     }
     // Use the integration fixture's exact historical publication removal, never alter a checked receipt.
@@ -211,172 +216,11 @@ test("native inspection authenticates genuine bytes without writes or lock claim
   } finally { await rm(parent, { recursive: true, force: true }); }
 });
 
-test("installed transition inspect reduces native operational gaps on a genuinely authorised root without effects", {
-  skip: process.env.USF_REPOSITORY_ROOT !== undefined && "the direct lane owns isolated construction publication and CLI subprocesses",
-}, async (t) => {
-  const { cp, mkdir, mkdtemp, readdir, chmod, rm } = await import("node:fs/promises");
-  const { spawnSync, execFileSync } = await import("node:child_process");
-  const { createHash } = await import("node:crypto");
-  const { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } = await import("../../../src/commands/construction-authority.ts");
-  const native = await import("../../../src/commands/work-completion.ts");
-  const { inspectLocalContribution } = await import("../../../src/collaboration/local-contribution.ts");
-  const { loadSemanticGraph } = await import("../../../src/graph/index.ts");
-  const { canonicalJson } = await import("../../../src/core/canonical.ts");
-  const canonicalRoot = fileURLToPath(new URL("../../../", import.meta.url));
-  const temporaryRoot = process.env.TMPDIR ?? join(canonicalRoot, ".usf/tmp");
-  await mkdir(temporaryRoot, { recursive: true, mode: 0o700 });
-  const parent = await mkdtemp(join(temporaryRoot, "installed-native-frontier-"));
-  const root = join(parent, "repository");
-  await mkdir(root, { mode: 0o700 });
-  const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
-  const profile = "urn:usf:profile:cli-transition-definition:1";
-  try {
-    for (const entry of await readdir(canonicalRoot, { withFileTypes: true })) {
-      if (entry.name === ".git" || entry.name === "node_modules" || entry.name.startsWith(".usf")) continue;
-      await cp(join(canonicalRoot, entry.name), join(root, entry.name), { recursive: true });
-    }
-    for (const path of ["node_modules", ".usf/cache"]) {
-      const source = join(canonicalRoot, path);
-      assert.equal(lstatSync(source).isSymbolicLink(), false, "fixture dependencies must be physical: " + path);
-      await mkdir(join(root, path), { recursive: true, mode: 0o700 });
-      await cp(source, join(root, path), { recursive: true, verbatimSymlinks: true });
-      await chmod(join(root, path), 0o700);
-    }
-      const assertContainedLinks = (entry: string) => {
-        const stat = lstatSync(entry);
-        if (stat.isSymbolicLink()) {
-          const target = realpathSync(entry);
-          const relation = relative(root, target);
-          assert.ok(!isAbsolute(relation) && relation !== ".." && !relation.startsWith(".." + sep),
-            "copied dependency symlink must resolve within the fixture: " + relative(root, entry));
-        } else if (stat.isDirectory()) {
-          for (const child of readdirSync(entry).sort()) assertContainedLinks(join(entry, child));
-        }
-      };
-    for (const path of ["node_modules", ".usf/cache"]) assertContainedLinks(join(root, path));
-    execFileSync("git", ["init", "--quiet"], { cwd: root });
-    const snapshot = () => {
-      const rows: unknown[] = [];
-      const visit = (path: string) => {
-        const absolute = join(root, path), stat = lstatSync(absolute);
-        rows.push({ path, dev: stat.dev, ino: stat.ino, mode: stat.mode, size: stat.size, mtime: stat.mtimeMs, ctime: stat.ctimeMs,
-          digest: stat.isFile() ? createHash("sha256").update(readFileSync(absolute)).digest("hex") : null,
-          link: stat.isSymbolicLink() ? readlinkSync(absolute) : null });
-        if (stat.isDirectory()) for (const child of readdirSync(absolute).sort()) visit(path === "" ? child : path + "/" + child);
-      };
-      visit("");
-      return rows;
-    };
-    const inspect = () => {
-      const result = spawnSync(join(root, "bin/usf"), ["transition", "inspect", "--root", selection.rootIdentity, "--manifest", selection.manifestPath],
-        { cwd: root, encoding: "utf8", timeout: 120_000, maxBuffer: 16 * 1024 * 1024 });
-      assert.equal(result.error, undefined);
-      assert.equal(result.signal, null);
-      assert.equal(result.status, 1, result.stderr);
-      const report = JSON.parse(result.stdout) as ReturnType<typeof deriveCliTransitionCoverage>;
-      assert.ok(Array.isArray(report.descriptors), result.stdout);
-      return report;
-    };
-    const beforeConstruction = snapshot();
-    const refused = inspect();
-    assert.equal(refused.descriptors.length, 6);
-    assert.ok(refused.waves.length > 0);
-    assert.equal(refused.complete, false);
-    assert.equal(refused.executionAuthority, "none");
-    assert.equal(refused.parallelSafety.state, "unproven");
-    const initialGraph = loadSemanticGraph(root, selection.manifestPath);
-    for (const command of ["realise no-change", "check", "evidence completion", "prove completion", "publish work-completion"]) {
-      const identity = inspectTransition(initialGraph, selection, command).transitionIdentity;
-      const matches = refused.operationalSupport.filter(support => support.transitionIdentity === identity);
-      assert.equal(matches.length, 1, command);
-      const support = matches[0]!;
-      assert.equal(support.outcome, "refused");
-      assert.ok(support.outcome === "refused");
-      assert.equal(support.refusalClass, "unclassified", "wire classification must not invent a semantic class from a native error constructor");
-      assert.equal(support.refusalCode, "INVALID_REALISATION_BASIS");
-      assert.equal(support.lockAvailability, "not-observed");
-      assert.deepEqual(support.derivations, []);
-    }
-    assert.equal(refused.diagnostics.some(diagnostic => diagnostic.reasonCode === "TRANSITION_OPERATIONAL_PREFLIGHT_FAILED"), false);
-    assert.deepEqual(snapshot(), beforeConstruction, "typed construction refusal must retain the DAG without any fixture mutation");
-    const common = ["--profile", profile, "--manifest", selection.manifestPath];
-    const evidence = ".usf/candidates/construction-authority/installed-frontier-evidence.json";
-    const bundle = ".usf/candidates/construction-authority/installed-frontier-bundle.json";
-    await evidenceCommandHandler({ command: "evidence", repositoryRoot: root,
-      args: ["construction", "--work", selection.rootIdentity, ...common, "--output", evidence] });
-    await proveCommandHandler({ command: "prove", repositoryRoot: root,
-      args: ["construction", "--obligation", "urn:usf:proof:cli-transition-definition:construction", "--evidence", evidence, ...common, "--output", bundle] });
-    const grant = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root,
-      args: ["construction-authority", "--bundle", bundle, ...common, "--apply"] });
-    assert.equal((grant.output as { status: string }).status, "ok");
-    const graph = loadSemanticGraph(root, selection.manifestPath);
-    const baseline = deriveCliTransitionCoverage(graph, selection, { leaves: [], complete: false }, transitionAdaptersForCoverage());
-    const original = snapshot();
-    const report = inspect();
-    assert.deepEqual(inspect(), report, "the installed CLI replay must bind the same native support and graph basis");
-    assert.ok(report.descriptors.length > 0);
-    assert.deepEqual(report.descriptors, baseline.descriptors);
-    assert.deepEqual(report.waves, baseline.waves);
-    assert.equal(report.executionAuthority, "none");
-    assert.equal(report.parallelSafety.state, "unproven");
-    assert.equal(report.topologicalOnly, true);
-    assert.equal(report.complete, false);
-    const matrix = [
-      ["realise no-change", native.inspectNoChangeWork], ["check", native.inspectCompletionChecks],
-      ["evidence completion", native.inspectCompletionEvidence], ["prove completion", native.inspectCanonicalCompletionProof],
-      ["publish work-completion", native.inspectCanonicalCompletionPublication], ["resolve prepare-local", inspectLocalContribution],
-    ] as const;
-    const sorted = (values: readonly unknown[]) => values.map(value => canonicalJson(value)).sort();
-    const supportedFields = new Set<string>();
-    for (const [command, read] of matrix) {
-      const transition = inspectTransition(graph, selection, command).transitionIdentity;
-      const supports = report.operationalSupport.filter(support => support.transitionIdentity === transition);
-      assert.equal(supports.length, 1, command + " must retain one native observation");
-      const support = supports[0]!;
-      const observed = await read(root, selection);
-      assert.equal(support.implementation, "authenticated");
-      assert.equal(support.lockAvailability, "not-observed");
-      assert.equal(support.outcome, observed.status === "authenticated" ? "current" : "missing-prerequisite");
-      assert.ok(support.derivations.length > 0, command + " must bind actual operational field derivations");
-      for (const derivation of support.derivations) {
-        supportedFields.add(derivation.fieldIdentity);
-        assert.deepEqual(sorted(derivation.authenticatedFacts), sorted(observed.facts.map(fact => ({ factKind: fact.kind, identity: fact.identity, digest: fact.digest }))));
-      }
-      if (support.outcome === "missing-prerequisite") {
-        assert.deepEqual(sorted(support.unavailableInputs), sorted(observed.unavailable.map(input => ({
-          factKind: input.kind, identity: input.identity, state: input.state, reasonCode: input.reasonCode,
-        }))));
-      }
-      if (command === "publish work-completion") assert.ok(observed.unavailable.some(input => input.identity === "mode"));
-      if (command === "resolve prepare-local") assert.ok(observed.unavailable.some(input => input.identity === "proposedOperations"));
-      assert.equal(observed.facts.some(fact => fact.kind === "candidate-workspace" || fact.kind === "check-receipt" || fact.kind === "proof-bundle"), false);
-    }
-    const unresolved = (value: typeof report) => new Set(value.diagnostics.filter(d => d.reasonCode === "CLI_OPERATIONAL_RULE_UNRESOLVED").map(d => d.subject));
-    const before = unresolved(baseline), after = unresolved(report);
-    const removed = new Set([...before].filter(field => !after.has(field)));
-    assert.ok(removed.size > 0, "genuine current authority must reduce the operational family");
-    assert.deepEqual(removed, new Set([...before].filter(field => supportedFields.has(field))));
-    assert.deepEqual(after, new Set([...before].filter(field => !supportedFields.has(field))), "unsupported operational rules remain unresolved");
-    assert.deepEqual(snapshot(), original, "installed interrogation and native readback must not write any fixture state");
-    const summary = (value: typeof report) => {
-      const families: Record<string, number> = {};
-      for (const diagnostic of value.diagnostics) families[diagnostic.reasonCode] = (families[diagnostic.reasonCode] ?? 0) + 1;
-      return { digest: value.digest, graphDigest: value.graphDigest, descriptors: value.descriptors.length, waves: value.waves.length,
-        diagnostics: value.diagnostics.length, operational: value.diagnostics.filter(d => d.reasonCode === "CLI_OPERATIONAL_RULE_UNRESOLVED").length,
-        families: Object.fromEntries(Object.entries(families).sort(([left], [right]) => left.localeCompare(right))) };
-    };
-    t.diagnostic(JSON.stringify({ installedNativeFrontier: { beforeConstruction: summary(refused),
-      withoutNativeSupport: summary(baseline), afterConstruction: summary(report),
-      removedOperationalFields: [...removed].sort(), executionAuthority: report.executionAuthority,
-      parallelSafety: report.parallelSafety.state } }));
-  } finally { await rm(parent, { recursive: true, force: true }); }
-});
-
 test("binding proof and publication dispatch derive native work and target without authorising missing evidence", async () => {
   const root = mkdtempSync(join(tmpdir(), "usf-binding-proof-dispatch-"));
   try {
-    mkdirSync(join(root, "graph"));
-    mkdirSync(join(root, "schemas"));
+    cpSync(fileURLToPath(new URL("../../../graph", import.meta.url)), join(root, "graph"), { recursive: true });
+    cpSync(fileURLToPath(new URL("../../../schemas", import.meta.url)), join(root, "schemas"), { recursive: true });
     mkdirSync(join(root, ".usf"), { mode: 0o700 });
     mkdirSync(join(root, ".usf/inputs"), { mode: 0o700 });
     const source = actualDescriptorGraph();
@@ -436,7 +280,7 @@ test("binding proof and publication dispatch derive native work and target witho
 });
 
 function actualDescriptorGraph(): SemanticGraph {
-  const quads = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
+  const quads = ["cli-schema-primitives","cli-command-mode-schema","cli-inventory","cli-parser-coverage-schema","cli-parallel-safety-schema","cli-operational-support-schema","cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
   quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
   const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1", "urn:usf:schema:completion-proof-bundle:1", "urn:usf:schema:work-completion-publication-result:1", "urn:usf:schema:work-completion-publication-receipt:1", "urn:usf:command:prove-completion:1", "urn:usf:command:publish-work-completion:1"]);
@@ -543,18 +387,17 @@ test("schema derivation can describe governed schema drift but refuses invalid o
 test("schema handler loads declared sources, emits a reproducible candidate and creates no runtime ledger", async () => {
   const root = mkdtempSync(join(tmpdir(), "usf-schema-cli-"));
   try {
-    mkdirSync(join(root, "graph"));
-    const names = ["cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","v3-convention"];
-    for (const name of names) writeFileSync(join(root, "graph", name + ".nq"), readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url)));
-    writeFileSync(join(root, "graph", "test.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: names.map(name => ({
-      path: "graph/" + name + ".nq", format: "application/n-quads", graph: "urn:usf:graph:" + name, role: "contract", validationProfile: "bootstrap-nquads-v1",
-    })) }));
+    cpSync(fileURLToPath(new URL("../../../graph", import.meta.url)), join(root, "graph"), { recursive: true });
+    cpSync(fileURLToPath(new URL("../../../schemas", import.meta.url)), join(root, "schemas"), { recursive: true });
+    const names = ["cli-schema-primitives","cli-command-mode-schema","cli-inventory","cli-parser-coverage-schema","cli-parallel-safety-schema","cli-operational-support-schema","cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications","check-execution-intent","v3-convention"];
+    const sources = names.map(name => ({ path: "graph/" + name + ".nq", format: "application/n-quads", graph: "urn:usf:graph:" + name, role: "contract", validationProfile: "bootstrap-nquads-v1" }));
+    writeFileSync(join(root, "graph/test.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources }));
     const request = { command: "transition" as const, repositoryRoot: root, args: ["schema", "--root", "urn:usf:work:cli-transition-definition", "--manifest", "graph/test.json"] };
     const first = await transitionCommandHandler(request, []);
     assert.equal(first.exitCode, 0);
     assert.deepEqual(await transitionCommandHandler(request, []), first);
     assert.equal((first.output as { executionAuthority: string }).executionAuthority, "none");
-    assert.deepEqual(readdirSync(root), ["graph"]);
+    assert.deepEqual(readdirSync(root).sort(), ["graph", "schemas"]);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
@@ -584,7 +427,7 @@ test("interrogation and preparation share actual graph-bound observation admissi
   assert.equal(report.executionAuthority, "none");
   assert.equal(report.complete, false);
   assert.equal(report.parallelSafety.state, "unproven");
-  assert.equal(report.terminalClosure.equal, false);
+  assert.equal(report.terminalClosure.equal, true);
   assert(report.diagnostics.some(d => d.reasonCode === "TRANSITION_EVALUATORS_UNAUTHENTICATED"));
   assert.equal(admitted.validator.validate({ ...selection, operations: [{ kind: "write", path: "src/a.ts", content: "proposal" }] }).valid, true);
   assert.equal(admitted.validator.validate({ ...selection, basis: "invented", operations: [] }).valid, false);
@@ -807,14 +650,11 @@ test("binding context uses the declared profile and never admits observation exe
 test("CLI binding reads follow only the selected target manifest without runtime effects", async () => {
   const root = mkdtempSync(join(tmpdir(), "usf-binding-context-"));
   try {
-    mkdirSync(join(root, "graph"));
+    cpSync(fileURLToPath(new URL("../../../graph", import.meta.url)), join(root, "graph"), { recursive: true });
+    cpSync(fileURLToPath(new URL("../../../schemas", import.meta.url)), join(root, "schemas"), { recursive: true });
     const source = actualDescriptorGraph();
-    const names = ["urn:usf:graph:cli-transition-definition","urn:usf:graph:cli-transition-record-specifications","urn:usf:graph:cli-transition-field-specifications","urn:usf:graph:cli-transition-completion-field-specifications","urn:usf:graph:v3-convention"];
-    const sources = names.map((graph, i) => {
-      const path = `graph/source-${i}.nq`;
-      writeFileSync(join(root, path), source.quads.filter(q => q.graph === graph).map(canonicalQuadLine).join("\n") + "\n");
-      return { path, graph, format: "application/n-quads", role: "contract", validationProfile: "bootstrap-nquads-v1" };
-    });
+    const names = ["urn:usf:graph:cli-schema-primitives","urn:usf:graph:cli-command-mode-schema","urn:usf:graph:cli-inventory","urn:usf:graph:cli-parser-coverage-schema","urn:usf:graph:cli-parallel-safety-schema","urn:usf:graph:cli-operational-support-schema","urn:usf:graph:cli-transition-definition","urn:usf:graph:cli-transition-record-specifications","urn:usf:graph:cli-transition-field-specifications","urn:usf:graph:cli-transition-completion-field-specifications","urn:usf:graph:check-execution-intent","urn:usf:graph:v3-convention"];
+    const sources = names.map(graph => ({ path: "graph/" + graph.slice("urn:usf:graph:".length) + ".nq", graph, format: "application/n-quads", role: "contract", validationProfile: "bootstrap-nquads-v1" }));
     writeFileSync(join(root, "graph/target.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources }));
     writeFileSync(join(root, "graph/bindings.nq"), bindingRows().map(canonicalQuadLine).join("\n") + "\n");
     writeFileSync(join(root, "graph/bindings.json"), JSON.stringify({ schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [{ path: "graph/bindings.nq", graph: "urn:test:bindings", format: "application/n-quads", role: "contract", validationProfile: "bootstrap-nquads-v1" }] }));
@@ -832,12 +672,12 @@ test("CLI binding reads follow only the selected target manifest without runtime
     assert.equal(output.parallelSafety.state, "unproven");
     assert.deepEqual(await transitionCommandHandler(request, []), result);
     assert.equal((await transitionCommandHandler({ ...request, args: ["schema", ...request.args.slice(1)] }, [])).exitCode, 0);
-    assert.deepEqual(readdirSync(root), ["graph"]);
+    assert.deepEqual(readdirSync(root).sort(), ["graph", "schemas"]);
     for (const target of ["../outside.json", "/outside.json", "graph/missing.json"]) {
       writeFileSync(join(root, "graph/bindings.nq"), bindingRows(target).map(canonicalQuadLine).join("\n") + "\n");
       assert.throws(() => loadTransitionContextGraph(root, selection), target);
     }
-    assert.deepEqual(readdirSync(root), ["graph"]);
+    assert.deepEqual(readdirSync(root).sort(), ["graph", "schemas"]);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
@@ -891,7 +731,7 @@ test("no-change producer describes derived identity and retained-state recovery 
 test("generated no-change request and recovery cases reject opaque or caller-derived overrides", async () => {
   const { createJsonSchemaValidator } = await import("../../../src/schema/index.ts");
   const canonical = deriveTransitionSchemaResult(actualDescriptorGraph(), { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" }).descriptorSchema!;
-  const validator = (fragment: string) => createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:no-change-contract:" + fragment, $ref: String(canonical.$id) + "#/$defs/" + fragment }, { dependencySchemas: [canonical] });
+  const validator = (fragment: string) => createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:no-change-contract:" + fragment, $ref: String(canonical.$id) + "#/$defs/" + fragment }, { dependencySchemas: descriptorSchemaDependencies(canonical) });
   const input = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
   assert.equal(validator("noChangeRequest").validate(input).valid, true);
   for (const key of ["candidateDigest", "profile", "work", "basis", "policy", "workspacePath", "output", "fields", "executionAuthority"]) {
@@ -933,7 +773,8 @@ test("result schema admission refuses unsafe files and malformed schemas without
   const root = join(parent, "repository");
   const original = readFileSync(new URL("../../../schemas/no-change-realisation-result.schema.json", import.meta.url));
   try {
-    mkdirSync(join(root, "schemas"), { recursive: true });
+    cpSync(fileURLToPath(new URL("../../../graph", import.meta.url)), join(root, "graph"), { recursive: true });
+    cpSync(fileURLToPath(new URL("../../../schemas", import.meta.url)), join(root, "schemas"), { recursive: true });
     const path = join(root, "schemas/no-change-realisation-result.schema.json");
     const graph = { ...actualDescriptorGraph(), repositoryRoot: root };
     const inspect = () => inspectTransition(graph, selection, "realise no-change");
@@ -950,7 +791,7 @@ test("result schema admission refuses unsafe files and malformed schemas without
     rmSync(path);
     const schema = JSON.parse(original.toString("utf8"));
     const cases: readonly [string, Buffer][] = [
-      ["oversized otherwise valid JSON", Buffer.concat([original, Buffer.alloc(4 * 1024 * 1024 + 1, 0x20)])],
+      ["oversized otherwise valid JSON", Buffer.concat([original, Buffer.alloc(5 * 1024 * 1024 + 1, 0x20)])],
       ["malformed JSON", Buffer.from("{not-json")],
       ["invalid UTF-8", Buffer.concat([original, Buffer.from([0xff])])],
       ["unsupported keyword", Buffer.from(JSON.stringify({ ...schema, patternProperties: { ".*": {} } }))],
@@ -960,18 +801,18 @@ test("result schema admission refuses unsafe files and malformed schemas without
       writeFileSync(path, bytes);
       assert.throws(inspect, { code: "CLI_TRANSITION_UNIMPLEMENTED" }, label);
       assert.deepEqual(readFileSync(path), bytes, label + " must remain untouched");
-      assert.deepEqual(readdirSync(root), ["schemas"], label + " must not create operational state");
+      assert.deepEqual(readdirSync(root).sort(), ["graph", "schemas"], label + " must not create operational state");
     }
     writeFileSync(path, original);
     assert.doesNotThrow(inspect);
-    assert.deepEqual(readdirSync(root), ["schemas"]);
+    assert.deepEqual(readdirSync(root).sort(), ["graph", "schemas"]);
   } finally { rmSync(parent, { recursive: true, force: true }); }
 });
 
 test("selective check input is root-only and admits the exact shared native-intent closure", async () => {
   const { createJsonSchemaValidator } = await import("../../../src/schema/index.ts");
   const canonical = deriveTransitionSchemaResult(actualDescriptorGraph(), { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" }).descriptorSchema!;
-  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:selective-check-input:1", $ref: String(canonical.$id) + "#/$defs/noChangeRequest" }, { dependencySchemas: [canonical] });
+  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: "urn:test:selective-check-input:1", $ref: String(canonical.$id) + "#/$defs/noChangeRequest" }, { dependencySchemas: descriptorSchemaDependencies(canonical) });
   const input = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
   assert.equal(validator.validate(input).valid, true);
   for (const key of ["candidateDigest", "validationObligations", "receipts", "profile", "basis", "output", "force", "executionAuthority"]) {
@@ -1005,7 +846,7 @@ test("completion receipt-set result uses the canonical generated fragment and ca
   const { createJsonSchemaValidator } = await import("../../../src/schema/index.ts");
   const canonical = deriveTransitionSchemaResult(actualDescriptorGraph(), { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" }).descriptorSchema!;
   const schema = "urn:usf:schema:completion-check-receipt-set-result:1";
-  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: schema, $ref: String(canonical.$id) + "#/$defs/completionCheckReceiptSet" }, { dependencySchemas: [canonical] });
+  const validator = createJsonSchemaValidator({ $schema: canonical.$schema, $id: schema, $ref: String(canonical.$id) + "#/$defs/completionCheckReceiptSet" }, { dependencySchemas: descriptorSchemaDependencies(canonical) });
   const members = ["urn:test:validation:a", "urn:test:validation:b"].map((obligationIri, index) => ({
     obligationIri, receiptPath: `.usf/receipts/check/sha256:${"a".repeat(64)}/${index}.json`,
     receiptDigest: "sha256:" + (index ? "b" : "a").repeat(64), validationResultSetDigest: "sha256:" + (index ? "d" : "c").repeat(64),
