@@ -162,7 +162,12 @@ async function isolatedPrecompletionRepository(): Promise<{ root: string; cleanu
   const root = resolve(parent, "repository");
   await mkdir(root, { mode: 0o700 });
   for (const entry of await readdir(canonicalRoot, { withFileTypes: true })) {
-    if (entry.name === ".git" || entry.name === "node_modules" || entry.name.startsWith(".usf")) continue;
+    // artifacts/ is generated observation output, not a source input. Copying it
+    // into every isolated repository moves gigabytes per fixture for bytes no
+    // work in this file reads, and a fixture that carries generated output is
+    // not the clean pre-completion repository it claims to be.
+    if (entry.name === ".git" || entry.name === "node_modules" || entry.name === "artifacts"
+      || entry.name.startsWith(".usf")) continue;
     await cp(resolve(canonicalRoot, entry.name), resolve(root, entry.name), { recursive: true });
   }
   // This helper represents a clean pre-completion repository. Construction
@@ -224,7 +229,90 @@ test("fresh native check reuses an authenticated receipt for the same scoped fix
     assert.equal((reused.output as { status?: unknown }).status, "pass", JSON.stringify(reused.output));
     assert.deepEqual(await readGraphDerivedCheckReceipt(isolated.root, fresh.candidateDigest, validation), readback,
       "the same scoped candidate and validation must reuse its authenticated receipt");
-    assert.equal(fixture.provenance.receiptDigest, fixture.receipt.receiptDigest, "historical fixture receipt remains integrity/provenance evidence only");
+    // outerAuthoritativeRequirement: the direct lane regenerates the receipt
+    // through the real realise and check handlers and canonical-compares it to
+    // the retained candidate assets, refusing drift. Asserting only that the
+    // fixture is internally consistent would pass for a fixture that no longer
+    // describes anything this repository produces, which is what it had become.
+    assert.equal(fixture.provenance.receiptDigest, fixture.receipt.receiptDigest);
+    assert.equal(fresh.candidateDigest, fixture.provenance.candidateDigest,
+      "the retained fixture candidate must still reproduce; regenerate it with scripts/generate-checked-receipt-fixture.mjs --write");
+    assert.equal(fresh.receiptPath, fixture.provenance.receiptPath);
+    assert.deepEqual(fresh.receipt, fixture.receipt,
+      "the retained receipt must canonically equal a freshly generated one; drift is refused, not tolerated");
+    assert.deepEqual(Buffer.from(canonicalJson(fresh.receipt, { rejectAbsolutePaths: true })), fixture.bytes,
+      "the retained fixture bytes must be exactly the canonical form of the regenerated receipt");
+  } finally {
+    await isolated.cleanup();
+  }
+});
+
+test("mode-2 consumes the retained receipt through production completion handlers without launching a check", {
+  skip: !isConfinedFixtureProcess && "this is the governed mode-2 consumption lane; the direct lane owns receipt production",
+}, async () => {
+  // completion-staged-receipt-consumption: the mode-2 lane must not call
+  // admissionCheck, spawn Bubblewrap or gain additional executable permission.
+  // It reconstructs the same pre-completion fixture, reproduces the exact
+  // candidate digest, installs only the retained receipt beneath the derived
+  // .usf receipt path at mode 0600, and invokes the production completion
+  // evidence, proof and publication verify handlers.
+  //
+  // Before this existed the requirement was satisfied by nothing: both receipt
+  // tests skipped under confinement, so the confined run proved no consumption
+  // at all. A skip is not a pass.
+  const fixture = await checkedReceiptFixture();
+  const isolated = await isolatedPrecompletionRepository();
+  try {
+    const constructionEvidencePath = ".usf/candidates/construction-authority/mode2-consumer-evidence.json";
+    const constructionBundlePath = ".usf/candidates/construction-authority/mode2-consumer-bundle.json";
+    await evidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+      args: ["construction", "--work", work, "--profile", profile, "--manifest", manifest, "--output", constructionEvidencePath] });
+    await proveCommandHandler({ command: "prove", repositoryRoot: isolated.root,
+      args: ["construction", "--obligation", "urn:usf:proof:repository-path-scope:construction-authority",
+        "--evidence", constructionEvidencePath, "--profile", profile, "--manifest", manifest, "--output", constructionBundlePath] });
+    const construction = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root,
+      args: ["construction-authority", "--bundle", constructionBundlePath, "--profile", profile, "--manifest", manifest, "--apply"] });
+    assert.equal((construction.output as { status?: unknown }).status, "ok");
+
+    const realised = await realiseCommandHandler({ command: "realise", repositoryRoot: isolated.root,
+      args: ["no-change", "--work", work, "--profile", profile, "--manifest", manifest] });
+    const candidateDigest = (realised.output as { candidateDigest: string }).candidateDigest;
+    assert.equal(candidateDigest, fixture.provenance.candidateDigest,
+      "the confined lane must reproduce the exact retained candidate identity, not a new one");
+
+    // Only the retained receipt is installed. Nothing produces one here.
+    const receiptPath = resolve(isolated.root, fixture.provenance.receiptPath);
+    assert.equal(existsSync(receiptPath), false, "the confined lane must start without any receipt for this candidate");
+    await mkdir(dirname(receiptPath), { recursive: true, mode: 0o700 });
+    await writeFile(receiptPath, fixture.bytes, { flag: "wx", mode: 0o600 });
+    const installed = await lstat(receiptPath);
+    assert.equal(installed.mode & 0o777, 0o600, "the staged receipt is installed owner-private");
+
+    const readback = await readGraphDerivedCheckReceipt(isolated.root, candidateDigest, validation);
+    assert.ok(readback, "the retained receipt must authenticate as current for this exact candidate");
+    assert.deepEqual(readback.receipt, fixture.receipt);
+
+    const evidencePath = ".usf/candidates/work-completion/mode2-consumer-completion-evidence.json";
+    const bundlePath = ".usf/candidates/work-completion/mode2-consumer-completion-bundle.json";
+    const evidence = await completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+      args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest, "--output", evidencePath] });
+    assert.equal(evidence.exitCode ?? 0, 0);
+    const proof = await completionAwareProveCommandHandler({ command: "prove", repositoryRoot: isolated.root,
+      args: ["completion", "--obligation", "urn:usf:proof:repository-path-scope", "--evidence", evidencePath,
+        "--profile", profile, "--manifest", manifest, "--output", bundlePath] });
+    assert.equal(proof.exitCode ?? 0, 0);
+    const verified = await completionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root,
+      args: ["work-completion", "--bundle", bundlePath, "--profile", profile, "--manifest", manifest, "--verify"] });
+    assert.equal(verified.exitCode ?? 0, 0);
+
+    // A tampered staged receipt must refuse rather than be re-produced.
+    await unlink(receiptPath);
+    const tampered = rehashedReceipt(fixture.receipt, "exitCode", 1);
+    await writeFile(receiptPath, `${canonicalJson(tampered, { rejectAbsolutePaths: true })}`, { mode: 0o600 });
+    await assert.rejects(
+      async () => completionAwareEvidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
+        args: ["completion", "--candidate", candidateDigest, "--work", work, "--profile", profile, "--manifest", manifest] }),
+      "a staged receipt that is not the authenticated one cannot be consumed");
   } finally {
     await isolated.cleanup();
   }
@@ -724,6 +812,47 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
     await unlink(missingSeedReceipt);
     await assert.rejects(() => readCompletionValidationSeed(isolated.root, request), { code: "WORK_COMPLETION_SEED_NOT_CURRENT" });
     await writeFile(missingSeedReceipt, retainedSeedReceiptBytes, { mode: 0o600 });
+
+    // The seed refusal matrix is exercised against this one authenticated seed
+    // rather than by reproducing it, which is the whole point of the seed: a
+    // read-only refusal assertion must not pay the validation producer again.
+    // Every branch restores the exact original bytes and mode so the following
+    // replay assertion still observes the genuine retained set.
+    const seedPath = resolve(isolated.root, `.usf/receipts/check/${identity.slice("sha256:".length)}/completion-validation-seed.json`);
+    const seedBytes = await readFile(seedPath);
+    const seedMode = (await lstat(seedPath)).mode & 0o777;
+    assert.equal(seedMode, 0o600, "the derived seed is retained owner-private");
+
+    await chmod(seedPath, 0o644);
+    await assert.rejects(() => readCompletionValidationSeed(isolated.root, request),
+      { code: "WORK_COMPLETION_SEED_FILE_UNSAFE" }, "a group- or world-readable seed is not consumable");
+    await chmod(seedPath, 0o600);
+    assert.deepEqual(await readFile(seedPath), seedBytes, "a refused read must not rewrite the seed");
+
+    await writeFile(seedPath, "{ not a seed", { mode: 0o600 });
+    await assert.rejects(() => readCompletionValidationSeed(isolated.root, request),
+      { code: "WORK_COMPLETION_SEED_INVALID" }, "a malformed seed refuses instead of rebuilding");
+    await writeFile(seedPath, seedBytes, { mode: 0o600 });
+
+    const supersededSeed = { ...(seed as Record<string, unknown>), candidateDigest: `sha256:${"0".repeat(64)}` };
+    await writeFile(seedPath, `${canonicalJson(supersededSeed, { rejectAbsolutePaths: true })}\n`, { mode: 0o600 });
+    await assert.rejects(() => readCompletionValidationSeed(isolated.root, request),
+      { code: "WORK_COMPLETION_SEED_STALE" }, "a seed naming another candidate is stale, not current");
+    await writeFile(seedPath, seedBytes, { mode: 0o600 });
+
+    const droppedReceiptSeed = { ...(seed as Record<string, unknown>),
+      receipts: (seed as { receipts: readonly unknown[] }).receipts.slice(1) };
+    await writeFile(seedPath, `${canonicalJson(droppedReceiptSeed, { rejectAbsolutePaths: true })}\n`, { mode: 0o600 });
+    await assert.rejects(() => readCompletionValidationSeed(isolated.root, request),
+      { code: "WORK_COMPLETION_SEED_STALE" }, "a partial receipt denominator cannot pass as the complete set");
+    await writeFile(seedPath, seedBytes, { mode: 0o600 });
+
+    await unlink(seedPath);
+    await assert.rejects(() => readCompletionValidationSeed(isolated.root, request),
+      { code: "WORK_COMPLETION_SEED_INVALID" }, "a missing seed refuses and never triggers an implicit rebuild");
+    await writeFile(seedPath, seedBytes, { mode: 0o600 });
+    assert.deepEqual(await readCompletionValidationSeed(isolated.root, request), seed,
+      "the restored seed is consumable again without any validation launch");
 
     const replay = await prepareCompletionChecks(isolated.root, request);
     assert.deepEqual(replay, first, "a complete retained set has stable readback after native per-member reconciliation");

@@ -1,1 +1,30 @@
-{"candidateDigest":"sha256:b4049433477371e689925a0229af412b86071eaf786d921cf42ac03c1552b291","fixtureSourceSet":{"canonicalHead":"d79ec0d74d81905c5b78f15fa20e92bf9c090bb3","canonicalTree":"49bf997cc602be26fab3bca0fd3ab9b91fa7c693","excludedTopLevelEntries":[".git",".usf","node_modules"]},"fixtureSourceSetDigest":"sha256:999d4593335dd32506519d0c7ba79615b69c3cf2b8de251ddefd1c55f4eeba36","generatorCommand":["node",".usf/workspaces/nested-validation-definition-prototype.mjs"],"generatorCommandDigest":"sha256:2d9bcba7f83df8b87569dd79493819b781638a7c366038aa470e1bfa1a30de01","originalConstructionBasisDigest":"sha256:cba18fdb204b11833fef19ffd4c4afeeab236a66a57178bc4081c94702f557a5","receiptDigest":"sha256:ea4f4a5e85085ffa0c1e29fe72fb887a8d38e0d3cde53debe1077a0e1be1ec5a","receiptPath":".usf/receipts/check/b4049433477371e689925a0229af412b86071eaf786d921cf42ac03c1552b291/aac23ef22ee0185dd6d987154fae096c22be61eeb031ec25f7cf55f68cb5dbf7.json","receiptRawSha256":"sha256:5b0b8bcdfc217f171feda6df2a87a47b71fc09fa55d3b7cc5b313032c3140727","schema":"urn:usf:checked-candidate-receipt-fixture-provenance:1","scopedDependencyDigest":"sha256:af657b46e6aed8537fedd3846f41f492c318b1ec12bbfc4e033735644b9d6d31","sourceManifestPath":"graph/manifests/integration.json","sourceProfileIri":"urn:usf:profile:v3-self-host:1","sourceValidationIri":"urn:usf:validation:repository-path-tests","sourceWorkIri":"urn:usf:work:repository-path-scope","workspaceIdentityDigest":"sha256:29e7dacb5d16358ac907405fc6b2b56ac7289f53d201c6fc3bee07f7def9abb9"}
+{
+  "candidateDigest": "sha256:04adea99748e92c041257675ad517117c3b2085b6330d9edc186c6add67b27ff",
+  "fixtureSourceSet": {
+    "canonicalHead": "e01c94bf425881ab8b7cbd6ce514a0cbf40741e4",
+    "canonicalTree": "d8978c4ca3d5a17c38c333c88a72813ecef33630",
+    "excludedTopLevelEntries": [
+      ".git",
+      ".usf",
+      "artifacts",
+      "node_modules"
+    ]
+  },
+  "fixtureSourceSetDigest": "sha256:f66a5e44ea50f064c4e4b0131a7f07768c4e6e9497c3e5bb6a9a0dc7fed76af7",
+  "generatorCommand": [
+    "node",
+    "scripts/generate-checked-receipt-fixture.mjs"
+  ],
+  "generatorCommandDigest": "sha256:f904bb93b63f3aee9622f70d4f568b3a6cae8f90ea680d41f278c5a2a6f84762",
+  "originalConstructionBasisDigest": "sha256:d478944d49851ac5f4cfa7ed8e25de1906ab09b7c2def31855afde48e846d2d8",
+  "receiptDigest": "sha256:5fbc9f59f5c246b60486179153d1460bc5dd74ccf0ad583f229f2c6e8db05f82",
+  "receiptPath": ".usf/receipts/check/04adea99748e92c041257675ad517117c3b2085b6330d9edc186c6add67b27ff/aac23ef22ee0185dd6d987154fae096c22be61eeb031ec25f7cf55f68cb5dbf7.json",
+  "receiptRawSha256": "sha256:4148a0f9e9fe760144c6f5919d410cbfa8ba39034d07089e5a4cdc20086d2206",
+  "schema": "urn:usf:checked-candidate-receipt-fixture-provenance:1",
+  "scopedDependencyDigest": "sha256:aec788d9bb6b00051b1ecf2dda0aa161da07c2ef4520e8e8d4965f9f7a340415",
+  "sourceManifestPath": "graph/manifests/integration.json",
+  "sourceProfileIri": "urn:usf:profile:v3-self-host:1",
+  "sourceValidationIri": "urn:usf:validation:repository-path-tests",
+  "sourceWorkIri": "urn:usf:work:repository-path-scope",
+  "workspaceIdentityDigest": "sha256:f65c56d0a8cce950b92476361df5f9823107fa8dd0e45ae1a97ea3938cb22833"
+}
