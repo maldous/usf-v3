@@ -44,10 +44,19 @@ test("every domain error class in the read closure carries a reason code", () =>
   let found = 0;
   for (const path of DOMAIN_ERROR_SOURCES) {
     const source = readFileSync(resolve(repositoryRoot, path), "utf8");
-    for (const match of source.matchAll(/export class (\w*Error) extends Error \{([\s\S]{0,400}?)\n\}/gu)) {
-      const [, name, body] = match;
+    // Take each declaration, then its body up to the closing brace at column
+    // zero. A fixed-size body window silently drops a class that outgrows it,
+    // which removes that class from the denominator instead of failing it: the
+    // check then passes while covering less. SchemaPolicyError crossed a 400
+    // character window by gaining one documented field and stopped being
+    // checked at all, while still declaring its reasonCode correctly.
+    for (const match of source.matchAll(/export class (\w*Error) extends Error \{/gu)) {
+      const name = match[1] ?? "";
+      const start = (match.index ?? 0) + match[0].length;
+      const end = source.indexOf("\n}", start);
+      assert.notEqual(end, -1, `${name} in ${path} has no closing brace at column zero`);
       found += 1;
-      assert.match(body ?? "", /readonly reasonCode\s*:/u,
+      assert.match(source.slice(start, end), /readonly reasonCode\s*:/u,
         `${name} in ${path} declares no reasonCode, so the boundary could not classify it`);
     }
   }
