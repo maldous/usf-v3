@@ -7340,3 +7340,36 @@ quads. `executionAuthority` remains `none` and `parallelSafety` remains
 plan still reports `authority-ready`, so the retained pass continues to describe
 the current source; the publication appended only grant, Evidence and ProofResult
 records, which the clean-clone fixture strips.
+
+## 2026-09-13 programme convergence tranche
+
+Gate on commit 9a3748c passed and is retained at
+`.usf/logs/full-gate/20260912T225307104Z-1595570.json`, result digest
+`sha256:2ada633ed418eb41a512660640d2a180fe2e1e45f3235d1996f538411299b068`,
+log digest `sha256:51255d884c6cf0d5ec9647e0db6f4c5bafcc0e73099116305fd442dfc1e8d03a`.
+Status `passed`, exit 0, phase `complete`, 3988694 ms, 1091 assertions, zero
+failures, all three phases.
+
+USF-1192 names one acceptance that nothing measured: "the parallel plan and the
+sequential semantic transition interpreter converge on the same terminal
+required artifact set for the same basis. Any discrepancy is a correctness
+failure." `tests/unit/graph/transition-convergence.test.ts` measures it, 5/5:
+the wave projection covers the required transition denominator exactly once and
+agrees with `requiredTransitions`; every wave member's consumed artifacts are
+produced strictly earlier, with artifacts nothing in the cohort produces treated
+as external inputs that constrain no ordering; the terminal set derived by
+walking the waves equals the interpreter's own `terminalClosure.derived`; and the
+derivation is deterministic for one basis, including its interrogation digest.
+
+A fourth case exists to stop this convergence being misread. Agreement about
+artifacts is not a statement about concurrent execution, so the same test asserts
+`topologicalOnly`, `parallelSafety.state = unproven`, `executionAuthority = none`
+and that the unproven assessment still names its missing obligation. Wave
+membership is a topological fact and is denied as evidence of anything else.
+
+`parallelSafety` stays `unproven` deliberately. USF-1192 requires parallelisation
+to be *derived* from semantic dependencies, read/write overlap, integration
+ownership, provider limits and concurrency policy, and forbids inferring it from
+file names or apparent independence. It does not require this cohort to be
+proved, and the evaluator would refuse a proof it does not have: every effect
+declares a `scopeDerivationRule`, so no authored path list can establish it.
