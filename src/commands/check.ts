@@ -2020,6 +2020,30 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
       const failureDiagnostic = startedIntent !== null && (observation.timedOut || !observation.outputWithinLimit || observation.exitCode !== 0)
         ? await persistFailureDiagnostic(canonicalRoot, candidateDigest, validationId, validation, startedIntent, observation)
         : null;
+      // A persisted diagnostic is bound to a started execution intent, so a
+      // failure observed without one used to return an exit code and nothing
+      // else. That is not enough to act on: the operator cannot see whether the
+      // child said anything, and the refusal is indistinguishable from every
+      // other CHECK_FAILED. Carry the bounded observation itself so a failure
+      // can always be read, without inventing an intent it does not have.
+      const observedFailure = failureDiagnostic !== null
+        || !(observation.timedOut || !observation.outputWithinLimit || observation.exitCode !== 0)
+        ? null
+        : Object.freeze({
+            exitCode: observation.exitCode,
+            timedOut: observation.timedOut,
+            timeoutTerminationSignal: observation.timeoutTerminationSignal,
+            outputWithinLimit: observation.outputWithinLimit,
+            outputTruncated: observation.outputTruncated,
+            stdoutObservedBytes: observation.stdoutObservedBytes,
+            stderrObservedBytes: observation.stderrObservedBytes,
+            stdoutCapturedBase64: observation.stdoutCaptured.toString("base64"),
+            stderrCapturedBase64: observation.stderrCaptured.toString("base64"),
+            executionIntentStarted: false,
+          });
+      const failureDetail = failureDiagnostic === null
+        ? (observedFailure === null ? {} : { observedFailure })
+        : { failureDiagnostic: failureDiagnostic.record };
       if (observation.timedOut) {
         if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
         return {
@@ -2034,18 +2058,18 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
           validationTimedOut: true,
           validationTimeoutTerminationSignal: observation.timeoutTerminationSignal,
           outputResultDigest: observedOutputResultDigest,
-          ...(failureDiagnostic === null ? {} : { failureDiagnostic: failureDiagnostic.record }),
+          ...failureDetail,
         };
       }
       if (!observation.outputWithinLimit) {
         if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
         return { status: "refused", basis, reasonCode: "CHECK_OUTPUT_LIMIT_EXCEEDED", id: validationId, exitCode: observation.exitCode,
-          ...(failureDiagnostic === null ? {} : { failureDiagnostic: failureDiagnostic.record }) };
+          ...failureDetail };
       }
       if (observation.exitCode !== 0) {
         if (intentBound !== null && startedIntent !== null) await persistExecutionIntent(canonicalRoot, candidateDigest, validationId, intentBound, "UNKNOWN", null, startedIntent);
         return { status: "refused", basis, reasonCode: "CHECK_FAILED", id: validationId, exitCode: observation.exitCode,
-          ...(failureDiagnostic === null ? {} : { failureDiagnostic: failureDiagnostic.record }) };
+          ...failureDetail };
       }
       const authenticatedAfter = await currentCandidateWorkspace(canonicalRoot, candidateDigest);
       if (authenticatedAfter.basis.basisDigest !== basis.basisDigest) refuse("CANDIDATE_BASIS_MISMATCH");

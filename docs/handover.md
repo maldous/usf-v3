@@ -7373,3 +7373,39 @@ ownership, provider limits and concurrency policy, and forbids inferring it from
 file names or apparent independence. It does not require this cohort to be
 proved, and the evaluator would refuse a proof it does not have: every effect
 declares a `scopeDerivationRule`, so no authored path list can establish it.
+
+## 2026-09-13 USF-1189 blocker and the check diagnostic repair
+
+The autonomous Linear implementation is present, not missing: `src/commands/linear-client.ts`
+is a real GraphQL client, `src/commands/hermes-linear.ts` drives it under
+`urn:usf:policy:hermes-linear-transport:1`, the CLI exposes
+`hermes start|status|stop --linear-policy`, and `config/hermes-linear.json`
+carries endpoint, workspaces, teams, credential name and bounds. Its declared
+validation set passes 33/33 run directly.
+
+Construction authority for `urn:usf:work:hermes-linear-autonomy` was earned and
+published (receipt
+`evidence/construction-authority/b3eda33e6495d12621b11109a65c88ab5ead50a731af2d0f7de88870d4afde44.json`),
+taking the work to construction eligible, active-permission, maximumThrough
+integrate. Runtime remains correctly refused: `readLinearPolicySource(runtime)`
+requires `completion.verified`, which is false pending the no-change receipt.
+
+The blocker was that the graph-derived check refused `CHECK_FAILED` carrying an
+exit code and nothing else. `readGraphDerivedCheckFailureDiagnostic` returned
+`absent` and `.usf/diagnostics/check/` did not exist, because
+`persistFailureDiagnostic` is gated on a started execution intent. A failure
+observed without one was unreadable, and indistinguishable from every other
+`CHECK_FAILED`.
+
+`graphDerivedCheck` now carries the bounded observation itself — exit code,
+timeout and signal, output-limit and truncation state, observed byte counts and
+the captured stdout/stderr — on every failing return where no intent-bound
+diagnostic can be persisted, marked `executionIntentStarted: false`. It invents
+no intent it does not have and changes no confinement, receipt or authority
+semantics. `tests/adversarial/realisation-check.test.ts` and
+`tests/unit/realisation/workspace.test.ts` pass 25/25 together.
+
+That repair moved the basis, which correctly staled the construction authority
+published minutes earlier and made the candidate refuse `STALE_REALISATION_BASIS`.
+This is the ordering rule enforcing itself: finish source, then gate, then
+publish. Authority for both works is republished after the final gate.
