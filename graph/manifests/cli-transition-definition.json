@@ -7,7 +7,10 @@
     "graph/manifests/v3-execution.json",
     "graph/manifests/v3-convention.json",
     "graph/manifests/check-execution-intent.json",
-    "graph/manifests/cli-schema-primitives.json"
+    "graph/manifests/cli-schema-primitives.json",
+    "graph/manifests/cli-parser-coverage-schema.json",
+    "graph/manifests/cli-parallel-safety-schema.json",
+    "graph/manifests/cli-operational-support-schema.json"
   ],
   "sources": [
     {
