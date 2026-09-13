@@ -1377,15 +1377,66 @@ const canonicalSeedRequest = Object.freeze({
 
 let checkedCanonicalPrepublicationSeed: Promise<{ root: string; cleanup: () => Promise<void> }> | undefined;
 
+/**
+ * Fingerprint of the exact source this seed would be built from.
+ *
+ * The seed is expensive because it publishes construction authority, realises a
+ * candidate and settles the complete graph-derived check set. All of that is a
+ * pure function of the copied source bytes, so a seed built from identical
+ * bytes is the same seed. Any source change moves this fingerprint, so a stale
+ * seed is never addressed, let alone reused: the cache is self-invalidating
+ * rather than trusted.
+ */
+async function canonicalSeedSourceFingerprint(): Promise<string> {
+  const entries: [string, number, string][] = [];
+  const visit = async (relative: string): Promise<void> => {
+    for (const entry of await readdir(resolve(canonicalRoot, relative), { withFileTypes: true })) {
+      if (relative === "" && (entry.name === ".git" || entry.name === "node_modules"
+        || entry.name === "artifacts" || entry.name.startsWith(".usf"))) continue;
+      const child = relative.length === 0 ? entry.name : join(relative, entry.name);
+      if (entry.isDirectory()) { await visit(child); continue; }
+      if (!entry.isFile()) continue;
+      const absolute = resolve(canonicalRoot, child);
+      entries.push([child, (await lstat(absolute)).mode & 0o777, rawDigest(await readFile(absolute))]);
+    }
+  };
+  await visit("");
+  entries.sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
+  return canonicalDigest(entries, { rejectAbsolutePaths: true }).slice("sha256:".length);
+}
+
+/**
+ * One authenticated seed, reused within this process and across runs.
+ *
+ * Retained under .usf/cache, which is ignored runtime state, keyed by the
+ * source fingerprint above. Building it is the single largest cost in this
+ * file; paying it once per distinct source rather than once per run is the
+ * whole point of USF-1200's seed, applied to the fixture that needs it most.
+ * The retained copy is never mutated: every consumer clones it.
+ */
 async function canonicalCheckedPrepublicationSeed(): Promise<{ root: string; cleanup: () => Promise<void> }> {
   if (checkedCanonicalPrepublicationSeed === undefined) {
     checkedCanonicalPrepublicationSeed = (async () => {
+      const fingerprint = await canonicalSeedSourceFingerprint();
+      const cacheRoot = resolve(canonicalRoot, ".usf/cache/completion-seeds", fingerprint);
+      const retained = resolve(cacheRoot, "repository");
+      const complete = resolve(cacheRoot, "complete");
+      // A seed is only reusable once its build finished; the marker is written
+      // last, so an interrupted build is rebuilt rather than half-consumed.
+      if (existsSync(complete) && existsSync(retained)) {
+        return { root: retained, cleanup: async () => {} };
+      }
+      await rm(cacheRoot, { recursive: true, force: true });
       const seed = await canonicalNoChangeFixture();
       try {
         await prepareGenuineCanonicalPublicationRoot(seed.root);
         await assertSettledCompleteCheckSet(seed.root);
         await assertNoCheckRuntimeResidue(seed.root);
-        return seed;
+        await mkdir(cacheRoot, { recursive: true, mode: 0o700 });
+        await cp(seed.root, retained, { recursive: true, verbatimSymlinks: true });
+        await writeFile(complete, `${fingerprint}\n`, { mode: 0o600 });
+        await seed.cleanup();
+        return { root: retained, cleanup: async () => {} };
       } catch (error) { await seed.cleanup(); throw error; }
     })();
   }
