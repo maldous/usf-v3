@@ -154,3 +154,38 @@ test("registry bounds document count, depth, text bytes, nodes and cycles", () =
   const cycle: Record<string, unknown> = { ...root, $id: "urn:test:cycle:1" }; cycle.items = cycle;
   assert.throws(() => createJsonSchemaValidator(root, { dependencySchemas: [cycle] }), (e: unknown) => e instanceof SchemaPolicyError && e.reasonCode === "SCHEMA_NOT_JSON");
 });
+
+/**
+ * A refusal that names only where it looked leaves the reader to open the
+ * schema and guess which identity the registry is missing. Naming the exact
+ * unresolved reference is the difference between reading the reason and
+ * reconstructing it: the schema path is shared by every module reference at
+ * that position, while the identity is the one fact that distinguishes them.
+ */
+test("an unresolved reference names the exact identity, not only the schema path", () => {
+  const root = { $schema: dialect, $id: "urn:test:root:1", type: "string" };
+  const caught = (schema: unknown, dependencies: readonly unknown[]): SchemaPolicyError => {
+    try {
+      createJsonSchemaValidator(schema, { dependencySchemas: dependencies });
+    } catch (error) {
+      assert.ok(error instanceof SchemaPolicyError);
+      return error;
+    }
+    throw new Error("the schema was expected to refuse");
+  };
+
+  const missingDependency = caught(root, [{ $schema: dialect, $id: "urn:test:dep:1", $ref: "urn:test:missing:1" }]);
+  assert.equal(missingDependency.reasonCode, "SCHEMA_REF_UNRESOLVED");
+  assert.equal(missingDependency.reference, "urn:test:missing:1");
+  assert.match(missingDependency.message, /urn:test:missing:1/);
+
+  const missingFragment = caught({ ...root, $ref: "urn:test:dep:1#/$defs/missing" }, [{ $schema: dialect, $id: "urn:test:dep:1", type: "string" }]);
+  assert.equal(missingFragment.reasonCode, "SCHEMA_REF_UNRESOLVED");
+  assert.equal(missingFragment.reference, "urn:test:dep:1#/$defs/missing");
+
+  // A refusal that is not about a reference carries none, rather than an
+  // empty string that would read as an unnamed one.
+  const unsupported = caught(root, [{ $schema: dialect, $id: "urn:test:dep:1", unevaluatedProperties: false }]);
+  assert.equal(unsupported.reasonCode, "SCHEMA_KEYWORD_UNSUPPORTED");
+  assert.equal(unsupported.reference, null);
+});

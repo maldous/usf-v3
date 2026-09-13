@@ -62,11 +62,20 @@ export class SchemaPolicyError extends Error {
   readonly reasonCode: SchemaPolicyReason;
   readonly schemaPath: string;
 
-  constructor(reasonCode: SchemaPolicyReason, schemaPath: string) {
-    super(`${reasonCode} at ${schemaPath}`);
+  /**
+   * The exact reference that could not be resolved, when the refusal is about
+   * one. The schema path alone names where the defect was found and not what
+   * failed, which leaves the reader to open the schema and guess which identity
+   * the registry is missing.
+   */
+  readonly reference: string | null;
+
+  constructor(reasonCode: SchemaPolicyReason, schemaPath: string, reference?: string) {
+    super(`${reasonCode} at ${schemaPath}${reference === undefined ? "" : `: ${reference}`}`);
     this.name = "SchemaPolicyError";
     this.reasonCode = reasonCode;
     this.schemaPath = schemaPath;
+    this.reference = reference ?? null;
   }
 }
 
@@ -200,7 +209,7 @@ function assertSchemaNode(schema: unknown, path: string, registry?: ReadonlySet<
         if (registry === undefined) throw new SchemaPolicyError("SCHEMA_REF_EXTERNAL", keywordPath);
         const [id, fragment, ...extra] = typeof value === "string" ? value.split("#") : [];
         if (!id || !registry.has(id) || extra.length > 0 || (fragment !== undefined && fragment !== "" && !fragment.startsWith("/"))) {
-          throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", keywordPath);
+          throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", keywordPath, typeof value === "string" ? value : undefined);
         }
       }
       continue;
@@ -345,7 +354,10 @@ function compile(schema: AnySchema, documents?: readonly AnySchema[]): ValidateF
     }
     return ajv.compile(schema);
   } catch (error) {
-    if (documents !== undefined && typeof error === "object" && error !== null && "missingRef" in error) throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", "#/$ref");
+    if (documents !== undefined && typeof error === "object" && error !== null && "missingRef" in error) {
+      const missing = (error as { missingRef?: unknown }).missingRef;
+      throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", "#/$ref", typeof missing === "string" ? missing : undefined);
+    }
     throw new SchemaPolicyError("SCHEMA_COMPILE_FAILED", "#");
   }
 }
@@ -433,7 +445,7 @@ export function createRegisteredJsonSchemaValidator<T = unknown>(
       throw new SchemaPolicyError("SCHEMA_REGISTRY_UNKNOWN", "#/externalSchemas");
     }
     if (!schemaFragmentExists(entry.document, reference.schemaFragment)) {
-      throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", "#/externalSchemas");
+      throw new SchemaPolicyError("SCHEMA_REF_UNRESOLVED", "#/externalSchemas", `${reference.schemaIdentity}${reference.schemaFragment}`);
     }
     selected.push(entry);
   }
