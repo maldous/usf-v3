@@ -1,5 +1,41 @@
 # USF V3 handover
 
+## Current boundary - USF-1192 transition frontier closed, 2026-09-13
+
+### State
+
+- `c253cdd` on `anqr-experience-realisation`, clean tree, pushed, zero ahead. Gate 17 passed at `d41b0d1`: 1100 tests, 0 failures, exit 0, 67.1 min.
+- `transition inspect --root urn:usf:work:cli-transition-definition --manifest graph/manifests/cli-transition-definition.json` returns `complete: true`, `TRANSITION_COVERAGE_COMPLETE`, **0 diagnostics** (was 25), 5 waves, 10 descriptors.
+- `executionAuthority: none` and `parallelSafety: unproven` are unchanged and were not altered to reach that state. The graph requires an operator decision for the first; the second is deliberately fail-closed because all scopes are rule-derived, so no authored path list can prove the cohort. Never clear it from topology or empty conflicts.
+- Hermes is live, cycle 175+, on `graph/manifests/anqr-application.json`, `ready: 0`, `lastReason: "no ready implementation work remains"`, zero tokens and zero provider contacts. It is not stuck; it has nothing to pick up because USF-1189's lane reports `boundLaneCount: 0` against six unbound issue locators.
+
+### What closed the frontier
+
+The 25 diagnostics were one cause, not twenty-five. `CLI_OPERATIONAL_RULE_UNRESOLVED` is suppressed only when `allDescriptorsValid` holds and every field user has a supporter, and operational support is computed only for descriptors whose projection is valid. Five stale `INVALID_REALISATION_BASIS` descriptors made `allDescriptorsValid` false, withholding the 13 rule diagnostics and 6 unauthenticated evaluators. One construction-authority republication against the current basis cleared all 25 with **no source change**.
+
+Order held: gate green -> freeze source -> evidence -> prove -> verify -> apply under a steward claim, released immediately. Publishing and then touching source has staled authority three times in this programme.
+
+### Accepted work
+
+- Command registry 73 -> 103 rows. Every advertised leaf declares its own output schema, exit codes, contact posture and authority effect. Three group answers were wrong rather than coarse: `graph` declared `externalContact: explicit` so `graph integrity` appeared to contact a provider, `linear-binding` declared a schema no handler emits, and `providers` promised no semantic authority while `providers policy` writes a graph line through the ordinary transaction. Guarded by `tests/unit/commands/registry-leaf-coverage.test.ts`, which derives the advertised set from synopses rather than restating it.
+- Inventory classifications: 108 entries, none unclassified. The installed registry is the denominator, and `deriveCliTransitionInventory` states that missing classifications remain leaves "so coverage cannot be made complete by omission" - while the registry under-reported the CLI surface, completeness was reachable by exactly that omission.
+- `SchemaPolicyError` now carries the unresolved reference and appends it to the message at all three refusal sites, staying null where the refusal is not about a reference.
+- `tests/adversarial/cli-diagnostic-classification.test.ts` no longer bounds each class body to 400 characters; a class that outgrows a window must not leave the denominator silently.
+
+### Correction a successor must not repeat
+
+`SCHEMA_REF_UNRESOLVED` from `transition inspect` is a **manifest-selection** question first. The default `graph/manifest.json` carries only the foundation source and cannot reach the graph-owned schema modules a descriptor references, so interrogating without `--manifest` refuses before producing any DAG. That refusal was read here as a corpus defect and "repaired" by importing the three module manifests into `graph/manifests/cli-transition-definition.json`. That import took each module identity from one binding subject to nine, nine and six, violated `schemaIdentity` uniqueness, and failed six tests in gate 15 that gate 14 had passed. Reverted at `eb63e44`. Never repair it that way; a manifest import composes every subject in that source into one corpus where identity uniqueness is an invariant.
+
+### Exact next transitions
+
+1. **USF-1189 delivery lane** is the critical path and the reason Hermes idles. `boundLaneCount: 0` against six unbound issue locators; `LINEAR_BINDING_WORK_INACTIVE` for `urn:usf:linear-binding:usf-1162-fixture-repair:2`. Use `usf linear-binding prepare|status|settle` and `usf hermes run --binding IRI`; never delete projections to force selection.
+2. **USF-1192 contract depth.** 10 of the golden-path leaves expose the full descriptor contract (input derivation rules, produces/consumes, prerequisites, recovery, effect class); the rest expose help-level metadata only. Requirement 2, derivation transparency, is unmet for every non-adapter leaf. The issue also cannot close while `parallelSafety` is `unproven` and the end-to-end proof is gated on USF-1189.
+3. **USF-1193** reproducibility lane not yet assessed against its acceptance.
+4. **USF-1202** seed and clone cost. The seed fingerprint digests the **whole repository**, so any edit anywhere forces a ~17 min rebuild; cold is the common case in a develop-and-gate loop, and the cache is now ~168 MB across four fingerprints with no prune. Narrowing the fingerprint to the seed's real dependency set is worth more than the two clone-cost levers, and must be evidence-led: an unsound narrowing reuses a stale seed, which is far worse than a slow one.
+
+Note: editing this file moves the seed fingerprint, so the next gate after this commit pays a cold rebuild. That is expected, not a fault.
+
+
 ## Current boundary - USF-1191 rename-neutral postimage repair, 2026-09-10
 
 - `src/realisation/transition.ts` now applies `--no-renames` to both cached and working-tree postimage `name-only` checks, matching the authoritative staged diff path enumeration and preserving both sides of a rename alongside additions, deletions and modifications.
