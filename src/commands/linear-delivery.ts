@@ -39,6 +39,8 @@ export type LinearDeliveryOutcome =
   | { readonly status: "completed"; readonly evidence: LinearDeliveryEvidence }
   | { readonly status: "refused"; readonly reasonCode: string; readonly evidence: LinearDeliveryEvidence };
 
+type SettledLinearBinding = { readonly status: "SETTLED"; readonly binding: LinearBindingResult["binding"] };
+
 interface DeliveryCheckpoint {
   readonly schema: "urn:usf:linear-delivery-checkpoint:1";
   readonly bindingIri: string;
@@ -256,18 +258,22 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
   if (prepared.status === "COMPLETED") return Object.freeze({ status: "completed", evidence });
   if (prepared.status === "UNKNOWN") return refusal("LINEAR_BINDING_OUTCOME_UNKNOWN", evidence);
 
-  let settled: LinearBindingResult;
-  let restartAfterDispatch: boolean;
+  let settled: SettledLinearBinding;
+  let beforeDispatchCheckpoint: DeliveryCheckpoint | null;
   try {
-    restartAfterDispatch = await readCheckpoint(repositoryRoot, prepared, "before-hermes-run", { status: prepared.status }) !== null;
+    beforeDispatchCheckpoint = await readCheckpoint(repositoryRoot, prepared, "before-hermes-run", { status: prepared.status });
   } catch (error) {
     return refusal(reasonCode(error, "LINEAR_DELIVERY_CHECKPOINT_READ_REFUSED"), evidence);
   }
-  if (!restartAfterDispatch) {
+  if (prepared.status === "PREPARED" || prepared.status === "REFUSED") {
     try {
       // Persist before dispatch because Hermes changes an attempt from PREPARED
       // to STARTED before any provider-side invocation can occur.
-      checkpointRecordKey = await persistCheckpoint(repositoryRoot, prepared, "before-hermes-run", { status: prepared.status });
+      if (beforeDispatchCheckpoint === null) {
+        checkpointRecordKey = await persistCheckpoint(repositoryRoot, prepared, "before-hermes-run", { status: prepared.status });
+      } else {
+        checkpointRecordKey = checkpointKey(prepared, "before-hermes-run", { status: prepared.status });
+      }
       evidence = { ...evidence, checkpointRecordKey };
       await hermesCommand(repositoryRoot, ["run", "--binding", selector.bindingIri, "--env-file", envFile]);
     } catch (error) {
@@ -275,11 +281,13 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
     }
   }
   try {
-    settled = await observeLinearBinding(Object.freeze({ ...selector, repositoryRoot }));
-    evidence = { ...evidence, settledStatus: settled.status };
-    if (settled.status === "COMPLETED") return Object.freeze({ status: "completed", evidence });
-    if (settled.status !== "SETTLED") return refusal("LINEAR_BINDING_OUTCOME_UNKNOWN", evidence);
-    if (!restartAfterDispatch) {
+    const observed = await observeLinearBinding(Object.freeze({ ...selector, repositoryRoot }));
+    evidence = { ...evidence, settledStatus: observed.status };
+    if (observed.status === "COMPLETED") return Object.freeze({ status: "completed", evidence });
+    if (observed.status === "REFUSED") return refusal("LINEAR_BINDING_PROVIDER_REFUSED", evidence);
+    if (observed.status !== "SETTLED") return refusal("LINEAR_BINDING_OUTCOME_UNKNOWN", evidence);
+    settled = { status: "SETTLED", binding: observed.binding };
+    if (prepared.status === "PREPARED") {
       checkpointRecordKey = await persistCheckpoint(repositoryRoot, settled, "settled", { status: settled.status, resultDigest: settled.binding.attempt.executionResultDigest });
       evidence = { ...evidence, checkpointRecordKey };
     }

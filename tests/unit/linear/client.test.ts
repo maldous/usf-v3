@@ -91,14 +91,14 @@ test("issue-bound mutations reject wrong teams and substituted UUIDs before muta
   }
 });
 
-test("comment creation uses caller UUID and verifies issue and comment readback", async () => {
+test("comment creation uses the server UUID and verifies issue and comment readback", async () => {
   const calls: { operationName: string; variables: Record<string, unknown> }[] = [];
   const created = await client(async (_url, init) => {
     calls.push(JSON.parse(String(init?.body)) as { operationName: string; variables: Record<string, unknown> });
     return [identity(), response({ data: { issue: remoteIssue() } }), response({ data: { commentCreate: { success: true, comment: { id: commentId } } } }), response({ data: { comment: { id: commentId, body: "Body", issue: { id: issueId } } } })][calls.length - 1]!;
   }).createComment({ id: commentId, issueId, teamId, body: "Body" });
   assert.deepEqual(calls.map((call) => call.operationName), ["ViewerIdentity", "IssueReadback", "CommentCreate", "CommentReadback"]);
-  assert.equal((calls[2]?.variables.input as { id: string }).id, commentId);
+  assert.deepEqual(calls[2]?.variables.input, { issueId, body: "Body" });
   assert.equal(created.id, commentId);
 });
 

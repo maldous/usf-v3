@@ -11,6 +11,7 @@ import { graphExecuteCommand } from "./graph-execute.ts";
 import { graphIntegrityCommand } from "./graph-integrity.ts";
 import {
   LinearBindingError,
+  afterHermesRefusal,
   afterHermesResult,
   beforeHermesDispatch,
   observeLinearBinding,
@@ -557,9 +558,21 @@ export async function hermesCommand(repositoryRoot: string, args: readonly strin
         const successful = unitRecords.length === 1
           && unitRecords[0]!.unit === boundUnit
           && unitRecords[0]!.status === "ok";
+        const refused = evidence.status === "refused"
+          && unitRecords.length === 1
+          && unitRecords[0]!.unit === boundUnit
+          && unitRecords[0]!.status === "refused";
         const evidenceDigest = evidence.evidenceDigest;
-        if (!successful || typeof evidenceDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(evidenceDigest)) {
+        if ((!successful && !refused) || typeof evidenceDigest !== "string" || !/^sha256:[0-9a-f]{64}$/u.test(evidenceDigest)) {
           unitRecords = [];
+        } else if (refused) {
+          try {
+            const retryable = await afterHermesRefusal(selector, evidenceDigest as `sha256:${string}`);
+            if (retryable.status !== "REFUSED") unitRecords = [];
+          } catch (error) {
+            if (!(error instanceof LinearBindingError)) throw error;
+            unitRecords = [];
+          }
         } else {
           try {
             const settled = await afterHermesResult(selector, evidenceDigest as `sha256:${string}`);

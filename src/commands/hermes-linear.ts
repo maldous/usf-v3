@@ -13,7 +13,7 @@ import { LinearStateStore, readLinearRecord, writeLinearRecord, type LinearRecor
 import { linuxProcessInspector } from "../continuous/lifecycle.ts";
 import { acquireSupervisorLifetimeLock, claimStewardship, releaseStewardship, withSupervisorActivity } from "../continuous/stewardship.ts";
 import { currentStewardshipDependencies } from "./hermes-stewardship.ts";
-import { registerForegroundSupervisor, unregisterForegroundSupervisor, foregroundSupervisorStopRequested, type HermesSupervisorRecord } from "./hermes-lifecycle.ts";
+import { registerForegroundSupervisor, unregisterForegroundSupervisor, foregroundSupervisorStopRequested, type HermesSupervisorRecord } from "./hermes-supervisor-foreground.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import { executeLinearDelivery } from "./linear-delivery.ts";
 import type { CommandResult } from "./dispatcher.ts";
@@ -413,6 +413,9 @@ export async function hermesLinearCommand(root: string, args: readonly string[])
   await readLinearPolicySource(root, parsed.manifest, parsed.policyIri, true);
   const processIdentity = await linuxProcessInspector.inspect(process.pid);
   if (!processIdentity) refuse("HERMES_LINEAR_PROCESS_UNOBSERVABLE");
+  const selectedGraph = loadSemanticGraph(root, parsed.manifest);
+  const bounds = readRuntimeAuthority(selectedGraph.quads);
+  const concurrency = bounds.concurrencyDefault ?? 1;
   const lifetime = await acquireSupervisorLifetimeLock(root);
   const dependencies = { ...currentStewardshipDependencies(root), controller: processIdentity,
     sessionId: `hermes-linear-${processIdentity.pid}-${processIdentity.startTicks}` };
@@ -422,17 +425,20 @@ export async function hermesLinearCommand(root: string, args: readonly string[])
   const onStop = (): void => { stop = true; };
   try {
     claim = await claimStewardship(root, { agent: "hermes-linear", recover: true, dependencies });
+    const startedAt = new Date().toISOString();
+    const record: HermesSupervisorRecord = { schema: "urn:usf:hermes-supervisor:1", version: 1,
+      supervisorId: canonicalDigest({ process: processIdentity, startedAt }).slice(7, 32), startedAt, process: processIdentity,
+      manifest: parsed.manifest, usefulTokenTarget: 100_000, envFile: parsed.providerEnvFile,
+      pauseSeconds: policy.pollSeconds, concurrency, dispatchLimit: 12,
+      authorityIdentity: canonicalDigest(selectedGraph.graphDigests ?? {}) };
     registered = await registerForegroundSupervisor(root, { lifetime, process: processIdentity,
-      claimId: claim.record.claimId, generation: claim.record.generation, dependencies,
-      args: ["--manifest", parsed.manifest, "--env-file", parsed.providerEnvFile, "--pause-seconds", String(policy.pollSeconds)] });
+      claimId: claim.record.claimId, generation: claim.record.generation, dependencies, record });
     await releaseStewardship(root, claim.record.claimId, claim.record.generation, dependencies);
     claim = undefined;
     const runtime = { schema: "urn:usf:hermes-linear-runtime:1", policyDigest, process: processIdentity, startedAt: new Date().toISOString() };
     await writeLinearRecord(root, `runtime-${key}`, recordValue(runtime));
     const runtimeDigest = canonicalDigest(runtime);
     const store = await LinearStateStore.open(root);
-    const bounds = readRuntimeAuthority(loadSemanticGraph(root, parsed.manifest).quads);
-    const concurrency = bounds.concurrencyDefault ?? 1;
     process.on("SIGINT", onStop);
     process.on("SIGTERM", onStop);
     let cycles = 0;

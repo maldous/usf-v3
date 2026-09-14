@@ -105,16 +105,29 @@ export interface LinearCreateCommentInput {
 
 export class LinearClientError extends Error {
   readonly code: string;
+  readonly detail?: string;
 
-  constructor(code: string) {
+  constructor(code: string, detail?: string) {
     super(code);
     this.name = "LinearClientError";
     this.code = code;
+    this.detail = detail;
   }
 }
 
-function fail(code: string): never {
-  throw new LinearClientError(code);
+function fail(code: string, detail?: string): never {
+  throw new LinearClientError(code, detail);
+}
+
+function linearResponseDetail(value: unknown): string | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const messages = value.flatMap((item) => {
+    if (item === null || typeof item !== "object" || Array.isArray(item)) return [];
+    const message = (item as Record<string, unknown>).message;
+    return typeof message === "string" ? [message] : [];
+  });
+  const detail = messages.join("; ").replace(/[\u0000-\u001f\u007f]/gu, " ").replace(/\s+/gu, " ").trim();
+  return detail.length > 512 ? `${detail.slice(0, 509)}...` : detail || undefined;
 }
 
 function object(value: unknown, code = "LINEAR_POLICY_INVALID"): Record<string, unknown> {
@@ -272,6 +285,19 @@ export class LinearClient {
     return this.#readComment(id, issueId);
   }
 
+  async findComment(issueId: string, teamId: string, body: string): Promise<LinearComment | null> {
+    if (!uuidPattern.test(issueId)) fail("LINEAR_INPUT_INVALID");
+    nonEmpty(body);
+    await this.#authorizedTeam(teamId);
+    await this.#readIssue(issueId, teamId);
+    const data = await this.#request("IssueComments", "query IssueComments($id: String!) { issue(id: $id) { comments { nodes { id body issue { id } } } } }", { id: issueId });
+    const comments = object(object(object(data).issue, "LINEAR_RESPONSE_INVALID").comments, "LINEAR_RESPONSE_INVALID").nodes;
+    if (!Array.isArray(comments)) fail("LINEAR_RESPONSE_INVALID");
+    const matches = comments.map(comment).filter((item) => item.body === body);
+    if (matches.length > 1) fail("LINEAR_COMMENT_READBACK_AMBIGUOUS");
+    return matches[0] ?? null;
+  }
+
   async createIssue(input: LinearCreateIssueInput): Promise<LinearIssue> {
     if (!this.#policy.allowCreate) fail("LINEAR_CREATE_NOT_ALLOWED");
     this.#validateCreateIssue(input);
@@ -305,10 +331,11 @@ export class LinearClient {
     this.#validateComment(input);
     await this.#authorizedTeam(input.teamId);
     await this.#readIssue(input.issueId, input.teamId);
-    const data = await this.#request("CommentCreate", "mutation CommentCreate($input: CommentCreateInput!) { commentCreate(input: $input) { success comment { id } } }", { input: { id: input.id, issueId: input.issueId, body: input.body } });
+    const data = await this.#request("CommentCreate", "mutation CommentCreate($input: CommentCreateInput!) { commentCreate(input: $input) { success comment { id } } }", { input: { issueId: input.issueId, body: input.body } });
     const created = object(object(data).commentCreate, "LINEAR_RESPONSE_INVALID");
-    if (created.success !== true || string(object(created.comment, "LINEAR_RESPONSE_INVALID").id, uuidPattern, "LINEAR_RESPONSE_INVALID") !== input.id) fail("LINEAR_MUTATION_UNCONFIRMED");
-    const readback = await this.#readComment(input.id, input.issueId);
+    if (created.success !== true) fail("LINEAR_MUTATION_UNCONFIRMED");
+    const createdId = string(object(created.comment, "LINEAR_RESPONSE_INVALID").id, uuidPattern, "LINEAR_RESPONSE_INVALID");
+    const readback = await this.#readComment(createdId, input.issueId);
     if (readback.body !== input.body) fail("LINEAR_READBACK_MISMATCH");
     return readback;
   }
@@ -383,7 +410,7 @@ export class LinearClient {
       let parsed: unknown;
       try { parsed = JSON.parse(new TextDecoder().decode(bytes)); } catch { fail("LINEAR_RESPONSE_INVALID"); }
       const envelope = object(parsed, "LINEAR_RESPONSE_INVALID");
-      if (Array.isArray(envelope.errors) && envelope.errors.length > 0) fail("LINEAR_GRAPHQL_ERROR");
+      if (Array.isArray(envelope.errors) && envelope.errors.length > 0) fail("LINEAR_GRAPHQL_ERROR", linearResponseDetail(envelope.errors));
       return object(envelope.data, "LINEAR_RESPONSE_INVALID");
     } catch (error) {
       if (error instanceof LinearClientError) throw error;

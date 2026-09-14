@@ -11,6 +11,20 @@ import { loadSemanticGraph } from "../graph/index.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import { assertHermesDispatchAccounting } from "../providers/dispatch-accounting.ts";
 import type { CommandResult } from "./dispatcher.ts";
+export interface HermesSupervisorRecord {
+  readonly schema: "urn:usf:hermes-supervisor:1";
+  readonly version: 1;
+  readonly supervisorId: string;
+  readonly startedAt: string;
+  readonly process: ProcessIdentity;
+  readonly manifest: string;
+  readonly usefulTokenTarget: number;
+  readonly envFile: string;
+  readonly pauseSeconds: number;
+  readonly concurrency: number;
+  readonly dispatchLimit: number;
+  readonly authorityIdentity: string;
+}
 
 /**
  * The supported operator interface for Hermes business-as-usual.
@@ -28,6 +42,9 @@ const cycleRecord = `${supervisorRoot}/cycle.json`;
 const supervisorLog = `${supervisorRoot}/supervisor.log`;
 const supervisorAdmission = `${supervisorRoot}/admission.json`;
 const deliveryManifest = "graph/manifests/v3-delivery.json";
+const linearAutonomyManifest = "graph/manifests/hermes-linear-autonomy.json";
+const linearAutonomyPolicy = "urn:usf:policy:hermes-linear-transport:1";
+const linearCredentialFile = ".usf/credentials/linear.env";
 const startObservationTimeoutMs = 300_000;
 const defaultStopWaitMs = 300_000;
 const defaultPauseSeconds = 20;
@@ -48,24 +65,6 @@ interface SupervisorAdmission {
   readonly child: ProcessIdentity;
   readonly argumentsDigest: string;
   readonly createdAt: string;
-}
-
-export interface HermesSupervisorRecord {
-  readonly schema: "urn:usf:hermes-supervisor:1";
-  readonly version: 1;
-  readonly supervisorId: string;
-  readonly startedAt: string;
-  readonly process: ProcessIdentity;
-  /** The profile manifest every cycle of this supervisor selects work from. */
-  readonly manifest: string;
-  /** Frozen at start; achieved only by kept tokens. */
-  readonly usefulTokenTarget: number;
-  readonly envFile: string;
-  readonly pauseSeconds: number;
-  readonly concurrency: number;
-  readonly dispatchLimit: number;
-  /** Which V3 authority this supervisor started against. */
-  readonly authorityIdentity: string;
 }
 
 function invalid(message: string, details?: Record<string, unknown>): never {
@@ -672,6 +671,7 @@ export async function hermesLifecycleStatusCommand(repositoryRoot: string, args:
       providerActivity: cycle === null ? Object.freeze([]) : cycle.providerActivity ?? Object.freeze([]),
       transactions: cycle === null ? Object.freeze([]) : cycle.transactions ?? Object.freeze([]),
       blockers: cycle === null ? Object.freeze([]) : cycle.blockers ?? Object.freeze([]),
+      linear: cycle === null ? null : cycle.linear ?? null,
       latestEvidence: evidence,
       facets: cycle === null ? null : cycle.facets ?? null,
       authority: authority === null ? null : Object.freeze({
@@ -744,6 +744,8 @@ interface CycleProjection {
   readonly usefulTokenTargetAchieved: boolean;
   /** GOAL 14.3: observed, target and utilisation for the cycle's dispatch. */
   readonly dispatchConcurrency: Record<string, unknown> | null;
+  /** Autonomous Linear discovery, delivery and reconciliation for this cycle. */
+  readonly linear: Record<string, unknown> | null;
   readonly facets: Record<string, unknown> | null;
   readonly blockers: readonly Record<string, unknown>[];
   readonly providerActivity: readonly Record<string, unknown>[];
@@ -876,6 +878,13 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
   const { implementCommand } = await import("./hermes-implement.ts");
   const { realisePlanCommand } = await import("./hermes-realise.ts");
   const { transactCommand, listPendingTransactions } = await import("./transact.ts");
+  // The Linear lane is loaded dynamically because hermes-linear uses this
+  // lifecycle module for its foreground registration. Keeping the import here
+  // preserves one supervisor lifetime lock and one steward activity owner.
+  const { loadLinearCredentials, readLinearPolicySource, runHermesLinearCycle } = await import("./hermes-linear-autonomy.ts");
+  const { parseLinearPolicy } = await import("./linear-client.ts");
+  const { LinearStateStore } = await import("./linear-state.ts");
+  const linearStore = await LinearStateStore.open(repositoryRoot);
 
   // A signal is a request, not an interruption: it is recorded and observed at
   // the next boundary, so no transaction is torn in half by it.
@@ -977,6 +986,33 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
             (error: unknown) => Object.freeze({ lane: "artefact", refused: error instanceof Error ? error.message.slice(0, 300) : "unknown" })));
       }
 
+      // Linear is part of the normal BAU cycle, not a separately started
+      // controller. It discovers and creates issues from the governed policy,
+      // then dispatches each current binding through the same activity held by
+      // this supervisor. A Linear refusal is recorded as a lane blocker while
+      // allowing the product lane to remain healthy and observable.
+      const linear = await (async (): Promise<Record<string, unknown>> => {
+        try {
+          const policy = parseLinearPolicy(await readLinearPolicySource(
+            repositoryRoot, linearAutonomyManifest, linearAutonomyPolicy));
+          const credentials = await loadLinearCredentials(
+            repositoryRoot, linearCredentialFile, policy.workspaces.map((workspace) => workspace.credentialName));
+          if (credentials === null) {
+            const result = { schema: "urn:usf:hermes-linear-cycle:1", status: "blocked",
+              reasonCode: "LINEAR_CREDENTIALS_UNAVAILABLE", terminal: false };
+            blockers.push(Object.freeze({ lane: "linear", reason: result.reasonCode }));
+            return result;
+          }
+          const result = await runHermesLinearCycle(repositoryRoot, policy, credentials, linearStore,
+            parsed.envFile, parsed.concurrency, () => signalled !== null);
+          return result as Record<string, unknown>;
+        } catch (error) {
+          const reason = error instanceof Error ? error.message.slice(0, 300) : "unknown";
+          blockers.push(Object.freeze({ lane: "linear", reason }));
+          return { schema: "urn:usf:hermes-linear-cycle:1", status: "blocked", reasonCode: reason, terminal: false };
+        }
+      })();
+
       const outcomes = Array.isArray(implementation?.outcomes) ? implementation.outcomes as Record<string, unknown>[] : [];
       for (const outcome of outcomes) {
         if (outcome.outcome === "refused" || outcome.outcome === "output-refused") {
@@ -1038,6 +1074,7 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
         usefulTokenTarget: parsed.usefulTokenTarget,
         usefulTokenTargetAchieved: usefulTokens >= parsed.usefulTokenTarget,
         dispatchConcurrency: (implementation?.dispatchConcurrency ?? null) as Record<string, unknown> | null,
+        linear,
         providerActivity: Object.freeze(outcomes
           .filter((outcome) => outcome.outcome === "accepted")
           .map((outcome) => Object.freeze({
@@ -1046,7 +1083,8 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
           }))
           .slice(0, 24)),
         idleCycles,
-        lastReason: implementation === null ? "implementation lane refused"
+        lastReason: linear.terminal !== true ? "linear lane requires attention"
+          : implementation === null ? "implementation lane refused"
           : Number(implementation.readyFrontier ?? 0) === 0 ? "no ready implementation work remains"
           : Number(implementation.acceptedResults ?? 0) === 0 ? "the ready frontier produced no accepted result this cycle"
           : "progress",
@@ -1058,7 +1096,10 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
       // ready without spinning; any progress returns it to the operator's pace.
       const progressed = Number(implementation?.acceptedResults ?? 0) > 0
         || transactions.length > 0
-        || (Array.isArray(implementation?.conformanceRuns) && implementation.conformanceRuns.length > 0);
+        || (Array.isArray(implementation?.conformanceRuns) && implementation.conformanceRuns.length > 0)
+        || (Array.isArray(linear.outcomes) && linear.outcomes.some((outcome) =>
+          typeof outcome === "object" && outcome !== null && "status" in outcome && outcome.status === "completed"))
+        || (Array.isArray(linear.proposals) && linear.proposals.length > 0);
       idleCycles = progressed ? 0 : Math.min(idleCycles + 1, 3);
       waitSeconds = Math.min(maximumPauseSeconds, parsed.pauseSeconds * 2 ** idleCycles);
       }

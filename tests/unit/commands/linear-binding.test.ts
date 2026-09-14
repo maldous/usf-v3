@@ -369,6 +369,66 @@ test("caller-provided result objects and missing evidence digests are refused", 
   await assert.rejects(afterHermesResult(selector, `sha256:${"a".repeat(64)}`), reason("LINEAR_BINDING_RESULT_INVALID"));
 });
 
+test("canonical zero-success refusal evidence self-reconciles a STARTED attempt for retry", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const started = await beforeHermesDispatch(selector);
+  assert.equal(started.status, "STARTED");
+  const graph = await readFile(resolve(selector.repositoryRoot, started.binding.unitPath), "utf8");
+  const sourceGraph = `urn:usf:graph:hermes-input:${started.binding.unit.attemptKey}`;
+  const sourceAssertionDigest = canonicalQuadDigest(parseStrictNQuads(graph, sourceGraph));
+  const digest = (value: string): `sha256:${string}` => `sha256:${createHash("sha256").update(value, "utf8").digest("hex")}`;
+  const evidence = {
+    schema: "urn:usf:graph-execution-evidence:1",
+    version: 1,
+    status: "refused",
+    observedAt: "2026-09-14T00:00:00.000Z",
+    sourceGraph,
+    sourceGraphDigest: sourceAssertionDigest,
+    economicsClosureDigest: digest("economics"),
+    resultGraph: "urn:usf:graph:hermes-result:refused",
+    resultGraphDigest: digest("result-graph"),
+    workUnitCount: 1,
+    declaredUnitCount: 1,
+    dependencyEdgeCount: 0,
+    dependencyAcyclic: true,
+    selectedUnits: [started.binding.unit.unitIri],
+    externallySatisfiedDependencies: [],
+    succeededCount: 0,
+    authoritySnapshot: { schema: "test" },
+    catalogue: { providerCount: 1 },
+    concurrency: { requested: 1 },
+    localAgentDispositions: [],
+    units: [{
+      unit: started.binding.unit.unitIri,
+      sourceAssertionDigest,
+      requiredCapabilities: [...started.binding.unit.modelCapabilities],
+      candidatesConsidered: 1,
+      attempts: [{ reasonCode: "PROVIDER_RATE_LIMITED" }],
+      eligible: true,
+      status: "refused",
+      reasonCode: "PROVIDER_RATE_LIMITED",
+      selectedCandidateId: null,
+      transport: null,
+      actualModel: null,
+      invocationIdentity: null,
+      usage: null,
+      transportReportedCostUsd: null,
+      resultDigest: null,
+      resultText: null,
+    }],
+    nonClaims: [],
+    deferredRouteCount: 0,
+  };
+  const evidenceDigest = canonicalDigest(evidence) as GraphExecutionEvidenceDigest;
+  const evidenceRoot = resolve(selector.repositoryRoot, ".usf/graph-executions");
+  await mkdir(evidenceRoot, { recursive: true, mode: 0o700 });
+  await writeFile(resolve(evidenceRoot, `${evidenceDigest.slice(7)}.json`), `${canonicalJson(evidence, { rejectAbsolutePaths: true })}\n`, { mode: 0o600 });
+
+  const retried = await beforeHermesDispatch(selector);
+  assert.equal(retried.status, "STARTED");
+  assert.equal((await observeLinearBinding(selector)).status, "STARTED");
+});
+
 test("malformed locator and missing binding fail closed", async () => {
   const root = await fixtureRoot();
   await assert.rejects(prepareLinearBinding({ repositoryRoot: root, manifestPath, bindingIri: "urn:test:missing" }), reason("LINEAR_BINDING_GRAPH_BINDING_MISSING"));

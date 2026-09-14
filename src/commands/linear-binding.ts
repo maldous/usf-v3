@@ -2,7 +2,7 @@ import { deriveLinearBindingDeclaration, LinearBindingError, type LinearBindingA
 export { LinearBindingError, type LinearBindingAuthority, type OwningModel } from "../graph/linear-binding.ts";
 import { createHash, randomUUID } from "node:crypto";
 import { constants } from "node:fs";
-import { link, lstat, mkdir, open, realpath, rename, unlink } from "node:fs/promises";
+import { link, lstat, mkdir, open, realpath, readdir, rename, unlink } from "node:fs/promises";
 import { dirname, parse, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
@@ -16,7 +16,7 @@ const privateDirectoryMode = 0o700;
 const privateFileMode = 0o600;
 const maximumRecordBytes = 4 * 1024 * 1024;
 
-export type LinearAttemptState = "PREPARED" | "STARTED" | "SETTLED" | "UNKNOWN";
+export type LinearAttemptState = "PREPARED" | "STARTED" | "REFUSED" | "SETTLED" | "UNKNOWN";
 
 export interface LinearBindingSelector {
   readonly repositoryRoot: string;
@@ -77,14 +77,14 @@ interface GraphExecutionEvidenceUnit {
   readonly candidatesConsidered: number;
   readonly attempts: readonly unknown[];
   readonly status: string;
-  readonly selectedCandidateId: string;
-  readonly transport: string;
+  readonly selectedCandidateId: string | null;
+  readonly transport: string | null;
   readonly actualModel: unknown;
   readonly invocationIdentity: string | null;
   readonly usage: object | null;
   readonly transportReportedCostUsd: unknown;
-  readonly resultDigest: string;
-  readonly resultText: string;
+  readonly resultDigest: string | null;
+  readonly resultText: string | null;
 }
 
 interface LinearIssueRecord {
@@ -93,7 +93,7 @@ interface LinearIssueRecord {
   readonly intentKey: string;
   readonly attemptKey: string;
   readonly bindingIri: string;
-  readonly state: "STARTED" | "UNKNOWN" | "SETTLED";
+  readonly state: "STARTED" | "REFUSED" | "UNKNOWN" | "SETTLED";
 }
 
 interface GraphExecutionEvidence {
@@ -123,7 +123,7 @@ interface GraphExecutionEvidence {
 }
 
 export type LinearBindingResult =
-  | { readonly status: "PREPARED" | "STARTED" | "SETTLED" | "UNKNOWN"; readonly binding: PreparedLinearBinding }
+  | { readonly status: "PREPARED" | "STARTED" | "REFUSED" | "SETTLED" | "UNKNOWN"; readonly binding: PreparedLinearBinding }
   | { readonly status: "COMPLETED"; readonly binding: PreparedLinearBinding; readonly integrationReceipt: string; readonly evidence: string; readonly proofResult: string };
 
 function refuse(reasonCode: string): never { throw new LinearBindingError(reasonCode); }
@@ -327,9 +327,12 @@ function validAttempt(value: unknown, expected: LinearAttemptRecord): value is L
   if (!value || typeof value !== "object" || !exactKeys(value, ["schema", "intentKey", "attemptKey", "unitIri", "bindingIri", "workIri", "basisDigest", "scopedDependencyDigest", "state", "executionResultIri", "executionResultDigest"])) return false;
   const record = value as LinearAttemptRecord;
   const unsettled = record.state === "PREPARED" || record.state === "STARTED" || record.state === "UNKNOWN";
+  const refused = record.state === "REFUSED";
   const settled = record.state === "SETTLED";
   const validResultPair = unsettled
     ? record.executionResultIri === null && record.executionResultDigest === null
+    : refused
+      ? typeof record.executionResultIri === "string" && record.executionResultIri.startsWith("urn:usf:graph-execution-evidence:") && typeof record.executionResultDigest === "string" && DIGEST.test(record.executionResultDigest)
     : settled && typeof record.executionResultIri === "string" && record.executionResultIri.startsWith("urn:") && typeof record.executionResultDigest === "string" && DIGEST.test(record.executionResultDigest);
   return record.schema === expected.schema && record.intentKey === expected.intentKey && record.attemptKey === expected.attemptKey && record.unitIri === expected.unitIri && record.bindingIri === expected.bindingIri && record.workIri === expected.workIri && record.basisDigest === expected.basisDigest && record.scopedDependencyDigest === expected.scopedDependencyDigest && validResultPair;
 }
@@ -391,7 +394,7 @@ export async function prepareLinearBinding(selector: LinearBindingSelector): Pro
   const issue = await readRecord<LinearIssueRecord>(issueRecordPath(binding));
   if (issue !== null) {
     if (!validIssueRecord(issue)) refuse("LINEAR_BINDING_ATTEMPT_CONFLICT");
-    if (issue.state === "STARTED" || issue.state === "UNKNOWN") {
+    if (issue.state === "STARTED" || issue.state === "REFUSED" || issue.state === "UNKNOWN") {
       if (issue.intentKey !== binding.unit.intentKey || issue.attemptKey !== binding.unit.attemptKey) refuse("LINEAR_BINDING_OUTCOME_UNKNOWN");
       if (issue.locator !== binding.authority.locator || issue.basisDigest !== binding.unit.basisDigest || issue.bindingIri !== binding.authority.bindingIri) refuse("LINEAR_BINDING_ATTEMPT_CONFLICT");
     }
@@ -407,6 +410,11 @@ export async function beforeHermesDispatch(selector: LinearBindingSelector): Pro
   if (observed.status === "STARTED" || observed.status === "UNKNOWN") {
     const unknown = Object.freeze({ ...observed.binding.attempt, state: "UNKNOWN" as const });
     if (observed.status === "STARTED") {
+      const refusalDigest = await latestRefusedEvidence(observed.binding);
+      if (refusalDigest !== null) {
+        await afterHermesRefusal(selector, refusalDigest);
+        return beforeHermesDispatch(selector);
+      }
       await durableWrite(resolve(binding.selector.repositoryRoot, binding.attemptPath), unknown, true);
       const issueKey = canonicalDigest({ locator: binding.authority.locator });
       const dispatchPath = resolve(binding.selector.repositoryRoot, `.usf/work/linear/issues/${issueKey.slice(7)}.json`);
@@ -422,9 +430,9 @@ export async function beforeHermesDispatch(selector: LinearBindingSelector): Pro
   const dispatch = Object.freeze({ locator: binding.authority.locator, basisDigest: binding.unit.basisDigest, intentKey: binding.unit.intentKey, attemptKey: binding.unit.attemptKey, bindingIri: binding.authority.bindingIri, state: "STARTED" as const });
   const priorDispatch = await readRecord<Record<string, unknown>>(dispatchPath);
   if (priorDispatch !== null) {
-    if (!exactKeys(priorDispatch, ["locator", "basisDigest", "intentKey", "attemptKey", "bindingIri", "state"]) || priorDispatch.locator !== binding.authority.locator || typeof priorDispatch.basisDigest !== "string" || !DIGEST.test(priorDispatch.basisDigest) || typeof priorDispatch.intentKey !== "string" || !DIGEST.test(priorDispatch.intentKey) || typeof priorDispatch.attemptKey !== "string" || !DIGEST.test(priorDispatch.attemptKey) || typeof priorDispatch.bindingIri !== "string" || typeof priorDispatch.state !== "string" || !["STARTED", "UNKNOWN", "SETTLED"].includes(priorDispatch.state)) refuse("LINEAR_BINDING_ATTEMPT_CONFLICT");
-    if (priorDispatch.state !== "SETTLED") refuse("LINEAR_BINDING_REDISPATCH_REFUSED");
-    if (priorDispatch.intentKey === binding.unit.intentKey || binding.authority.supersedes !== priorDispatch.bindingIri) refuse("LINEAR_BINDING_SUPERSESSION_REQUIRED");
+    if (!exactKeys(priorDispatch, ["locator", "basisDigest", "intentKey", "attemptKey", "bindingIri", "state"]) || priorDispatch.locator !== binding.authority.locator || typeof priorDispatch.basisDigest !== "string" || !DIGEST.test(priorDispatch.basisDigest) || typeof priorDispatch.intentKey !== "string" || !DIGEST.test(priorDispatch.intentKey) || typeof priorDispatch.attemptKey !== "string" || !DIGEST.test(priorDispatch.attemptKey) || typeof priorDispatch.bindingIri !== "string" || typeof priorDispatch.state !== "string" || !["STARTED", "REFUSED", "UNKNOWN", "SETTLED"].includes(priorDispatch.state)) refuse("LINEAR_BINDING_ATTEMPT_CONFLICT");
+    if (priorDispatch.state !== "SETTLED" && priorDispatch.state !== "REFUSED") refuse("LINEAR_BINDING_REDISPATCH_REFUSED");
+    if (priorDispatch.state === "SETTLED" && (priorDispatch.intentKey === binding.unit.intentKey || binding.authority.supersedes !== priorDispatch.bindingIri)) refuse("LINEAR_BINDING_SUPERSESSION_REQUIRED");
     await durableWrite(dispatchPath, dispatch, true);
   } else {
     try { await durableWrite(dispatchPath, dispatch, false); }
@@ -436,6 +444,90 @@ export async function beforeHermesDispatch(selector: LinearBindingSelector): Pro
   const started = Object.freeze({ ...binding.attempt, state: "STARTED" as const });
   await durableWrite(resolve(binding.selector.repositoryRoot, binding.attemptPath), started, true);
   return Object.freeze({ status: "STARTED", binding: Object.freeze({ ...binding, attempt: started }) });
+}
+
+function refusalEvidenceMatches(binding: PreparedLinearBinding, evidenceDigest: GraphExecutionEvidenceDigest, evidence: GraphExecutionEvidence, assertionDigest: string): boolean {
+  const unit = evidence.units[0];
+  return canonicalDigest(evidence) === evidenceDigest
+    && evidence.schema === "urn:usf:graph-execution-evidence:1"
+    && evidence.version === 1
+    && evidence.status === "refused"
+    && typeof evidence.observedAt === "string"
+    && evidence.sourceGraph === `urn:usf:graph:hermes-input:${binding.unit.attemptKey}`
+    && DIGEST.test(evidence.sourceGraphDigest)
+    && DIGEST.test(evidence.economicsClosureDigest)
+    && typeof evidence.resultGraph === "string"
+    && evidence.resultGraph.startsWith("urn:")
+    && DIGEST.test(evidence.resultGraphDigest)
+    && evidence.workUnitCount === 1
+    && evidence.declaredUnitCount === 1
+    && Number.isSafeInteger(evidence.dependencyEdgeCount)
+    && evidence.dependencyAcyclic === true
+    && Array.isArray(evidence.selectedUnits)
+    && evidence.selectedUnits.includes(binding.unit.unitIri)
+    && evidence.succeededCount === 0
+    && Array.isArray(evidence.units)
+    && evidence.units.length === 1
+    && unit !== undefined
+    && unit.unit === binding.unit.unitIri
+    && unit.sourceAssertionDigest === assertionDigest
+    && Array.isArray(unit.requiredCapabilities)
+    && unit.requiredCapabilities.every((value: unknown) => typeof value === "string")
+    && Number.isSafeInteger(unit.candidatesConsidered)
+    && unit.candidatesConsidered >= 1
+    && Array.isArray(unit.attempts)
+    && unit.status === "refused"
+    && unit.selectedCandidateId === null
+    && unit.transport === null
+    && unit.actualModel === null
+    && unit.invocationIdentity === null
+    && (unit.usage === null || (typeof unit.usage === "object" && !Array.isArray(unit.usage)))
+    && unit.resultDigest === null
+    && unit.resultText === null;
+}
+
+async function latestRefusedEvidence(binding: PreparedLinearBinding): Promise<GraphExecutionEvidenceDigest | null> {
+  const directory = resolve(binding.selector.repositoryRoot, ".usf", "graph-executions");
+  if (!await validateDirectoryAncestry(directory, true)) return null;
+  const graphText = await readTextRecord(resolve(binding.selector.repositoryRoot, binding.unitPath));
+  if (graphText !== semanticWorkUnitGraph(binding.unit)) return null;
+  const assertionDigest = canonicalQuadDigest(parseStrictNQuads(graphText, `urn:usf:graph:hermes-input:${binding.unit.attemptKey}`));
+  const entries = await readdir(directory, { withFileTypes: true }).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    refuse("LINEAR_BINDING_RUNTIME_UNSAFE");
+  });
+  const candidates: Array<{ digest: GraphExecutionEvidenceDigest; observedAt: string }> = [];
+  for (const entry of entries) {
+    if (!entry.isFile() || !/^[0-9a-f]{64}\.json$/u.test(entry.name)) continue;
+    const digest = `sha256:${entry.name.slice(0, -5)}` as GraphExecutionEvidenceDigest;
+    try {
+      const evidence = await readRecord<GraphExecutionEvidence>(resolve(directory, entry.name));
+      if (evidence !== null && refusalEvidenceMatches(binding, digest, evidence, assertionDigest)) candidates.push({ digest, observedAt: evidence.observedAt });
+    } catch { /* malformed evidence is not a retry authority */ }
+  }
+  candidates.sort((left, right) => left.observedAt.localeCompare(right.observedAt) || left.digest.localeCompare(right.digest));
+  return candidates.at(-1)?.digest ?? null;
+}
+
+export async function afterHermesRefusal(selector: LinearBindingSelector, evidenceDigest: GraphExecutionEvidenceDigest): Promise<LinearBindingResult> {
+  if (typeof evidenceDigest !== "string" || !DIGEST.test(evidenceDigest)) refuse("LINEAR_BINDING_RESULT_INVALID");
+  const binding = await freshlyDerived(selector);
+  const prior = await readRecord<LinearAttemptRecord>(resolve(binding.selector.repositoryRoot, binding.attemptPath));
+  if (prior === null || !validAttempt(prior, binding.attempt) || prior.state === "PREPARED") refuse("LINEAR_BINDING_RESULT_UNKNOWN");
+  const evidence = await readRecord<GraphExecutionEvidence>(resolve(binding.selector.repositoryRoot, `.usf/graph-executions/${evidenceDigest.slice(7)}.json`));
+  const graphText = await readTextRecord(resolve(binding.selector.repositoryRoot, binding.unitPath));
+  if (graphText === null || graphText !== semanticWorkUnitGraph(binding.unit)) refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+  const assertionDigest = canonicalQuadDigest(parseStrictNQuads(graphText, `urn:usf:graph:hermes-input:${binding.unit.attemptKey}`));
+  if (evidence === null || !refusalEvidenceMatches(binding, evidenceDigest, evidence, assertionDigest)) refuse("LINEAR_BINDING_RESULT_INVALID");
+  const executionResultIri = `urn:usf:graph-execution-evidence:${evidenceDigest}`;
+  if (prior.state === "REFUSED" && (prior.executionResultIri !== executionResultIri || prior.executionResultDigest !== evidenceDigest)) refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+  const dispatchPath = issueRecordPath(binding);
+  const dispatch = await readRecord<LinearIssueRecord>(dispatchPath);
+  if (dispatch === null || !validIssueRecord(dispatch) || dispatch.locator !== binding.authority.locator || dispatch.basisDigest !== binding.unit.basisDigest || dispatch.intentKey !== binding.unit.intentKey || dispatch.attemptKey !== binding.unit.attemptKey || dispatch.bindingIri !== binding.authority.bindingIri || (dispatch.state !== "STARTED" && dispatch.state !== "REFUSED")) refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+  const refused = Object.freeze({ ...prior, state: "REFUSED" as const, executionResultIri, executionResultDigest: evidenceDigest });
+  if (prior.state !== "REFUSED") await durableWrite(resolve(binding.selector.repositoryRoot, binding.attemptPath), refused, true);
+  if (dispatch.state !== "REFUSED") await durableWrite(dispatchPath, { ...dispatch, state: "REFUSED" }, true);
+  return Object.freeze({ status: "REFUSED", binding: Object.freeze({ ...binding, attempt: refused }) });
 }
 
 export async function afterHermesResult(selector: LinearBindingSelector, evidenceDigest: GraphExecutionEvidenceDigest): Promise<LinearBindingResult> {
