@@ -263,6 +263,7 @@
 <urn:usf:type:LinearIssueWorkBinding> <urn:usf:predicate:type> <urn:usf:type:SemanticType> <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:authorityRule> "One exact mode2 closure supplies only current non-candidate Hermes, stewardship and semantic lifecycle imports needed by the focused binding tests. Candidate binding/CLI/test files remain in candidate scope; no Linear contact, provider, credential, host or extra write authority follows." <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:forValidation> <urn:usf:validation:linear-work-binding> <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "bin/usf" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "graph/fixture-process-runtime-grants.nq" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "graph/fixture-process-runtime.nq" <urn:usf:graph:linear-work-binding> .
