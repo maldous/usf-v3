@@ -339,11 +339,58 @@ function validAttempt(value: unknown, expected: LinearAttemptRecord): value is L
 function validIssueRecord(value: unknown): value is LinearIssueRecord {
   if (!value || typeof value !== "object" || !exactKeys(value, ["locator", "basisDigest", "intentKey", "attemptKey", "bindingIri", "state"])) return false;
   const record = value as LinearIssueRecord;
-  return typeof record.locator === "string" && typeof record.basisDigest === "string" && DIGEST.test(record.basisDigest) && typeof record.intentKey === "string" && DIGEST.test(record.intentKey) && typeof record.attemptKey === "string" && DIGEST.test(record.attemptKey) && typeof record.bindingIri === "string" && record.bindingIri.startsWith("urn:") && ["STARTED", "UNKNOWN", "SETTLED"].includes(record.state);
+  return typeof record.locator === "string" && typeof record.basisDigest === "string" && DIGEST.test(record.basisDigest) && typeof record.intentKey === "string" && DIGEST.test(record.intentKey) && typeof record.attemptKey === "string" && DIGEST.test(record.attemptKey) && typeof record.bindingIri === "string" && record.bindingIri.startsWith("urn:") && ["STARTED", "REFUSED", "UNKNOWN", "SETTLED"].includes(record.state);
 }
 function issueRecordPath(binding: PreparedLinearBinding): string {
   const issueKey = canonicalDigest({ locator: binding.authority.locator });
   return resolve(binding.selector.repositoryRoot, `.usf/work/linear/issues/${issueKey.slice(7)}.json`);
+}
+async function recoverStaleRefusedIssue(binding: PreparedLinearBinding, issue: LinearIssueRecord): Promise<boolean> {
+  if (issue.state !== "STARTED"
+    || issue.locator !== binding.authority.locator
+    || issue.bindingIri !== binding.authority.bindingIri
+    || issue.intentKey !== binding.unit.intentKey
+    || issue.attemptKey === binding.unit.attemptKey) return false;
+  const oldAttemptPath = resolve(binding.selector.repositoryRoot, `.usf/work/linear/${issue.intentKey.slice(7)}/${issue.attemptKey.slice(7)}.json`);
+  const oldAttempt = await readRecord<LinearAttemptRecord>(oldAttemptPath);
+  if (oldAttempt === null
+    || !exactKeys(oldAttempt, ["schema", "intentKey", "attemptKey", "unitIri", "bindingIri", "workIri", "basisDigest", "scopedDependencyDigest", "state", "executionResultIri", "executionResultDigest"])
+    || oldAttempt.schema !== "urn:usf:linear-binding-attempt:1"
+    || oldAttempt.intentKey !== issue.intentKey
+    || oldAttempt.attemptKey !== issue.attemptKey
+    || oldAttempt.unitIri !== `urn:usf:work-unit:${issue.attemptKey}`
+    || oldAttempt.bindingIri !== binding.authority.bindingIri
+    || oldAttempt.workIri !== binding.authority.workIri
+    || oldAttempt.basisDigest !== issue.basisDigest
+    || !DIGEST.test(oldAttempt.scopedDependencyDigest)
+    || oldAttempt.state !== "STARTED"
+    || oldAttempt.executionResultIri !== null
+    || oldAttempt.executionResultDigest !== null) return false;
+  const oldUnit = Object.freeze({
+    ...binding.unit,
+    unitIri: oldAttempt.unitIri,
+    attemptKey: oldAttempt.attemptKey,
+    basisDigest: oldAttempt.basisDigest,
+    scopedDependencyDigest: oldAttempt.scopedDependencyDigest,
+  });
+  const oldBinding = Object.freeze({
+    ...binding,
+    unit: oldUnit,
+    attempt: oldAttempt,
+    unitPath: `.usf/work/${oldAttempt.attemptKey.slice(7)}.nq`,
+    attemptPath: `.usf/work/linear/${oldAttempt.intentKey.slice(7)}/${oldAttempt.attemptKey.slice(7)}.json`,
+  });
+  const refusalDigest = await latestRefusedEvidence(oldBinding);
+  if (refusalDigest === null) return false;
+  const refused = Object.freeze({
+    ...oldAttempt,
+    state: "REFUSED" as const,
+    executionResultIri: `urn:usf:graph-execution-evidence:${refusalDigest}`,
+    executionResultDigest: refusalDigest,
+  });
+  await durableWrite(oldAttemptPath, refused, true);
+  await durableWrite(issueRecordPath(binding), { ...issue, state: "REFUSED" }, true);
+  return true;
 }
 async function freshlyDerived(selector: LinearBindingSelector): Promise<PreparedLinearBinding> {
   assertSelector(selector);
@@ -395,8 +442,10 @@ export async function prepareLinearBinding(selector: LinearBindingSelector): Pro
   if (issue !== null) {
     if (!validIssueRecord(issue)) refuse("LINEAR_BINDING_ATTEMPT_CONFLICT");
     if (issue.state === "STARTED" || issue.state === "REFUSED" || issue.state === "UNKNOWN") {
-      if (issue.intentKey !== binding.unit.intentKey || issue.attemptKey !== binding.unit.attemptKey) refuse("LINEAR_BINDING_OUTCOME_UNKNOWN");
-      if (issue.locator !== binding.authority.locator || issue.basisDigest !== binding.unit.basisDigest || issue.bindingIri !== binding.authority.bindingIri) refuse("LINEAR_BINDING_ATTEMPT_CONFLICT");
+      const mismatchedAttempt = issue.intentKey !== binding.unit.intentKey || issue.attemptKey !== binding.unit.attemptKey;
+      const recovered = mismatchedAttempt ? await recoverStaleRefusedIssue(binding, issue) : false;
+      if (mismatchedAttempt && !recovered && issue.state !== "REFUSED") refuse("LINEAR_BINDING_OUTCOME_UNKNOWN");
+      if (!mismatchedAttempt && (issue.locator !== binding.authority.locator || issue.basisDigest !== binding.unit.basisDigest || issue.bindingIri !== binding.authority.bindingIri)) refuse("LINEAR_BINDING_ATTEMPT_CONFLICT");
     }
   }
   return reconcile(binding);

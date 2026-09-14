@@ -1067,6 +1067,7 @@ export async function graphExecuteCommand(
     units: Object.freeze(ordered.map((outcome) => Object.freeze({
       unit: outcome.unit.iri,
       sourceAssertionDigest: outcome.unit.sourceAssertionDigest,
+      promptDigest: outcome.unit.promptDigest,
       requiredCapabilities: outcome.unit.requiredCapabilities,
       candidatesConsidered: outcome.candidatesConsidered,
       attempts: outcome.attempts,

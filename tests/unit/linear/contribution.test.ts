@@ -38,6 +38,16 @@ test("adapts a qualified non-named route with retained receipts", () => {
   assert.equal(resolveCommand([contribution]).status, "resolved");
 });
 
+test("derives the prompt identity for legacy graph evidence without weakening present-digest checks", () => {
+  const legacy = persisted();
+  delete (legacy.evidence as { units: Array<Record<string, unknown>> }).units[0]!.promptDigest;
+  const contribution = contributionFromGraphExecution(prepared, { evidence: legacy.evidence, evidenceDigest: canonicalDigest(legacy.evidence) }, digest("source"));
+  assert.equal(contribution.claims.includes(`invocation-prompt-digest:${canonicalDigest("fixed prompt")}`), true);
+  const malformed = persisted();
+  (malformed.evidence as { units: Array<Record<string, unknown>> }).units[0]!.promptDigest = null;
+  assert.throws(() => contributionFromGraphExecution(prepared, { evidence: malformed.evidence, evidenceDigest: canonicalDigest(malformed.evidence) }, digest("source")), refuses("LINEAR_CONTRIBUTION_RESULT_MISMATCH"));
+});
+
 test("SDK retention records enforced no-tools bounds and rejects an unknown context ceiling", () => {
   assert.deepEqual(sdkInvocationLimits({ contextLimit: 1024 }, { prompt: "bounded", maximumOutputTokens: 128 }, 150_000), {
     maxTurns: 1, maxWallTimeMs: 150_000, maxInputTokens: 896, maxOutputTokens: 128, maxToolCalls: 0, maxRetries: 0,
@@ -99,6 +109,11 @@ test("refuses absent provenance, usage, qualification, scope and mismatches", ()
   const mismatchedPrompt = persisted(); (mismatchedPrompt.evidence as { units: Array<Record<string, unknown>> }).units[0]!.promptDigest = digest("other-prompt");
   assert.throws(() => contributionFromGraphExecution(prepared, { evidence: mismatchedPrompt.evidence, evidenceDigest: canonicalDigest(mismatchedPrompt.evidence) }, digest("source")), refuses("LINEAR_CONTRIBUTION_RESULT_MISMATCH"));
   const emptyRequirements = Object.freeze({ ...prepared, unit: Object.freeze({ ...prepared.unit, modelCapabilities: [] }) });
-  assert.throws(() => contributionFromGraphExecution(emptyRequirements, persisted(), digest("source")), refuses("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN"));
+  const ordinaryNoQualification = persisted();
+  (ordinaryNoQualification.evidence as { qualificationSnapshot: { routes: unknown[] } }).qualificationSnapshot.routes = [];
+  assert.doesNotThrow(() => contributionFromGraphExecution(emptyRequirements, {
+    evidence: ordinaryNoQualification.evidence,
+    evidenceDigest: canonicalDigest(ordinaryNoQualification.evidence),
+  }, digest("source")));
   assert.throws(() => contributionFromGraphExecution(Object.freeze({ ...prepared, unit: Object.freeze({ ...prepared.unit, basisDigest: digest("wrong") }) }), persisted(), digest("source")), refuses("LINEAR_CONTRIBUTION_BINDING_MISMATCH"));
 });

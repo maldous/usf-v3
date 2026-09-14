@@ -22,7 +22,7 @@ import {
   projectHermesDispatchAccounting, readRepairRounds, writeRepairRounds,
 } from "../../src/commands/hermes-implement.ts";
 import { projectImplementationDispatchAccounting } from "../../src/commands/hermes-lifecycle.ts";
-import { canonicalJson } from "../../src/core/canonical.ts";
+import { canonicalDigest, canonicalJson } from "../../src/core/canonical.ts";
 import { normalizeModelsDevCatalogue } from "../../src/providers/catalogue.ts";
 
 const digest = (character: string): string => `sha256:${character.repeat(64)}`;
@@ -370,6 +370,7 @@ test("the graph command emits no-route, preflight and contacted-refusal accounti
       contactedAttempts: 1, successfulUnits: 0, refusedUnits: 1,
     });
     const refusedUnit = (refused.output.units as Record<string, unknown>[])[0]!;
+    assert.equal(refusedUnit.promptDigest, canonicalDigest("offline fixture"));
     const refusedAttempt = (refusedUnit.attempts as Record<string, unknown>[])[0]!;
     assert.equal(refusedAttempt.phase, "invocation");
     assert.equal(refusedAttempt.contacted, true);

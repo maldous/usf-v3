@@ -265,7 +265,7 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
   } catch (error) {
     return refusal(reasonCode(error, "LINEAR_DELIVERY_CHECKPOINT_READ_REFUSED"), evidence);
   }
-  if (prepared.status === "PREPARED" || prepared.status === "REFUSED") {
+  if (prepared.status === "PREPARED" || prepared.status === "STARTED" || prepared.status === "REFUSED") {
     try {
       // Persist before dispatch because Hermes changes an attempt from PREPARED
       // to STARTED before any provider-side invocation can occur.

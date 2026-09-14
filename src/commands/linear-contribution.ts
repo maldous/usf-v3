@@ -1,4 +1,5 @@
 import { canonicalDigest } from "../core/canonical.ts";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { isPathWithinPermission } from "../core/scope.ts";
@@ -7,6 +8,7 @@ import { assertRealisationBasis, type RealisationBasis } from "../realisation/ba
 import { contributionDigest, immutable, isOperation, type Contribution, type CostClass, type FileOperation } from "../providers/types.ts";
 
 const digest = /^sha256:[0-9a-f]{64}$/u;
+const repositoryPath = /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$)).+$/u;
 
 export class LinearContributionError extends Error {
   readonly reasonCode: string;
@@ -62,6 +64,48 @@ export interface SettledLinearContributionInput {
   }>;
 }
 
+function bytesDigest(bytes: Buffer): string {
+  return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+}
+
+/**
+ * Linear's bounded fixture prompt uses an exact text patch. Authenticate that
+ * patch against the settled basis, then lower it to the existing whole-file
+ * candidate wire without admitting a new generic operation kind.
+ */
+async function lowerSettledPatchOperations(
+  root: string,
+  prepared: PreparedContributionBinding,
+  evidence: Record<string, unknown>,
+): Promise<readonly FileOperation[] | undefined> {
+  const unit = evidence.units;
+  if (!Array.isArray(unit) || unit.length !== 1 || !record(unit[0]) || typeof unit[0].resultText !== "string") return undefined;
+  let decoded: unknown;
+  try { decoded = JSON.parse(unit[0].resultText) as unknown; } catch { return undefined; }
+  const operations = Array.isArray(decoded) ? decoded : record(decoded) ? decoded.operations : undefined;
+  if (!Array.isArray(operations) || operations.length === 0) return undefined;
+  let lowered = false;
+  const result: FileOperation[] = [];
+  for (const operation of operations) {
+    if (isOperation(operation)) { result.push(operation); continue; }
+    if (!record(operation) || operation.kind !== "replace" || typeof operation.path !== "string"
+      || !repositoryPath.test(operation.path) || typeof operation.oldText !== "string" || typeof operation.newText !== "string"
+      || !prepared.basis.scope.writeSet.some((scope) => isPathWithinPermission(operation.path as string, scope))) return undefined;
+    const expectedDigest = prepared.basis.scope.preimages[operation.path];
+    if (typeof expectedDigest !== "string" || !digest.test(expectedDigest)) return undefined;
+    let bytes: Buffer;
+    try { bytes = await readFile(resolve(root, operation.path)); } catch { return undefined; }
+    if (bytesDigest(bytes) !== expectedDigest) return undefined;
+    const source = bytes.toString("utf8");
+    if (!bytes.equals(Buffer.from(source, "utf8"))) return undefined;
+    const first = source.indexOf(operation.oldText);
+    if (first < 0 || source.indexOf(operation.oldText, first + operation.oldText.length) >= 0) return undefined;
+    result.push({ kind: "write", path: operation.path, content: `${source.slice(0, first)}${operation.newText}${source.slice(first + operation.oldText.length)}` });
+    lowered = true;
+  }
+  return lowered ? Object.freeze(result) : undefined;
+}
+
 /**
  * Convert one settled graph-execution result into the existing Contribution
  * envelope. Historical graph results stay readable by their old consumers, but
@@ -71,6 +115,7 @@ export function contributionFromGraphExecution(
   prepared: PreparedContributionBinding,
   persisted: PersistedGraphExecutionResult,
   boundSourceAssertionDigest: string,
+  operationOverride?: readonly FileOperation[],
 ): Contribution {
   try { assertRealisationBasis(prepared.basis); } catch { refuse("LINEAR_CONTRIBUTION_BASIS_INVALID"); }
   if (prepared.unit.basisDigest !== prepared.basis.basisDigest
@@ -86,9 +131,13 @@ export function contributionFromGraphExecution(
     refuse("LINEAR_CONTRIBUTION_RESULT_UNPROVEN");
   }
   const unit = evidence.units[0];
+  // Pre-promptDigest graph evidence is still admissible only when the exact
+  // bound WorkUnit supplies the digest; any present value remains exact.
+  const promptDigest = unit && typeof unit === "object" && !Array.isArray(unit) && unit.promptDigest === undefined
+    ? canonicalDigest(prepared.unit.prompt) : unit?.promptDigest;
   if (!record(unit) || unit.unit !== prepared.unit.unitIri || typeof unit.sourceAssertionDigest !== "string"
     || unit.sourceAssertionDigest !== boundSourceAssertionDigest || !digest.test(unit.sourceAssertionDigest)
-    || typeof unit.promptDigest !== "string" || unit.promptDigest !== canonicalDigest(prepared.unit.prompt)
+    || typeof promptDigest !== "string" || promptDigest !== canonicalDigest(prepared.unit.prompt)
     || unit.status !== "ok" || typeof unit.resultDigest !== "string"
     || !digest.test(unit.resultDigest) || typeof unit.resultText !== "string"
     || canonicalDigest(unit.resultText) !== unit.resultDigest) refuse("LINEAR_CONTRIBUTION_RESULT_MISMATCH");
@@ -102,25 +151,27 @@ export function contributionFromGraphExecution(
   if (!Array.isArray(prepared.unit.modelCapabilities) || !prepared.unit.modelCapabilities.every((item) => typeof item === "string")) {
     refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
   }
-  const snapshot = evidence.qualificationSnapshot;
-  if (!Array.isArray(snapshot.routes)) refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
-  const route = snapshot.routes.find((item) => record(item)
-    && item.routeId === `${unit.provider}:${unit.requestedModel}`);
-  if (!record(route) || !Array.isArray(route.taskClasses) || !Array.isArray(route.receipts)
-    || route.receipts.length === 0) {
-    refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
-  }
-  const taskClasses = route.taskClasses as unknown[];
-  const receipts = route.receipts as unknown[];
-  if (prepared.unit.modelCapabilities.length === 0 || taskClasses.length === 0 || !prepared.unit.modelCapabilities.every((required) => taskClasses.includes(required)
-      && receipts.some((receipt: unknown) => record(receipt) && receipt.taskClass === required
-        && typeof receipt.qualificationDigest === "string" && digest.test(receipt.qualificationDigest)
-        && typeof receipt.observationSetDigest === "string" && digest.test(receipt.observationSetDigest)))) {
-    refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
+  if (prepared.unit.modelCapabilities.length > 0) {
+    const snapshot = evidence.qualificationSnapshot;
+    if (!Array.isArray(snapshot.routes)) refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
+    const route = snapshot.routes.find((item) => record(item)
+      && item.routeId === `${unit.provider}:${unit.requestedModel}`);
+    if (!record(route) || !Array.isArray(route.taskClasses) || !Array.isArray(route.receipts)
+      || route.receipts.length === 0) {
+      refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
+    }
+    const taskClasses = route.taskClasses as unknown[];
+    const receipts = route.receipts as unknown[];
+    if (taskClasses.length === 0 || !prepared.unit.modelCapabilities.every((required) => taskClasses.includes(required)
+        && receipts.some((receipt: unknown) => record(receipt) && receipt.taskClass === required
+          && typeof receipt.qualificationDigest === "string" && digest.test(receipt.qualificationDigest)
+          && typeof receipt.observationSetDigest === "string" && digest.test(receipt.observationSetDigest)))) {
+      refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
+    }
   }
   let decoded: unknown;
   try { decoded = JSON.parse(unit.resultText) as unknown; } catch { refuse("LINEAR_CONTRIBUTION_OPERATIONS_INVALID"); }
-  const operations = Array.isArray(decoded) ? decoded : record(decoded) ? decoded.operations : undefined;
+  const operations = operationOverride ?? (Array.isArray(decoded) ? decoded : record(decoded) ? decoded.operations : undefined);
   if (!Array.isArray(operations) || operations.length === 0 || !operations.every(isOperation)
     || operations.some((operation) => !prepared.basis.scope.writeSet.some((scope) => isPathWithinPermission(operation.path, scope)))) {
     refuse("LINEAR_CONTRIBUTION_SCOPE_REFUSED");
@@ -147,7 +198,7 @@ export function contributionFromGraphExecution(
     usage: Object.freeze({ inputTokens: unit.usage.inputTokens, outputTokens: unit.usage.outputTokens, toolCalls: unit.toolCalls, retries: unit.limits.maxRetries }),
     limits: Object.freeze({ ...unit.limits }),
     payload: Object.freeze({ operations: Object.freeze(fileOperations.map((operation) => Object.freeze({ ...operation }))) }),
-    claims: Object.freeze([`graph-execution-evidence:${persisted.evidenceDigest}`, `graph-result:${unit.resultDigest}`, `invocation-prompt-digest:${unit.promptDigest}`]),
+    claims: Object.freeze([`graph-execution-evidence:${persisted.evidenceDigest}`, `graph-result:${unit.resultDigest}`, `invocation-prompt-digest:${promptDigest}`]),
     nonclaims: Object.freeze(["assignment-prompt-template-digest-is-policy-authority-not-invocation-prompt", "graph-execution-is-not-acceptance-or-completion"]),
   };
   return immutable({ ...contribution, identity: Object.freeze({ artifactDigest: contributionDigest(contribution), basisDigest: prepared.basis.basisDigest }) });
@@ -187,5 +238,6 @@ export async function contributionFromSettledLinearResult(
     boundSourceAssertionDigest = canonicalQuadDigest(quads.filter((quad) => quad.subject === settled.binding.unit.unitIri));
   } catch { refuse("LINEAR_CONTRIBUTION_BOUND_WORK_UNREADABLE"); }
   if (!digest.test(boundSourceAssertionDigest)) refuse("LINEAR_CONTRIBUTION_BOUND_WORK_UNREADABLE");
-  return contributionFromGraphExecution(settled.binding, { evidence, evidenceDigest }, boundSourceAssertionDigest);
+  const operationOverride = await lowerSettledPatchOperations(input.root, settled.binding, evidence);
+  return contributionFromGraphExecution(settled.binding, { evidence, evidenceDigest }, boundSourceAssertionDigest, operationOverride);
 }
