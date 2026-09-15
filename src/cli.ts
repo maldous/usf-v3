@@ -214,7 +214,10 @@ const bootstrapHandlers: CommandHandlers = {
     if (args[0] === "start" || args[0] === "stop" || args[0] === "supervise" || args[0] === "status") {
       const lifecycle = await import("./commands/hermes-lifecycle.ts");
       if (args[0] === "start") return operationalMutation(repositoryRoot, () => lifecycle.hermesStartCommand(repositoryRoot, args.slice(1)), true);
-      if (args[0] === "stop") return operationalMutation(repositoryRoot, () => lifecycle.hermesStopCommand(repositoryRoot, args.slice(1)), true);
+      // Stop only records an idempotent orderly request. It must remain callable
+      // while the supervisor owns the activity lock, or a continuously active
+      // supervisor could never be asked to drain.
+      if (args[0] === "stop") return lifecycle.hermesStopCommand(repositoryRoot, args.slice(1));
       if (args[0] === "status") return lifecycle.hermesLifecycleStatusCommand(repositoryRoot, args.slice(1));
       return lifecycle.hermesSuperviseCommand(repositoryRoot, args.slice(1));
     }
@@ -254,6 +257,11 @@ const bootstrapHandlers: CommandHandlers = {
   watch: async (context) => (await import("./commands/lifecycle.ts")).watchCommandHandler(context),
 };
 
+/** Dispatch one already-selected CLI request without creating a child process. */
+export async function dispatchCliCommand(argv: readonly string[], repositoryRoot: string) {
+  return dispatchCommand(argv, repositoryRoot, bootstrapHandlers);
+}
+
 function resolveRepositoryRootWithMinimalEnvironment(): string {
   const original = { ...process.env };
   const replacement = localGitChildEnvironment(process.cwd());
@@ -272,7 +280,7 @@ async function main(): Promise<void> {
     const argv = process.argv.slice(2);
     const parsed = parseCommand(argv);
     const repositoryRoot = parsed.command === "help" ? "" : resolveRepositoryRootWithMinimalEnvironment();
-    const result = await dispatchCommand(argv, repositoryRoot, bootstrapHandlers);
+    const result = await dispatchCliCommand(argv, repositoryRoot);
     if (result.output !== undefined) {
       if (result.outputMode === "text") process.stdout.write(`${String(result.output)}\n`);
       else process.stdout.write(`${JSON.stringify(result.output)}\n`);
@@ -284,4 +292,4 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+if (import.meta.main) void main();

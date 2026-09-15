@@ -71,6 +71,21 @@ test("retains binding progress, blockers, evidence references, and cycle summary
   assert.equal(store.progress()[0]?.evidenceRefs[0], "urn:usf:evidence:team");
 });
 
+test("allows a superseding basis to reopen completed binding progress", async () => {
+  const store = await LinearStateStore.open(await root());
+  const oldBasis = `sha256:${"a".repeat(64)}`;
+  const newBasis = `sha256:${"b".repeat(64)}`;
+  await store.recordProgress({ bindingIri: identity.bindingIri, basisDigest: oldBasis, stage: "completed", blocker: null, evidenceRefs: [] });
+  await assert.rejects(
+    () => store.recordProgress({ bindingIri: identity.bindingIri, basisDigest: oldBasis, stage: "blocked", blocker: "CHECK_FAILED", evidenceRefs: [] }),
+    (error: unknown) => typeof error === "object" && error !== null && "reasonCode" in error
+      && error.reasonCode === "LINEAR_STATE_PROGRESS_REGRESSION",
+  );
+  await store.recordProgress({ bindingIri: identity.bindingIri, basisDigest: newBasis, stage: "blocked", blocker: "CHECK_FAILED", evidenceRefs: [] });
+  assert.equal(store.progress()[0]?.basisDigest, newBasis);
+  assert.equal(store.progress()[0]?.stage, "blocked");
+});
+
 test("fails closed on corrupt persisted state and symlinked control paths", async () => {
   const repositoryRoot = await root();
   await mkdir(join(repositoryRoot, ".usf/hermes/linear"), { recursive: true, mode: 0o700 });

@@ -3,11 +3,14 @@
 import { closeSync, globSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync, writeSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
-import { spawn, spawnSync } from "node:child_process";
+import { createGateChildOwner } from "./full-gate-children.ts";
+import { acquireFullGateLock } from "./full-gate-lock.ts";
+import { runCompletionCohort } from "./completion-throughput.ts";
 
 const repositoryRoot = process.cwd();
 const usf = resolve(repositoryRoot, "bin/usf");
 const specialTest = "tests/adversarial/fixture-process-confinement.test.ts";
+const completionTest = "tests/integration/work-completion.test.ts";
 // These assert exclusivity, which concurrency inherently violates.
 //
 // The lifecycle tests require a real supervisor to reach a named event within a
@@ -61,6 +64,16 @@ const expectedValidationObligations = Object.freeze(Object.keys(expectedValidati
 const digestPattern = /^sha256:[0-9a-f]{64}$/u;
 const maxBuffer = 16 * 1024 * 1024;
 let retainedLog = null;
+let releaseFullGateLock;
+let gateChildren;
+const childResults = [];
+const fixtureCheckResults = [];
+const phaseDurations = [];
+const phaseStarts = new Map();
+
+function childStdio() {
+  return ["ignore", "pipe", "pipe", ...(releaseFullGateLock === undefined ? [] : [releaseFullGateLock.descriptor])];
+}
 
 function digest(bytes) {
   return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
@@ -76,7 +89,12 @@ function observedJson(value, stream = process.stdout) {
 }
 
 function progress(phase, details = {}) {
-  observedJson({ schema: "urn:usf:full-gate-progress:1", phase, ...details });
+  if (details.status === "started") phaseStarts.set(phase, performance.now());
+  if (["passed", "failed"].includes(details.status) && phaseStarts.has(phase)) {
+    phaseDurations.push({ phase, status: details.status, elapsedMilliseconds: Math.round(performance.now() - phaseStarts.get(phase)) });
+    phaseStarts.delete(phase);
+  }
+  observedJson({ schema: "urn:usf:full-gate-progress:1", phase, observedAt: new Date().toISOString(), ...details });
 }
 
 function beginRetention(mode) {
@@ -149,43 +167,59 @@ function ordinaryTests() {
   return Object.freeze(ordinary);
 }
 
-async function runSerialTests() {
-  const child = spawn(process.execPath, ["--test", "--test-concurrency=1", ...serialTests], {
-    cwd: repositoryRoot,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+async function runTestChild(arguments_, label) {
+  const started = performance.now();
+  const child = gateChildren.spawn(process.execPath, arguments_, { cwd: repositoryRoot, stdio: childStdio() });
   child.stdout.on("data", (chunk) => observedWrite(process.stdout, chunk));
   child.stderr.on("data", (chunk) => observedWrite(process.stderr, chunk));
-  const exitCode = await new Promise((accept, reject) => {
-    child.once("error", reject);
-    child.once("close", (code) => accept(code ?? 1));
-  }).catch((error) => fail("SERIAL_TEST_LAUNCH_FAILED", { message: error instanceof Error ? error.message : "unknown" }));
-  if (exitCode !== 0) fail("SERIAL_TESTS_FAILED", { exitCode });
-}
-
-function runCapturedJson(arguments_, label) {
-  const result = spawnSync(usf, arguments_, {
-    cwd: repositoryRoot,
-    encoding: "utf8",
-    maxBuffer,
-    stdio: ["ignore", "pipe", "pipe"],
+  let launchError;
+  const result = await new Promise((accept) => {
+    child.once("error", error => { launchError = error.code ?? error.name; });
+    child.once("close", (code, signal) => accept({
+      label, pid: child.pid, exitCode: code ?? 1, signal,
+      elapsedMilliseconds: Math.round(performance.now() - started),
+      ...(launchError === undefined ? {} : { launchError }),
+    }));
   });
-  if (result.error !== undefined) fail(`${label}_LAUNCH_FAILED`, { message: result.error.message });
-  let output;
-  try {
-    output = JSON.parse(result.stdout);
-  } catch {
-    fail(`${label}_OUTPUT_INVALID`, {
-      exitCode: result.status,
-      stderr: result.stderr.slice(0, 512),
-      stdout: result.stdout.slice(0, 512),
-    });
-  }
-  return Object.freeze({ exitCode: result.status, stderr: result.stderr, output });
+  childResults.push(result);
+  observedJson({ schema: "urn:usf:full-gate-child-result:1", ...result });
+  return result;
 }
 
-function currentFixtureWork() {
-  const result = runCapturedJson([
+async function runSerialTests() {
+  const result = await runTestChild(["--test", "--test-concurrency=1", ...serialTests], "serial");
+  if (result.exitCode !== 0) fail("SERIAL_TESTS_FAILED", { results: [result] });
+}
+
+async function runCapturedJson(arguments_, label) {
+  const child = gateChildren.spawn(usf, arguments_, { cwd: repositoryRoot, stdio: childStdio() });
+  const stdout = [], stderr = [];
+  let observedBytes = 0, launchError, outputExceeded = false;
+  const capture = (destination, bytes) => {
+    observedBytes += bytes.length;
+    if (observedBytes <= maxBuffer) destination.push(bytes);
+    else { outputExceeded = true; gateChildren.abort("FULL_GATE_CHILD_OUTPUT_LIMIT"); }
+  };
+  child.stdout.on("data", bytes => capture(stdout, bytes));
+  child.stderr.on("data", bytes => capture(stderr, bytes));
+  const exitCode = await new Promise(accept => {
+    child.once("error", error => { launchError = error; });
+    child.once("close", code => accept(code ?? 1));
+  });
+  if (launchError !== undefined) fail(`${label}_LAUNCH_FAILED`, { message: launchError.message });
+  if (outputExceeded) fail(`${label}_OUTPUT_LIMIT`);
+  const stdoutText = Buffer.concat(stdout).toString("utf8");
+  const stderrText = Buffer.concat(stderr).toString("utf8");
+  let output;
+  try { output = JSON.parse(stdoutText); }
+  catch {
+    fail(`${label}_OUTPUT_INVALID`, { exitCode, stderr: stderrText.slice(0, 512), stdout: stdoutText.slice(0, 512) });
+  }
+  return Object.freeze({ exitCode, stderr: stderrText, output });
+}
+
+async function currentFixtureWork() {
+  const result = await runCapturedJson([
     "work",
     "--profile", selection.profile,
     "--selector", selection.work,
@@ -231,27 +265,31 @@ function assertActiveConstruction(work) {
 }
 
 async function runOrdinaryTests(paths) {
-  const child = spawn(process.execPath, [
-    "--test",
-    "--test-concurrency=4",
-    ...paths,
-  ], {
-    cwd: repositoryRoot,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  child.stdout.on("data", (chunk) => observedWrite(process.stdout, chunk));
-  child.stderr.on("data", (chunk) => observedWrite(process.stderr, chunk));
-  const exitCode = await new Promise((accept, reject) => {
-    child.once("error", reject);
-    // `close` follows stdio closure, so the retained raw log includes every
-    // byte emitted by the child before its terminal result is recorded.
-    child.once("close", (code) => accept(code ?? 1));
-  }).catch((error) => fail("ORDINARY_TEST_LAUNCH_FAILED", { message: error instanceof Error ? error.message : "unknown" }));
-  if (exitCode !== 0) fail("ORDINARY_TESTS_FAILED", { exitCode });
+  const ordinary = paths.filter((path) => path !== completionTest);
+  const children = [runTestChild(["--test", "--test-concurrency=4", ...ordinary], "ordinary")];
+  if (paths.includes(completionTest)) {
+    children.push(runCompletionCohort({
+      repositoryRoot,
+      childOwner: gateChildren,
+      lockDescriptor: releaseFullGateLock?.descriptor,
+      onOutput: (channel, bytes) => observedWrite(channel === "stdout" ? process.stdout : process.stderr, bytes),
+      onEvent: event => observedJson({ schema: "urn:usf:full-gate-completion-progress:1", ...event }),
+    }).then(result => { childResults.push(result); return result; }).catch(error => {
+      childResults.push({ label: "completion", exitCode: 1, results: error.results ?? [], reason: String(error) });
+      throw error;
+    }));
+  }
+  // A failed launch or lane must not release the full-gate lock while siblings
+  // are still executing. The completion scheduler drains its own children too.
+  const settled = await Promise.allSettled(children);
+  const failures = settled.flatMap(result => result.status === "rejected"
+    ? [{ label: "completion", exitCode: 1, reason: String(result.reason) }]
+    : result.value.exitCode === 0 ? [] : [result.value]);
+  if (failures.length > 0) fail("ORDINARY_TESTS_FAILED", { results: failures });
 }
 
-function realiseNoChange(work) {
-  const result = runCapturedJson([
+async function realiseNoChange(work) {
+  const result = await runCapturedJson([
     "realise", "no-change",
     "--work", selection.work,
     "--profile", selection.profile,
@@ -283,10 +321,10 @@ function realiseNoChange(work) {
   });
 }
 
-function runFixtureChecks(candidate) {
+async function runFixtureChecks(candidate) {
   const failures = [];
   for (const validation of candidate.obligations) {
-    const result = runCapturedJson([
+    const result = await runCapturedJson([
       "check",
       "--candidate", candidate.candidateDigest,
       "--validation", validation,
@@ -314,6 +352,7 @@ function runFixtureChecks(candidate) {
       ...(typeof output?.reasonCode === "string" ? { reasonCode: output.reasonCode } : {}),
       ...(typeof output?.receiptPath === "string" ? { receiptPath: output.receiptPath } : {}),
     };
+    fixtureCheckResults.push(summary);
     observedJson(summary);
     if (!passed) {
       failures.push(summary);
@@ -337,6 +376,8 @@ function plan(paths, work) {
     directFixtureTestExcluded: specialTest,
     serialTests,
     ordinaryConcurrency: 4,
+    completionRecoveryMaximumProcesses: 2,
+    completionSeedPreparation: "genuine-producer-witness-once",
     serialConcurrency: 1,
     selection,
     realisationBasisDigest: work.basis.basisDigest,
@@ -351,8 +392,10 @@ try {
   if (!["--all", "--plan", "--fixtures-only"].includes(mode) || process.argv.length > 3) {
     fail("FULL_GATE_ARGUMENTS_INVALID", { accepted: ["--plan", "--fixtures-only"] });
   }
+  gateChildren = createGateChildOwner();
+  if (mode !== "--plan") releaseFullGateLock = acquireFullGateLock(repositoryRoot);
   const paths = ordinaryTests();
-  const work = currentFixtureWork();
+  const work = await currentFixtureWork();
   if (mode === "--plan") {
     process.stdout.write(`${JSON.stringify(plan(paths, work), null, 2)}\n`);
   } else {
@@ -363,8 +406,9 @@ try {
     retainedLog = retention;
     let failure = null;
     try {
-      progress(phase, { mode, ordinaryTestCount: paths.length, realisationBasisDigest: work.basis.basisDigest });
+      progress(phase, { status: "started", mode, ordinaryTestCount: paths.length, realisationBasisDigest: work.basis.basisDigest });
       assertActiveConstruction(work);
+      progress(phase, { status: "passed" });
       if (mode === "--all") {
         phase = "ordinary-tests";
         progress(phase, { status: "started", ordinaryTestCount: paths.length, concurrency: 4 });
@@ -377,13 +421,20 @@ try {
       }
       phase = "fixture-checks";
       progress(phase, { status: "started", validationObligations: work.validationObligations });
-      runFixtureChecks(realiseNoChange(work));
+      await runFixtureChecks(await realiseNoChange(work));
       progress(phase, { status: "passed", validationObligations: work.validationObligations });
       phase = "complete";
     } catch (error) {
+      progress(phase, { status: "failed" });
       failure = error instanceof GateError
         ? { reasonCode: error.code, ...error.details }
-        : { reasonCode: "FULL_GATE_INTERNAL_ERROR" };
+        : { reasonCode: gateChildren?.interrupted ? "FULL_GATE_INTERRUPTED" : "FULL_GATE_INTERNAL_ERROR" };
+    }
+    try {
+      await gateChildren.close();
+    } catch {
+      failure = { reasonCode: "FULL_GATE_TREE_DRAIN_UNCONFIRMED" };
+      phase = "process-drain";
     }
     const terminal = Object.freeze({
       schema: "urn:usf:full-gate-result:1",
@@ -398,6 +449,9 @@ try {
       selection,
       realisationBasisDigest: work.basis.basisDigest,
       validationObligations: work.validationObligations,
+      childResults,
+      fixtureCheckResults,
+      phaseDurations,
       ...(failure ?? {}),
     });
     finishRetention(retention, terminal);
@@ -406,7 +460,22 @@ try {
 } catch (error) {
   const failure = error instanceof GateError
     ? { schema: "urn:usf:full-gate-error:1", status: "failed", reasonCode: error.code, ...error.details }
-    : { schema: "urn:usf:full-gate-error:1", status: "failed", reasonCode: "FULL_GATE_INTERNAL_ERROR" };
+    : { schema: "urn:usf:full-gate-error:1", status: "failed", reasonCode: error?.code ?? "FULL_GATE_INTERNAL_ERROR" };
   process.stderr.write(`${JSON.stringify(failure)}\n`);
-  process.exitCode = 1;
+  process.exitCode = error?.exitCode ?? 1;
+} finally {
+  try {
+    await gateChildren?.close();
+    releaseFullGateLock?.confirmDrained();
+  } catch (error) {
+    process.exitCode = 1;
+    try {
+      process.stderr.write(`${JSON.stringify({
+        schema: "urn:usf:full-gate-error:1", status: "failed",
+        reasonCode: error?.code ?? "FULL_GATE_TREE_DRAIN_UNCONFIRMED",
+      })}\n`);
+    } catch { /* closed diagnostics cannot clear the unresolved fence */ }
+  } finally {
+    releaseFullGateLock?.();
+  }
 }

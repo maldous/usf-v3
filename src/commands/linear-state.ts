@@ -39,6 +39,8 @@ export interface LinearIntent {
 
 export interface LinearProgressRecord {
   readonly bindingIri: string;
+  /** The derived binding basis that produced this progress. Legacy records may omit it. */
+  readonly basisDigest?: string;
   readonly stage: LinearProgressStage;
   readonly blocker: string | null;
   readonly evidenceRefs: readonly string[];
@@ -143,8 +145,12 @@ function transitionValid(value: unknown): value is Transition {
     && validTimestamp(value.at) && validEvidenceRefs(value.evidenceRefs);
 }
 function progressValid(value: unknown): value is LinearProgressRecord {
-  return isObject(value) && exactKeys(value, ["bindingIri", "stage", "blocker", "evidenceRefs", "updatedAt"])
+  const keys = isObject(value) ? Object.keys(value).sort().join(",") : "";
+  const legacyKeys = ["bindingIri", "blocker", "evidenceRefs", "stage", "updatedAt"].join(",");
+  const currentKeys = ["basisDigest", "bindingIri", "blocker", "evidenceRefs", "stage", "updatedAt"].join(",");
+  return isObject(value) && (keys === legacyKeys || keys === currentKeys)
     && validText(value.bindingIri) && value.bindingIri.startsWith("urn:")
+    && (value.basisDigest === undefined || validDigest(value.basisDigest))
     && ["prepared", "sent", "unknown", "confirmed", "refused", "blocked", "completed"].includes(value.stage as string)
     && (value.blocker === null || validText(value.blocker)) && validEvidenceRefs(value.evidenceRefs) && validTimestamp(value.updatedAt);
 }
@@ -239,7 +245,10 @@ export class LinearStateStore {
       const candidate = Object.freeze({ ...record, evidenceRefs: Object.freeze([...record.evidenceRefs]), updatedAt: at });
       if (!progressValid(candidate) || !validTimestamp(at)) refuse("LINEAR_STATE_PROGRESS_INVALID");
       const previous = this.state.progress.find((item) => item.bindingIri === candidate.bindingIri);
-      if (previous?.stage === "completed" && candidate.stage !== "completed") refuse("LINEAR_STATE_PROGRESS_REGRESSION");
+      if (previous?.stage === "completed" && candidate.stage !== "completed"
+        && (previous.basisDigest === undefined || candidate.basisDigest === undefined || previous.basisDigest === candidate.basisDigest)) {
+        refuse("LINEAR_STATE_PROGRESS_REGRESSION");
+      }
       const progress = previous === undefined ? [...this.state.progress, candidate] : this.state.progress.map((item) => item.bindingIri === candidate.bindingIri ? candidate : item);
       if (progress.length > MAX_PROGRESS) refuse("LINEAR_STATE_CAPACITY_EXCEEDED");
       await this.replace({ ...this.state, progress });

@@ -1,5 +1,28 @@
 # USF V3 handover
 
+## Current boundary - autonomous Hermes Linear lane not yet active, 2026-09-15
+
+### State
+
+- The authoritative `./bin/usf hermes status` readback reports `running:false`, `liveness:absent`, no current supervisor or PID, and no cycle under the current status surface. An older `anqr-application` supervisor is only recorded as superseded history; it is not current liveness evidence.
+- `usf linear-binding status --manifest graph/manifests/linear-issue-bindings.json --binding urn:usf:linear-binding:usf-1202:12` refuses with `LINEAR_BINDING_WORK_INACTIVE`. The selected work is blocked and not actionable because construction authority is absent: bootstrap exception is undeclared, construction evidence and proof are missing, and the realisation permission is inactive.
+- Privileged host readback confirms `usf-fixture-process-v1`, `bwrap`, and `unpriv_bwrap` are loaded and enforcing. This removes the earlier host-profile uncertainty but does not grant repository or Linear authority.
+- The current source/test/docs cohort is not certified. The latest retained full gate failed in the root-derived completion recovery witness; no new full gate has been run after the focused harness correction.
+- A bounded `--test-concurrency=4` experiment was rejected: direct transition coverage remained 28/28 but slowed from 251.6s to 270.7s, and the confined completion witness did not settle reliably. The graph and all three launch grammars are restored to the prior serial command; only the exact-digest fixture cache remains as the measured throughput change.
+
+### Actual current bottleneck
+
+- Stewardship is released and idle; its caller-created session identifier is not a blocker. Do not recover or recreate a session merely because a binding is inactive.
+- The current binding source is `graph/manifests/linear-issue-bindings.json`; the nonexistent `linear-binding-authority.json` must never be substituted.
+- The autonomous intake circuit remains unproved. The current graph has no actionable construction authority for the selected Linear binding, and remote issue counts alone are not executable work. Unbound Linear prose still requires graph-authored binding/proposal coverage.
+
+### Operating boundary
+
+- Do not start another full gate during this diagnosis. Batch any mutation-ledger recovery, governed admission authoring, help/docs changes and source changes into one cohort; use focused, typecheck, affected-family and exact receipt-reuse validation while developing, then reserve one full gate for the frozen terminal cohort.
+- Never clear `executionAuthority: none` or `parallelSafety: unproven`; never retransmit an unknown mutation, delete projections, or treat a live supervisor and `ready` projection as completion.
+- Normal BAU is the detached `usf hermes start` supervisor. `hermes run --binding` is diagnostic only. The canonical binding source is `graph/manifests/linear-issue-bindings.json`, not `linear-binding-authority.json`.
+- The completion seed currently derives a bounded fixture dependency scope from the selected work projection. Verify the current basis and receipt key before changing seed or clone logic; do not assume the older whole-repository fingerprint description still applies.
+
 ## Current boundary - USF-1192 transition frontier closed, 2026-09-13
 
 ### State

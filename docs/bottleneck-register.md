@@ -62,3 +62,60 @@ start/status/ordinary-stop process boundary. Its timeout/fallback and provider
 population behavior reuse the existing scheduler, provider and lifecycle
 fixtures. A separate matrix per provider, model, prompt or skill is forbidden;
 live Hermes-Agent/provider execution stays outside the default lane.
+
+## Certification throughput, 2026-09-15
+
+The optimization target is elapsed time from the first repair through current
+authority and independent Hermes progress. Full-gate duration alone excludes
+focused checks, repeated cold seeds, source edits, evidence, proof, publication
+and the gaps between executions. Earlier seconds-scale budgets above are
+historical; they do not describe the current completion suite.
+
+Run `node scripts/certification-history.ts 20` for bounded, read-only accounting
+of retained full-gate runs. It reports summed execution time, occupied wall time
+and unobserved gaps. Repeated fixture bases are investigation candidates, never
+proof that an old full gate certifies a new source cohort.
+
+The gate completed at 2026-09-15T12:44:03.605Z in 3,218.530 seconds (53m38.530s).
+Its ordinary lane passed 1,073 tests; the completion lane passed 20 with one
+skip; the later exclusive lifecycle/stewardship lane passed 12; all five
+fixture obligations passed. The report is
+`.usf/logs/full-gate/20260915T115025075Z-2718087.json`. Subsequent source edits
+make this a historical observation, not certification of those edits.
+
+| Cost | Treatment | Required evidence |
+|---|---|---|
+| Overlapping/nested full gates | One kernel execution lock at the runner boundary; competing invocation refuses before tests | Real second-process refusal, process-death release, independent repository progress |
+| Repeated sequential gates | Freeze one complete cohort; select `check` or `test`, since both invoke the same full gate | Complete source/test/graph/toolchain identity before any exact-result reuse; fixture basis alone is insufficient |
+| Repeated completion setup | Share immutable prepared seed and private mutable clones; preserve a genuine validation producer | Cold/warm phase timings, one builder, every real interruption witness retained |
+| Sequential CPU-bound recovery | Two bounded isolated worker processes after seed preparation | Actual overlap, exact case union, terminal results, aggregate process-tree memory and timeout headroom |
+| Minor-change certification | USF-1201 Gate Lever 3 through current receipt authentication and fresh aggregate evidence | Complete transitive closure and denominator; unknown impact requires full gate |
+| Authority publication | Batch compatible authority members after the complete cohort freezes | Evidence/prove/verify/apply intervals and current readback; no intervening source edits |
+
+### TypeScript tooling decision
+
+Retain the current native Node runner for this repair. Node already supports
+sharding, CPU profiles and process isolation. Its CLI concurrency flag is
+ignored under isolation `none`; actual overlapping processes must be measured.
+See [Node 24.16 CLI](https://nodejs.org/download/release/v24.16.0/docs/api/cli.html).
+
+Vitest provides pool controls and separates transform, setup and execution in
+its profiling guidance. Evaluate a bounded representative pilot only if
+profiles show runner/transform overhead remains material after fixture repair.
+See [Vitest profiling](https://vitest.dev/guide/profiling-test-performance).
+Jest offers related-test selection, but that selection cannot account for
+undeclared semantic graph inputs by itself. See
+[Jest CLI](https://jestjs.io/docs/cli).
+Nx task caching can avoid repeat task execution when its complete declared
+inputs match; adopting it would still require USF receipt reauthentication and
+would not establish semantic currentness. See
+[Nx task caching](https://nx.dev/docs/features/cache-task-results).
+
+New transpilers, test-runner migration, remote caches and filesystem changes
+have no measured benefit for this cohort yet. The host observation showed
+approximately 30.8 GiB available memory and negligible current memory/I/O
+pressure. Size worker admission from complete descendant process trees and
+actual pressure during execution. Swap occupancy alone does not prove thrashing.
+Keep MySQL and Claude running while measuring. RAM-backed fixtures, reflinks
+or snapshots need measured I/O benefit and independent-write/recovery evidence
+before adoption.

@@ -1,35 +1,21 @@
 import assert from "node:assert/strict";
-import { spawn, spawnSync } from "node:child_process";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { once } from "node:events";
+import { join } from "node:path";
 import test from "node:test";
-
-const sourceRoot = resolve(import.meta.dirname, "../..");
-const cli = join(sourceRoot, "src/cli.ts");
-
-function environment(): NodeJS.ProcessEnv {
-  return {
-    HOME: process.env.HOME,
-    PATH: process.env.PATH,
-    TMPDIR: process.env.TMPDIR,
-    LANG: "C.UTF-8",
-    LC_ALL: "C.UTF-8",
-  };
-}
+import { dispatchCliCommand } from "../../src/cli.ts";
+import { errorOutput, UsfError } from "../../src/core/errors.ts";
 
 async function fixture(t: test.TestContext): Promise<string> {
   const root = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), "usf-linear-binding-cli-"));
   t.after(async () => rm(root, { recursive: true, force: true }));
-  assert.equal(spawnSync("git", ["init", "-q", root], { env: environment() }).status, 0);
   await mkdir(join(root, ".usf"), { mode: 0o700 });
   await mkdir(join(root, "graph/manifests"), { recursive: true });
   const binding = "urn:test:binding:cli";
-  const graph = "urn:usf:graph:linear-work-binding";
+  const graph = "urn:usf:graph:linear-issue-bindings";
   const quad = (predicate: string, object: string, iri = false): string =>
     `<${binding}> <urn:usf:predicate:${predicate}> ${iri ? `<${object}>` : JSON.stringify(object)} <${graph}> .`;
-  await writeFile(join(root, "graph/linear-binding-authority.nq"), [
+  await writeFile(join(root, "graph/linear-issue-bindings.nq"), [
     quad("type", "urn:usf:type:LinearIssueWorkBinding", true),
     quad("issueWorkspace", "workspace-main"),
     quad("issueUuid", "123e4567-e89b-42d3-a456-426614174000"),
@@ -42,12 +28,12 @@ async function fixture(t: test.TestContext): Promise<string> {
     quad("maximumPromptTokens", "12000"),
     "",
   ].join("\n"));
-  await writeFile(join(root, "graph/manifests/linear-binding-authority.json"), `${JSON.stringify({
+  await writeFile(join(root, "graph/manifests/linear-issue-bindings.json"), `${JSON.stringify({
     schema: "urn:usf:graph-manifest:2",
     version: 2,
     imports: [],
     sources: [{
-      path: "graph/linear-binding-authority.nq",
+      path: "graph/linear-issue-bindings.nq",
       format: "application/n-quads",
       graph,
       role: "contract",
@@ -57,20 +43,21 @@ async function fixture(t: test.TestContext): Promise<string> {
   return root;
 }
 
-async function invoke(root: string, args: string[]): Promise<{ code: number | null; stdout: string; stderr: string }> {
-  const child = spawn(process.execPath, [cli, ...args], {
-    cwd: root,
-    env: environment(),
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  let stdout = "";
-  let stderr = "";
-  child.stdout.setEncoding("utf8");
-  child.stderr.setEncoding("utf8");
-  child.stdout.on("data", chunk => { stdout += chunk; });
-  child.stderr.on("data", chunk => { stderr += chunk; });
-  const [code] = await once(child, "exit");
-  return { code: code as number | null, stdout, stderr };
+async function invoke(root: string, args: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
+  try {
+    const result = await dispatchCliCommand(args, root);
+    return {
+      code: result.exitCode ?? 0,
+      stdout: result.outputMode === "text" ? String(result.output) : JSON.stringify(result.output) ?? "",
+      stderr: "",
+    };
+  } catch (error) {
+    return {
+      code: error instanceof UsfError ? error.exitCode : 1,
+      stdout: "",
+      stderr: JSON.stringify(errorOutput(error)),
+    };
+  }
 }
 
 function parsed(result: { stdout: string; stderr: string }): any {
@@ -111,7 +98,7 @@ test("CLI settle requires the existing stewardship claim before target work", as
     "linear-binding",
     "settle",
     "--manifest",
-    "graph/manifests/linear-binding-authority.json",
+    "graph/manifests/linear-issue-bindings.json",
     "--binding",
     "urn:test:binding:cli",
     "--evidence",

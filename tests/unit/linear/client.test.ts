@@ -102,6 +102,20 @@ test("comment creation uses the server UUID and verifies issue and comment readb
   assert.equal(created.id, commentId);
 });
 
+test("comment lookup tolerates a bounded eventual-consistency gap", async () => {
+  let commentQueries = 0;
+  const found = await client(async (_url, init) => {
+    const operationName = (JSON.parse(String(init?.body)) as { operationName: string }).operationName;
+    if (operationName === "ViewerIdentity") return identity();
+    if (operationName === "IssueReadback") return response({ data: { issue: remoteIssue() } });
+    assert.equal(operationName, "IssueComments");
+    commentQueries += 1;
+    return response({ data: { issue: { comments: { nodes: commentQueries === 1 ? [] : [{ id: commentId, body: "Body", issue: { id: issueId } }] } } } });
+  }).findComment(issueId, teamId, "Body");
+  assert.equal(found?.id, commentId);
+  assert.equal(commentQueries, 2);
+});
+
 test("an exact issue read remains available for a completed bound issue", async () => {
   const completed = remoteIssue({ state: { id: "77777777-7777-4777-8777-777777777777", type: "completed" }, priority: 1, updatedAt: "2026-09-07T01:00:00.000Z" });
   const found = await client(queued(identity(), response({ data: { issue: completed } }))).getIssue(issueId, teamId);

@@ -22,7 +22,9 @@ const predicate = (name: string): string => `urn:usf:predicate:${name}`;
 const bindingType = "urn:usf:type:LinearIssueWorkBinding";
 
 export function linearReason(error: unknown): string {
-  const code = typeof error === "object" && error !== null && "reasonCode" in error ? error.reasonCode : null;
+  const code = typeof error === "object" && error !== null
+    ? ("reasonCode" in error ? error.reasonCode : ("code" in error ? error.code : null))
+    : null;
   return typeof code === "string" && /^[A-Z][A-Z0-9_]{0,127}$/u.test(code) ? code : "HERMES_LINEAR_OPERATION_FAILED";
 }
 
@@ -260,6 +262,7 @@ async function updateRemoteState(mutations: LinearMutations, lane: LinearLane, r
   if (matches.length !== 1) refuse("LINEAR_WORKFLOW_STATE_AMBIGUOUS");
   const stateId = matches[0]!.id;
   const assigneeId = remote.team.assigneeId;
+  if (remote.issue.stateId === stateId && (assigneeId === null || remote.issue.assigneeId === assigneeId)) return;
   const request = { id: remote.issue.id, teamId: remote.team.id, stateId, ...(assigneeId === null ? {} : { assigneeId }) };
   await mutations.run({ bindingIri: lane.selector.bindingIri, operation: `issue-${target}-${canonicalDigest(evidence)}`,
     remoteOperationId: remote.issue.id }, request, async () => {
@@ -349,7 +352,8 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
     const delivered = await executeLinearDelivery(root, lane.selector, providerEnvFile);
     const evidence = [delivered.evidence.checkpointPath, canonicalDigest(delivered.evidence)];
     if (delivered.status !== "completed") {
-      await store.recordProgress({ bindingIri: lane.selector.bindingIri, stage: "blocked", blocker: delivered.reasonCode, evidenceRefs: evidence });
+      await store.recordProgress({ bindingIri: lane.selector.bindingIri, basisDigest: lane.binding.basis.basisDigest,
+        stage: "blocked", blocker: delivered.reasonCode, evidenceRefs: evidence });
       await commentRemoteEvidence(mutations, lane, match, delivered.reasonCode, evidence);
       return { bindingIri: lane.selector.bindingIri, status: "blocked", reasonCode: delivered.reasonCode, evidence };
     }
@@ -358,7 +362,8 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
     const acceptedEvidence = [...evidence, settled.integrationReceipt, settled.evidence, settled.proofResult];
     await commentRemoteEvidence(mutations, lane, match, "semantic completion verified", acceptedEvidence);
     await updateRemoteState(mutations, lane, match, "completed", acceptedEvidence);
-    await store.recordProgress({ bindingIri: lane.selector.bindingIri, stage: "completed", blocker: null, evidenceRefs: acceptedEvidence });
+    await store.recordProgress({ bindingIri: lane.selector.bindingIri, basisDigest: lane.binding.basis.basisDigest,
+      stage: "completed", blocker: null, evidenceRefs: acceptedEvidence });
     return { bindingIri: lane.selector.bindingIri, status: "completed", evidence: acceptedEvidence };
   }, stopped);
   const updateErrors: { bindingIri: string; reasonCode: string }[] = [];
@@ -367,7 +372,8 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
     const lane = discovered.lanes.find((item) => item.selector.bindingIri === outcome.bindingIri)!;
     const match = remote.get(lane.binding.authority.locator);
     try {
-      await store.recordProgress({ bindingIri: outcome.bindingIri, stage: "blocked", blocker: outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", evidenceRefs: outcome.evidence });
+      await store.recordProgress({ bindingIri: outcome.bindingIri, basisDigest: lane.binding.basis.basisDigest,
+        stage: "blocked", blocker: outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", evidenceRefs: outcome.evidence });
       if (match) await commentRemoteEvidence(mutations, lane, match, outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", outcome.evidence);
     } catch (error) { updateErrors.push({ bindingIri: outcome.bindingIri, reasonCode: linearReason(error) }); }
   }

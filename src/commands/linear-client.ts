@@ -6,6 +6,8 @@ const organizationUrlKeyPattern = /^[a-z0-9][a-z0-9-]{1,63}$/u;
 const credentialNamePattern = /^[A-Z][A-Z0-9_]{2,127}$/u;
 const bindingManifestPattern = /^graph\/manifests\/[A-Za-z0-9._-]+\.json$/u;
 const activeIssueFilter = Object.freeze({ state: Object.freeze({ type: Object.freeze({ nin: Object.freeze(["completed", "canceled"]) }) }) });
+const commentReadbackAttempts = 3;
+const commentReadbackDelayMs = 50;
 
 export interface LinearTeamPolicy {
   readonly id: string;
@@ -290,12 +292,16 @@ export class LinearClient {
     nonEmpty(body);
     await this.#authorizedTeam(teamId);
     await this.#readIssue(issueId, teamId);
-    const data = await this.#request("IssueComments", "query IssueComments($id: String!) { issue(id: $id) { comments { nodes { id body issue { id } } } } }", { id: issueId });
-    const comments = object(object(object(data).issue, "LINEAR_RESPONSE_INVALID").comments, "LINEAR_RESPONSE_INVALID").nodes;
-    if (!Array.isArray(comments)) fail("LINEAR_RESPONSE_INVALID");
-    const matches = comments.map(comment).filter((item) => item.body === body);
-    if (matches.length > 1) fail("LINEAR_COMMENT_READBACK_AMBIGUOUS");
-    return matches[0] ?? null;
+    for (let attempt = 0; attempt < commentReadbackAttempts; attempt += 1) {
+      const data = await this.#request("IssueComments", "query IssueComments($id: String!) { issue(id: $id) { comments { nodes { id body issue { id } } } } }", { id: issueId });
+      const comments = object(object(object(data).issue, "LINEAR_RESPONSE_INVALID").comments, "LINEAR_RESPONSE_INVALID").nodes;
+      if (!Array.isArray(comments)) fail("LINEAR_RESPONSE_INVALID");
+      const matches = comments.map(comment).filter((item) => item.body === body);
+      if (matches.length > 1) fail("LINEAR_COMMENT_READBACK_AMBIGUOUS");
+      if (matches[0] !== undefined) return matches[0];
+      if (attempt + 1 < commentReadbackAttempts) await new Promise((resolve) => setTimeout(resolve, commentReadbackDelayMs));
+    }
+    return null;
   }
 
   async createIssue(input: LinearCreateIssueInput): Promise<LinearIssue> {

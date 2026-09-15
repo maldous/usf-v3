@@ -3,7 +3,7 @@ import test from "node:test";
 import { lstat, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { compatibleLinearLanes, currentLinearBindingSelections, linearMutationLedgerSettled, runLinearLaneCycle, LinearMutations, parseHermesLinearArguments, loadLinearCredentials, hermesLinearCommand, type LinearLane } from "../../src/commands/hermes-linear.ts";
+import { compatibleLinearLanes, currentLinearBindingSelections, linearMutationLedgerSettled, runLinearLaneCycle, LinearMutations, parseHermesLinearArguments, loadLinearCredentials, hermesLinearCommand, linearReason, type LinearLane } from "../../src/commands/hermes-linear.ts";
 import { canonicalDigest } from "../../src/core/canonical.ts";
 import { LinearStateStore } from "../../src/commands/linear-state.ts";
 import { acquireSupervisorLifetimeLock, claimStewardship, releaseStewardship, withSupervisorActivity } from "../../src/continuous/stewardship.ts";
@@ -11,11 +11,18 @@ import { linuxProcessInspector } from "../../src/continuous/lifecycle.ts";
 import { observeSupervisor, registerForegroundSupervisor, unregisterForegroundSupervisor } from "../../src/commands/hermes-lifecycle.ts";
 import { mergeHermesState } from "../../src/commands/hermes.ts";
 import { parseStrictNQuads } from "../../src/graph/nquads.ts";
+import { linearReason as autonomousLinearReason } from "../../src/commands/hermes-linear-autonomy.ts";
 
 function lane(id: string, writes: string[], reads: string[] = []): LinearLane {
   return { selector: { repositoryRoot: "/unused", manifestPath: "graph/test.json", bindingIri: id },
     contextKey: id, binding: { authority: { locator: id }, unit: { packet: { id, writeSet: writes, readSet: reads, dependsOn: [] } } } } as unknown as LinearLane;
 }
+
+test("Linear reason classification preserves stable USF error codes in both runtimes", () => {
+  const error = Object.assign(new Error("governed refusal"), { code: "LINEAR_STATE_PROGRESS_REGRESSION" });
+  assert.equal(linearReason(error), "LINEAR_STATE_PROGRESS_REGRESSION");
+  assert.equal(autonomousLinearReason(error), "LINEAR_STATE_PROGRESS_REGRESSION");
+});
 
 test("Linear lanes exclude write/read overlap and allow disjoint work", () => {
   assert.equal(compatibleLinearLanes(lane("a", ["src/a.ts"]), lane("b", ["src/b.ts"])), true);

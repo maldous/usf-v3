@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
-import { existsSync } from "node:fs";
-import { chmod, cp, lstat, mkdir, mkdtemp, open, readFile, readdir, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
+import { existsSync, realpathSync } from "node:fs";
+import { chmod, cp, lstat, mkdir, mkdtemp, open, readFile, readdir, rename, rm, stat, symlink, unlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import test, { after } from "node:test";
 
@@ -55,6 +55,38 @@ const checkedReceiptFixturePath = resolve(canonicalRoot, "tests/fixtures/work-co
 const checkedReceiptProvenancePath = resolve(canonicalRoot, "tests/fixtures/work-completion/repository-path-checked-receipt.provenance.json");
 const isConfinedFixtureProcess = process.env.USF_REPOSITORY_ROOT !== undefined;
 const temporaryRoot = process.env.TMPDIR === undefined ? resolve(canonicalRoot, ".usf/tmp") : resolve(process.env.TMPDIR);
+
+const completionCohortRole = process.env.USF_COMPLETION_COHORT_ROLE;
+const completionCohortRunDirectory = process.env.USF_COMPLETION_COHORT_DIRECTORY;
+assert.equal(completionCohortRole === undefined, completionCohortRunDirectory === undefined,
+  "completion cohort role and private directory must be supplied together");
+if (completionCohortRole !== undefined) {
+  assert.match(completionCohortRole, /^(?:producer|recovery-[01])$/u);
+  assert.equal(isConfinedFixtureProcess, false, "direct-lane cohort configuration must not enter confined fixtures");
+}
+
+async function completionCohortEvent(event: Readonly<Record<string, unknown>>): Promise<void> {
+  if (completionCohortRole === undefined) return;
+  assert.equal(typeof process.send, "function", "cohort execution requires its owned IPC channel");
+  await new Promise<void>((accept, reject) => {
+    process.send!({ schema: "urn:usf:test-completion-cohort-event:1", role: completionCohortRole, ...event },
+      undefined, undefined, (error: Error | null) => error ? reject(error) : accept());
+  });
+}
+
+async function completionCohortDirectory(): Promise<string> {
+  assert.ok(completionCohortRunDirectory);
+  const directory = resolve(completionCohortRunDirectory);
+  assert.equal(dirname(directory), resolve(canonicalRoot, ".usf/tmp"));
+  assert.match(directory.slice(dirname(directory).length + 1), /^completion-cohort-[A-Za-z0-9]+$/u);
+  assert.equal(realpathSync(directory), directory, "cohort directory cannot follow symbolic links");
+  const metadata = await lstat(directory);
+  assert.equal(metadata.isDirectory(), true);
+  assert.equal(metadata.mode & 0o777, 0o700);
+  assert.equal(metadata.uid, process.getuid!());
+  return directory;
+}
+
 
 test("a completion record binds exact semantic dependency identities", () => {
   const digest = `sha256:${"a".repeat(64)}`;
@@ -156,24 +188,7 @@ function rehashedReceipt(receipt: CheckedCandidateReceipt, key: keyof CheckedCan
   return { ...draft, receiptDigest: canonicalDigest(draft, { rejectAbsolutePaths: true }) } as CheckedCandidateReceipt;
 }
 
-async function isolatedPrecompletionRepository(): Promise<{ root: string; cleanup: () => Promise<void> }> {
-  await mkdir(temporaryRoot, { recursive: true, mode: 0o700 });
-  const parent = await mkdtemp(resolve(temporaryRoot, "work-completion-test-"));
-  const root = resolve(parent, "repository");
-  await mkdir(root, { mode: 0o700 });
-  for (const entry of await readdir(canonicalRoot, { withFileTypes: true })) {
-    // artifacts/ is generated observation output, not a source input. Copying it
-    // into every isolated repository moves gigabytes per fixture for bytes no
-    // work in this file reads, and a fixture that carries generated output is
-    // not the clean pre-completion repository it claims to be.
-    if (entry.name === ".git" || entry.name === "node_modules" || entry.name === "artifacts"
-      || entry.name.startsWith(".usf")) continue;
-    await cp(resolve(canonicalRoot, entry.name), resolve(root, entry.name), { recursive: true });
-  }
-  // This helper represents a clean pre-completion repository. Construction
-  // grants are publication output in the copied source tree, so retain no
-  // historical grant rows that could make the fixture's fresh publication
-  // appear partially applied.
+async function stripPrecompletionArtifacts(root: string): Promise<void> {
   const constructionGrants = resolve(root, "graph/cli-transition-definition-grants.nq");
   if (existsSync(constructionGrants)) {
     const source = await readFile(constructionGrants, "utf8");
@@ -182,26 +197,92 @@ async function isolatedPrecompletionRepository(): Promise<{ root: string; cleanu
       .join("\n"));
   }
   const receiptDirectory = resolve(root, "evidence/work-completion");
-  if (existsSync(receiptDirectory)) {
-    const removedBySource = new Map<string, Set<string>>();
-    for (const name of (await readdir(receiptDirectory)).sort()) {
-      const receiptPath = resolve(receiptDirectory, name);
-      const receipt = JSON.parse(await readFile(receiptPath, "utf8")) as WorkCompletionPublicationReceipt;
-      if (receipt.manifestPath !== manifest || receipt.profileIri !== profile) continue;
-      for (const operation of receipt.operations) {
-        const removed = removedBySource.get(operation.sourcePath) ?? new Set<string>();
-        removed.add(operation.line);
-        removedBySource.set(operation.sourcePath, removed);
-      }
-      await unlink(receiptPath);
+  if (!existsSync(receiptDirectory)) return;
+  const removedBySource = new Map<string, Set<string>>();
+  for (const name of (await readdir(receiptDirectory)).sort()) {
+    const receiptPath = resolve(receiptDirectory, name);
+    const receipt = JSON.parse(await readFile(receiptPath, "utf8")) as WorkCompletionPublicationReceipt;
+    if (receipt.manifestPath !== manifest || receipt.profileIri !== profile) continue;
+    for (const operation of receipt.operations) {
+      const removed = removedBySource.get(operation.sourcePath) ?? new Set<string>();
+      removed.add(operation.line);
+      removedBySource.set(operation.sourcePath, removed);
     }
-    for (const [relativeSourcePath, removed] of removedBySource) {
-      const sourcePath = resolve(root, relativeSourcePath);
-      const source = await readFile(sourcePath, "utf8");
-      await writeFile(sourcePath, `${source.split("\n").filter((line) => line.length > 0 && !removed.has(line)).join("\n")}\n`, "utf8");
-    }
+    await unlink(receiptPath);
   }
-  return { root, cleanup: async () => rm(parent, { recursive: true, force: true }) };
+  for (const [relativeSourcePath, removed] of removedBySource) {
+    const sourcePath = resolve(root, relativeSourcePath);
+    const source = await readFile(sourcePath, "utf8");
+    await writeFile(sourcePath, `${source.split("\n").filter((line) => line.length > 0 && !removed.has(line)).join("\n")}\n`, "utf8");
+  }
+}
+
+let canonicalPrecompletionSource: Promise<string> | undefined;
+
+/** Share only an immutable clean source image; every fixture receives a copy. */
+async function precompletionSource(): Promise<string> {
+  if (canonicalPrecompletionSource === undefined) {
+    canonicalPrecompletionSource = (async () => {
+      const fingerprint = await canonicalSeedSourceFingerprint();
+      const cacheRoot = resolve(canonicalRoot, ".usf/cache/completion-construction-sources", fingerprint);
+      const retained = resolve(cacheRoot, "repository");
+      const complete = resolve(cacheRoot, "complete");
+      if (existsSync(complete) && existsSync(retained)) return retained;
+      await rm(cacheRoot, { recursive: true, force: true });
+      await mkdir(temporaryRoot, { recursive: true, mode: 0o700 });
+      const parent = await mkdtemp(resolve(temporaryRoot, "work-completion-source-"));
+      const root = resolve(parent, "repository");
+      try {
+        await mkdir(root, { mode: 0o700 });
+        for (const entry of await readdir(canonicalRoot, { withFileTypes: true })) {
+          if (entry.name === ".git" || entry.name === "node_modules" || entry.name === "artifacts"
+            || entry.name.startsWith(".usf")) continue;
+          await cp(resolve(canonicalRoot, entry.name), resolve(root, entry.name), { recursive: true });
+        }
+        await stripPrecompletionArtifacts(root);
+        execFileSync("git", ["init", "--quiet"], { cwd: root });
+        const common = ["--profile", canonicalNoChangeProfile, "--manifest", canonicalNoChangeSelection.manifestPath];
+        const evidence = ".usf/candidates/construction-authority/no-change-test-evidence.json";
+        const proof = ".usf/candidates/construction-authority/no-change-test-proof.json";
+        await evidenceCommandHandler({ command: "evidence", repositoryRoot: root,
+          args: ["construction", "--work", canonicalNoChangeSelection.rootIdentity, ...common, "--output", evidence] });
+        await proveCommandHandler({ command: "prove", repositoryRoot: root,
+          args: ["construction", "--obligation", "urn:usf:proof:cli-transition-definition:construction", "--evidence", evidence, ...common, "--output", proof] });
+        const publication = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root,
+          args: ["construction-authority", "--bundle", proof, ...common, "--apply"] });
+        assert.equal((publication.output as { status: string }).status, "ok");
+        await rm(resolve(root, ".git"), { recursive: true, force: true });
+        // Construction publication may leave locks, candidates or workspaces
+        // in ignored runtime state. None is part of this source image; keeping
+        // it would clone stale coordination state into every test fixture.
+        await rm(resolve(root, ".usf"), { recursive: true, force: true });
+        await mkdir(cacheRoot, { recursive: true, mode: 0o700 });
+        await cp(root, retained, { recursive: true, verbatimSymlinks: true });
+        await writeFile(complete, `${fingerprint}\n`, { mode: 0o600 });
+        return retained;
+      } catch (error) {
+        await rm(cacheRoot, { recursive: true, force: true });
+        throw error;
+      } finally {
+        await rm(parent, { recursive: true, force: true });
+      }
+    })();
+  }
+  return canonicalPrecompletionSource;
+}
+
+async function isolatedPrecompletionRepository(): Promise<{ root: string; cleanup: () => Promise<void> }> {
+  await mkdir(temporaryRoot, { recursive: true, mode: 0o700 });
+  const parent = await mkdtemp(resolve(temporaryRoot, "work-completion-test-"));
+  const root = resolve(parent, "repository");
+  try {
+    await cp(await precompletionSource(), root, { recursive: true, verbatimSymlinks: true });
+    execFileSync("git", ["init", "--quiet"], { cwd: root });
+    return { root, cleanup: async () => rm(parent, { recursive: true, force: true }) };
+  } catch (error) {
+    await rm(parent, { recursive: true, force: true });
+    throw error;
+  }
 }
 
 function packet(root: string) {
@@ -613,17 +694,6 @@ function assertV2PublicationReceipt(value: unknown, expectedMemberCount: number)
 async function canonicalNoChangeFixture() {
   const isolated = await isolatedPrecompletionRepository();
   try {
-    execFileSync("git", ["init", "--quiet"], { cwd: isolated.root });
-    const common = ["--profile", canonicalNoChangeProfile, "--manifest", canonicalNoChangeSelection.manifestPath];
-    const evidence = ".usf/candidates/construction-authority/no-change-test-evidence.json";
-    const proof = ".usf/candidates/construction-authority/no-change-test-proof.json";
-    await evidenceCommandHandler({ command: "evidence", repositoryRoot: isolated.root,
-      args: ["construction", "--work", canonicalNoChangeSelection.rootIdentity, ...common, "--output", evidence] });
-    await proveCommandHandler({ command: "prove", repositoryRoot: isolated.root,
-      args: ["construction", "--obligation", "urn:usf:proof:cli-transition-definition:construction", "--evidence", evidence, ...common, "--output", proof] });
-    const publication = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: isolated.root,
-      args: ["construction-authority", "--bundle", proof, ...common, "--apply"] });
-    assert.equal((publication.output as { status: string }).status, "ok");
     await mkdir(resolve(isolated.root, ".usf/inputs"), { recursive: true, mode: 0o700 });
     await writeFile(resolve(isolated.root, canonicalNoChangeInput), JSON.stringify(canonicalNoChangeSelection), { mode: 0o600 });
     return isolated;
@@ -638,6 +708,8 @@ function runNoChangeCli(root: string) {
 test("root-derived completion checks derive no-effect identity and reconcile a genuine retained set", {
   skip: isConfinedFixtureProcess && "the direct lane owns the graph-derived check fixture",
 }, async () => {
+  await completionCohortEvent({ kind: "case-started", name: "root-derived completion checks derive no-effect identity and reconcile a genuine retained set" });
+  const cohortFingerprint = completionCohortRole === "producer" ? await canonicalSeedSourceFingerprint() : undefined;
   const isolated = await canonicalNoChangeFixture();
   try {
     const request = {
@@ -668,6 +740,7 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
 
     const native = await realiseNoChangeWork(isolated.root, request);
     assert.equal(native.candidateDigest, identity, "identity must match the native no-change result");
+    const candidateHash = identity.slice("sha256:".length);
     const workspaceIdentity = await withAuthenticatedNoChangeWorkspace(isolated.root, identity, async (workspace) => {
       assert.equal(workspace.candidateDigest, identity);
       await assert.rejects(
@@ -743,10 +816,21 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
     await rm(resolve(workspace, ".usf-check-tmp-other"), { recursive: true, force: true });
     const expectedObligations = [...(work.realisationAuthority?.completionValidationObligations ?? [])].sort();
     assert.ok(expectedObligations.length > 1, "genuine fixture must have a partial-retention denominator");
-    const retainedObligation = expectedObligations[0]!;
-    const absentObligation = expectedObligations[1]!;
+    // Retain the smallest graph-required native check. The adapter suite is
+    // also required in the completion denominator, but is intentionally not
+    // selected for this interruption probe because it is a long serial suite.
+    const retainedObligation = "urn:usf:validation:cli-transition-definition-runtime";
+    const absentObligation = "urn:usf:validation:cli-transition-definition-adapter-contracts";
+    assert.ok(expectedObligations.includes(retainedObligation), "genuine fixture must expose the fast native retention obligation");
+    assert.ok(expectedObligations.includes(absentObligation), "genuine fixture must expose the bounded absent obligation");
     const receiptPath = join(isolated.root, ".usf", "receipts", "check", identity.slice("sha256:".length), `${canonicalDigest(retainedObligation).slice("sha256:".length)}.json`);
     const pendingPath = `${receiptPath}.pending`;
+    for (const obligation of [retainedObligation, absentObligation]) {
+      const memberReceiptPath = join(isolated.root, ".usf", "receipts", "check", candidateHash, `${canonicalDigest(obligation).slice("sha256:".length)}.json`);
+      await rm(memberReceiptPath, { force: true });
+      await rm(memberReceiptPath.replace(/\.json$/u, ".intent.json"), { force: true });
+    }
+    await rm(join(isolated.root, ".usf", "receipts", "check", candidateHash, "completion-validation-seed.json"), { force: true });
     const interrupted = spawn(process.execPath, [resolve(canonicalRoot, "tests/fixtures/realisation/check-interruption.ts"),
       isolated.root, identity, retainedObligation, "pending-synced", pendingPath], {
       cwd: isolated.root, env: {}, stdio: ["ignore", "pipe", "pipe", "ipc"],
@@ -784,7 +868,7 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
     const intentPath = receiptPath.replace(/\.json$/u, ".intent.json");
     assert.equal(JSON.parse(await readFile(intentPath, "utf8")).state, "STARTED");
     assert.equal(await readGraphDerivedCheckReceiptForRecovery(isolated.root, identity, retainedObligation), null, "pending publication is not a current receipt before native reconciliation");
-    assert.equal(await readGraphDerivedCheckReceipt(isolated.root, identity, absentObligation), null, "only one genuine member is retained before preparation");
+    assert.equal(await readGraphDerivedCheckReceipt(isolated.root, identity, absentObligation), null, "the selected absent member is not retained before preparation");
 
     const first = await prepareCompletionChecks(isolated.root, request);
     assert.equal(first.status, "current");
@@ -856,7 +940,11 @@ test("root-derived completion checks derive no-effect identity and reconcile a g
 
     const replay = await prepareCompletionChecks(isolated.root, request);
     assert.deepEqual(replay, first, "a complete retained set has stable readback after native per-member reconciliation");
+    if (cohortFingerprint !== undefined) {
+      await retainCompletionCohortSeed(isolated.root, identity, replay.receiptSetDigest, cohortFingerprint);
+    }
   } finally { await isolated.cleanup(); }
+  await completionCohortEvent({ kind: "case-passed", name: "root-derived completion checks derive no-effect identity and reconcile a genuine retained set" });
 });
 
 // Test-only fault boundary: kill after the native effect returns but before stdout acknowledgement.
@@ -1307,6 +1395,7 @@ async function prepareGenuineCanonicalPublicationRoot(root: string): Promise<voi
 interface RegularTreeEntry {
   readonly mode: number;
   readonly digest: string;
+  readonly device: number;
   readonly inode: number;
 }
 
@@ -1322,7 +1411,7 @@ async function regularTree(root: string): Promise<ReadonlyMap<string, RegularTre
       if (metadata.isDirectory()) await visit(childRelative);
       else {
         assert.equal(metadata.isFile(), true, `seed copies admit only regular files: ${childRelative}`);
-        entries.set(childRelative, Object.freeze({ mode: metadata.mode & 0o777, digest: rawDigest(await readFile(child)), inode: metadata.ino }));
+        entries.set(childRelative, Object.freeze({ mode: metadata.mode & 0o777, digest: rawDigest(await readFile(child)), device: metadata.dev, inode: metadata.ino }));
       }
     }
   };
@@ -1375,7 +1464,79 @@ const canonicalSeedRequest = Object.freeze({
   manifestPath: canonicalNoChangeSelection.manifestPath,
 });
 
-let checkedCanonicalPrepublicationSeed: Promise<{ root: string; cleanup: () => Promise<void> }> | undefined;
+interface CheckedCanonicalPrepublicationSeed {
+  readonly root: string;
+  readonly tree: ReadonlyMap<string, RegularTreeEntry>;
+  readonly cleanup: () => Promise<void>;
+}
+
+let checkedCanonicalPrepublicationSeed: Promise<CheckedCanonicalPrepublicationSeed> | undefined;
+
+interface CompletionCohortSeedRecord {
+  readonly schema: "urn:usf:test-completion-shared-seed:1";
+  readonly sourceFingerprint: string;
+  readonly candidateDigest: string;
+  readonly receiptSetDigest: string;
+  readonly treeDigest: string;
+}
+let completionCohortSeedRecord: CompletionCohortSeedRecord | undefined;
+
+function completionCohortTreeDigest(tree: ReadonlyMap<string, RegularTreeEntry>): string {
+  return canonicalDigest([...tree].map(([path, entry]) => [path, entry.mode, entry.digest])
+    .sort(([left], [right]) => String(left).localeCompare(String(right))), { rejectAbsolutePaths: true });
+}
+
+/** Donate the genuine producer witness's restored receipt set, never rebuild it. */
+async function retainCompletionCohortSeed(root: string, candidateDigest: string, receiptSetDigest: unknown, sourceFingerprint: string): Promise<void> {
+  const started = performance.now();
+  const directory = await completionCohortDirectory();
+  assert.equal(completionCohortRole, "producer");
+  assert.equal(await canonicalSeedSourceFingerprint(), sourceFingerprint, "source changed during the genuine seed producer");
+  assert.equal(typeof receiptSetDigest, "string");
+  assert.match(receiptSetDigest as string, /^sha256:[0-9a-f]{64}$/u);
+  await assertNoCheckRuntimeResidue(root);
+  const before = completionCohortTreeDigest(await regularTree(root));
+  const retained = resolve(directory, "seed");
+  await cp(root, retained, { recursive: true, force: false, errorOnExist: true });
+  const treeDigest = completionCohortTreeDigest(await regularTree(retained));
+  assert.equal(treeDigest, before, "retention must preserve every producer byte and mode");
+  const record: CompletionCohortSeedRecord = {
+    schema: "urn:usf:test-completion-shared-seed:1", sourceFingerprint, candidateDigest,
+    receiptSetDigest: receiptSetDigest as string, treeDigest,
+  };
+  // The parent starts consumers only after this producer exits successfully.
+  // A private per-run destination eliminates shared-cache deletion/build races.
+  const pending = resolve(directory, "seed.json.pending");
+  await writeFile(pending, canonicalJson(record), { mode: 0o600, flag: "wx" });
+  await rename(pending, resolve(directory, "seed.json"));
+  await completionCohortEvent({ kind: "phase", phase: "seed-retention",
+    elapsedMilliseconds: Math.round(performance.now() - started) });
+  await completionCohortEvent({ kind: "seed-ready", seed: record });
+}
+
+async function readCompletionCohortSeed(): Promise<CheckedCanonicalPrepublicationSeed> {
+  const directory = await completionCohortDirectory();
+  assert.match(completionCohortRole!, /^recovery-[01]$/u);
+  const marker = resolve(directory, "seed.json");
+  const metadata = await lstat(marker);
+  assert.equal(metadata.isFile(), true);
+  assert.equal(metadata.isSymbolicLink(), false);
+  assert.equal(metadata.uid, process.getuid!());
+  assert.equal(metadata.nlink, 1);
+  assert.equal(metadata.mode & 0o777, 0o600);
+  const record = JSON.parse(await readFile(marker, "utf8")) as CompletionCohortSeedRecord;
+  assert.deepEqual(Object.keys(record).sort(), ["candidateDigest", "receiptSetDigest", "schema", "sourceFingerprint", "treeDigest"]);
+  assert.equal(record.schema, "urn:usf:test-completion-shared-seed:1");
+  for (const digest of [record.candidateDigest, record.receiptSetDigest, record.treeDigest]) assert.match(digest, /^sha256:[0-9a-f]{64}$/u);
+  assert.equal(record.sourceFingerprint, await canonicalSeedSourceFingerprint(), "shared seed must match current source");
+  const root = resolve(directory, "seed");
+  assert.equal(realpathSync(root), root);
+  const tree = await regularTree(root);
+  assert.equal(completionCohortTreeDigest(tree), record.treeDigest, "shared seed bytes or modes changed");
+  completionCohortSeedRecord = record;
+  return { root, tree, cleanup: async () => {} };
+}
+
 
 /**
  * Fingerprint of the exact source this seed would be built from.
@@ -1390,17 +1551,55 @@ let checkedCanonicalPrepublicationSeed: Promise<{ root: string; cleanup: () => P
 async function canonicalSeedSourceFingerprint(): Promise<string> {
   const entries: [string, number, string][] = [];
   const visit = async (relative: string): Promise<void> => {
-    for (const entry of await readdir(resolve(canonicalRoot, relative), { withFileTypes: true })) {
+    const absolute = resolve(canonicalRoot, relative);
+    const metadata = await lstat(absolute);
+    if (metadata.isFile()) {
+      entries.push([relative, metadata.mode & 0o777, rawDigest(await readFile(absolute))]);
+      return;
+    }
+    if (!metadata.isDirectory()) throw new Error("seed fingerprint accepts only regular files and directories");
+    for (const entry of await readdir(absolute, { withFileTypes: true })) {
       if (relative === "" && (entry.name === ".git" || entry.name === "node_modules"
         || entry.name === "artifacts" || entry.name.startsWith(".usf"))) continue;
       const child = relative.length === 0 ? entry.name : join(relative, entry.name);
       if (entry.isDirectory()) { await visit(child); continue; }
-      if (!entry.isFile()) continue;
-      const absolute = resolve(canonicalRoot, child);
-      entries.push([child, (await lstat(absolute)).mode & 0o777, rawDigest(await readFile(absolute))]);
+      if (!entry.isFile()) throw new Error("seed fingerprint encountered a non-regular entry");
+      const childAbsolute = resolve(canonicalRoot, child);
+      entries.push([child, (await lstat(childAbsolute)).mode & 0o777, rawDigest(await readFile(childAbsolute))]);
     }
   };
-  await visit("");
+  let dependencyPaths: string[] = [];
+  try {
+    const work = JSON.parse(execFileSync(resolve(canonicalRoot, "bin/usf"), [
+      "work", "--profile", canonicalNoChangeProfile,
+      "--selector", canonicalNoChangeSelection.rootIdentity,
+      "--manifest", canonicalNoChangeSelection.manifestPath,
+    ], { cwd: canonicalRoot, encoding: "utf8", maxBuffer: 4 * 1024 * 1024 })) as {
+      items?: readonly Record<string, unknown>[];
+    };
+    const item = work.items?.length === 1 ? work.items[0] : undefined;
+    const basis = item?.realisationBasis;
+    const basisRecord = basis !== null && typeof basis === "object" && !Array.isArray(basis)
+      ? basis as Record<string, unknown> : undefined;
+    const paths = (value: unknown): string[] => Array.isArray(value) && value.every((path) => typeof path === "string")
+      ? value as string[] : [];
+    dependencyPaths = [...new Set([
+      ...paths(item?.readSet), ...paths(item?.writeSet),
+      ...paths(basisRecord?.readSet), ...paths(basisRecord?.writeSet),
+      canonicalNoChangeSelection.manifestPath,
+      "tests/integration/work-completion.test.ts",
+      "tests/fixtures/realisation/completion-publication-interruption.ts",
+    ])].sort();
+    if (dependencyPaths.length === 0 || dependencyPaths.some((path) => path.startsWith("/") || path.split("/").includes(".."))) {
+      dependencyPaths = [];
+    }
+  } catch { dependencyPaths = []; }
+  if (dependencyPaths.length === 0) {
+    await visit("");
+  } else {
+    try { for (const path of dependencyPaths) await visit(path); }
+    catch { entries.length = 0; await visit(""); }
+  }
   entries.sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
   return canonicalDigest(entries, { rejectAbsolutePaths: true }).slice("sha256:".length);
 }
@@ -1414,7 +1613,12 @@ async function canonicalSeedSourceFingerprint(): Promise<string> {
  * whole point of USF-1200's seed, applied to the fixture that needs it most.
  * The retained copy is never mutated: every consumer clones it.
  */
-async function canonicalCheckedPrepublicationSeed(): Promise<{ root: string; cleanup: () => Promise<void> }> {
+async function canonicalCheckedPrepublicationSeed(): Promise<CheckedCanonicalPrepublicationSeed> {
+  if (completionCohortRole !== undefined) {
+    assert.notEqual(completionCohortRole, "producer", "producer stage must not execute a recovery consumer");
+    checkedCanonicalPrepublicationSeed ??= readCompletionCohortSeed();
+    return checkedCanonicalPrepublicationSeed;
+  }
   if (checkedCanonicalPrepublicationSeed === undefined) {
     checkedCanonicalPrepublicationSeed = (async () => {
       const fingerprint = await canonicalSeedSourceFingerprint();
@@ -1424,7 +1628,7 @@ async function canonicalCheckedPrepublicationSeed(): Promise<{ root: string; cle
       // A seed is only reusable once its build finished; the marker is written
       // last, so an interrupted build is rebuilt rather than half-consumed.
       if (existsSync(complete) && existsSync(retained)) {
-        return { root: retained, cleanup: async () => {} };
+        return { root: retained, tree: await regularTree(retained), cleanup: async () => {} };
       }
       await rm(cacheRoot, { recursive: true, force: true });
       const seed = await canonicalNoChangeFixture();
@@ -1434,9 +1638,10 @@ async function canonicalCheckedPrepublicationSeed(): Promise<{ root: string; cle
         await assertNoCheckRuntimeResidue(seed.root);
         await mkdir(cacheRoot, { recursive: true, mode: 0o700 });
         await cp(seed.root, retained, { recursive: true, verbatimSymlinks: true });
+        const tree = await regularTree(retained);
         await writeFile(complete, `${fingerprint}\n`, { mode: 0o600 });
         await seed.cleanup();
-        return { root: retained, cleanup: async () => {} };
+        return { root: retained, tree, cleanup: async () => {} };
       } catch (error) { await seed.cleanup(); throw error; }
     })();
   }
@@ -1445,6 +1650,18 @@ async function canonicalCheckedPrepublicationSeed(): Promise<{ root: string; cle
 
 after(async () => {
   if (checkedCanonicalPrepublicationSeed !== undefined) await (await checkedCanonicalPrepublicationSeed).cleanup();
+  if (completionCohortSeedRecord !== undefined) {
+    const directory = await completionCohortDirectory();
+    assert.equal(completionCohortTreeDigest(await regularTree(resolve(directory, "seed"))), completionCohortSeedRecord.treeDigest,
+      "recovery workers must leave the shared seed unchanged");
+    assert.equal(await canonicalSeedSourceFingerprint(), completionCohortSeedRecord.sourceFingerprint,
+      "source must stay frozen through recovery");
+  }
+  await completionCohortEvent({ kind: "inventory", cases: [
+    ...canonicalPublicationRecoveryBoundaries.map(boundary => `canonical completion publication resumes the exact retained intent at ${boundary}`),
+    "canonical terminal evaluation refuses altered evaluator and artifact lineage",
+  ] });
+  await completionCohortEvent({ kind: "resources", usage: process.resourceUsage(), memory: process.memoryUsage() });
 });
 
 async function assertSettledCompleteCheckSet(root: string): Promise<Readonly<{ candidateDigest: string; obligations: readonly string[] }>> {
@@ -1473,6 +1690,11 @@ async function assertSettledCompleteCheckSet(root: string): Promise<Readonly<{ c
   assert.equal(observed!.validationLaunches, 0, "a complete copied receipt set must not launch validation during public preparation");
   const prepared = observed!.result as Record<string, unknown>;
   assert.equal(prepared.status, "current");
+  if (completionCohortSeedRecord !== undefined) {
+    assert.equal(prepared.candidateDigest, completionCohortSeedRecord.candidateDigest);
+    assert.equal(prepared.receiptSetDigest, completionCohortSeedRecord.receiptSetDigest,
+      "native authentication must reproduce the genuine producer receipt set");
+  }
   const candidateDigest = prepared.candidateDigest as string;
   const obligations = prepared.validationObligations as readonly string[];
   assert.ok(candidateDigest.startsWith("sha256:"));
@@ -1488,11 +1710,23 @@ async function assertSettledCompleteCheckSet(root: string): Promise<Readonly<{ c
 
 async function canonicalCheckedPrepublicationClone(): Promise<{ root: string; cleanup: () => Promise<void> }> {
   const seed = await canonicalCheckedPrepublicationSeed();
+  const cloneStarted = performance.now();
   const parent = await mkdtemp(resolve(temporaryRoot, "completion-publication-seed-copy-"));
   const root = resolve(parent, "repository");
   try {
     await cp(seed.root, root, { recursive: true, force: false, errorOnExist: true });
-    const seedTree = await regularTree(seed.root);
+    const seedTree = seed.tree;
+    // Some filesystems/copy implementations preserve the cache inode during
+    // recursive copies. Rehydrate each regular file through a fresh inode so
+    // this fixture cannot accidentally share mutable storage with the seed.
+    let copyIndex = 0;
+    for (const [path, seedEntry] of seedTree) {
+      const target = resolve(root, path);
+      const temporary = `${target}.independent-${process.pid}-${copyIndex++}`;
+      await writeFile(temporary, await readFile(resolve(seed.root, path)), { mode: seedEntry.mode, flag: "wx" });
+      await chmod(temporary, seedEntry.mode);
+      await rename(temporary, target);
+    }
     const cloneTree = await regularTree(root);
     assert.deepEqual(
       [...cloneTree].map(([path, entry]) => [path, entry.mode, entry.digest]),
@@ -1500,10 +1734,11 @@ async function canonicalCheckedPrepublicationClone(): Promise<{ root: string; cl
       "each clone preserves exact checked seed bytes and modes",
     );
     for (const [path, seedEntry] of seedTree) {
-      assert.notEqual(cloneTree.get(path)?.inode, seedEntry.inode, `each regular seed file is independently copied: ${path}`);
+      assert.notEqual(`${cloneTree.get(path)?.device}:${cloneTree.get(path)?.inode}`, `${seedEntry.device}:${seedEntry.inode}`, `each regular seed file is independently copied: ${path}`);
     }
-    await assertNoCheckRuntimeResidue(root);
-    const before = await regularTree(root);
+    await completionCohortEvent({ kind: "phase", phase: "private-clone", elapsedMilliseconds: Math.round(performance.now() - cloneStarted) });
+    const before = cloneTree;
+    const authenticationStarted = performance.now();
     await assertSettledCompleteCheckSet(root);
     const afterPrepare = await regularTree(root);
     assert.deepEqual(
@@ -1511,6 +1746,7 @@ async function canonicalCheckedPrepublicationClone(): Promise<{ root: string; cl
       [...before].map(([path, entry]) => [path, entry.mode, entry.digest, entry.inode]),
       "complete-set authentication preserves copied receipt and intent provenance",
     );
+    await completionCohortEvent({ kind: "phase", phase: "clone-authentication", elapsedMilliseconds: Math.round(performance.now() - authenticationStarted) });
     return { root, cleanup: async () => rm(parent, { recursive: true, force: true }) };
   } catch (error) { await rm(parent, { recursive: true, force: true }); throw error; }
 }
@@ -1630,6 +1866,7 @@ const canonicalPublicationRecoveryBoundaries = ["before-source", "source-before-
 
 for (const boundary of canonicalPublicationRecoveryBoundaries) {
   test(`canonical completion publication resumes the exact retained intent at ${boundary}`, async () => {
+    await completionCohortEvent({ kind: "case-started", name: `canonical completion publication resumes the exact retained intent at ${boundary}` });
     const native: typeof import("../../src/commands/work-completion.ts") =
       await import(pathToFileURL(resolve(canonicalRoot, "src/commands/work-completion.ts")).href);
     const request = Object.freeze({ rootIdentity: canonicalNoChangeSelection.rootIdentity, manifestPath: canonicalNoChangeSelection.manifestPath });
@@ -1673,6 +1910,7 @@ for (const boundary of canonicalPublicationRecoveryBoundaries) {
         assert.equal((await lstat(receiptPath)).ino, final.ino, `${boundary} replay must not replace the recovered receipt`);
       }
     } finally { await isolated.cleanup(); }
+    await completionCohortEvent({ kind: "case-passed", name: `canonical completion publication resumes the exact retained intent at ${boundary}` });
   });
 }
 
@@ -1726,6 +1964,7 @@ test("transition inspection refuses an unsupported selected publication receipt 
 });
 
 test("canonical terminal evaluation refuses altered evaluator and artifact lineage", async () => {
+  await completionCohortEvent({ kind: "case-started", name: "canonical terminal evaluation refuses altered evaluator and artifact lineage" });
   const isolated = await canonicalCheckedPrepublicationClone();
   try {
     const native: typeof import("../../src/commands/work-completion.ts") =
@@ -1777,4 +2016,5 @@ test("canonical terminal evaluation refuses altered evaluator and artifact linea
       await refuseOrEmpty(replaceExactly(artifactSchema.canonical, canonicalQuadLine({ ...artifactSchema, object: "urn:usf:schema:wrong-publication-receipt:1" })));
     } finally { await writeFile(sourcePath, source); }
   } finally { await isolated.cleanup(); }
+  await completionCohortEvent({ kind: "case-passed", name: "canonical terminal evaluation refuses altered evaluator and artifact lineage" });
 });

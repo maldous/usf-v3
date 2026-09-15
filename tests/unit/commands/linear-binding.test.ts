@@ -22,8 +22,8 @@ import {
 } from "../../../src/commands/linear-binding.ts";
 
 const manifestPath = "graph/manifests/linear-work-binding.json";
-const bindingManifestPath = "graph/manifests/linear-binding-authority.json";
-const bindingGraphPath = "graph/linear-binding-authority.nq";
+  const bindingManifestPath = "graph/manifests/linear-issue-bindings.json";
+  const bindingGraphPath = "graph/linear-issue-bindings.nq";
 const sourceRoot = resolve(import.meta.dirname, "../../..");
 const testRoots = new Set<string>();
 

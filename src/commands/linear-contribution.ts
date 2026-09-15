@@ -80,8 +80,8 @@ async function lowerSettledPatchOperations(
 ): Promise<readonly FileOperation[] | undefined> {
   const unit = evidence.units;
   if (!Array.isArray(unit) || unit.length !== 1 || !record(unit[0]) || typeof unit[0].resultText !== "string") return undefined;
-  let decoded: unknown;
-  try { decoded = JSON.parse(unit[0].resultText) as unknown; } catch { return undefined; }
+  const decoded = decodeContributionPayload(unit[0].resultText);
+  if (decoded === undefined) return undefined;
   const operations = Array.isArray(decoded) ? decoded : record(decoded) ? decoded.operations : undefined;
   if (!Array.isArray(operations) || operations.length === 0) return undefined;
   let lowered = false;
@@ -169,8 +169,8 @@ export function contributionFromGraphExecution(
       refuse("LINEAR_CONTRIBUTION_QUALIFICATION_UNKNOWN");
     }
   }
-  let decoded: unknown;
-  try { decoded = JSON.parse(unit.resultText) as unknown; } catch { refuse("LINEAR_CONTRIBUTION_OPERATIONS_INVALID"); }
+  const decoded = decodeContributionPayload(unit.resultText);
+  if (decoded === undefined) refuse("LINEAR_CONTRIBUTION_OPERATIONS_INVALID");
   const operations = operationOverride ?? (Array.isArray(decoded) ? decoded : record(decoded) ? decoded.operations : undefined);
   if (!Array.isArray(operations) || operations.length === 0 || !operations.every(isOperation)
     || operations.some((operation) => !prepared.basis.scope.writeSet.some((scope) => isPathWithinPermission(operation.path, scope)))) {
@@ -202,6 +202,18 @@ export function contributionFromGraphExecution(
     nonclaims: Object.freeze(["assignment-prompt-template-digest-is-policy-authority-not-invocation-prompt", "graph-execution-is-not-acceptance-or-completion"]),
   };
   return immutable({ ...contribution, identity: Object.freeze({ artifactDigest: contributionDigest(contribution), basisDigest: prepared.basis.basisDigest }) });
+}
+
+/**
+ * Providers sometimes return an otherwise exact JSON response in one Markdown
+ * JSON fence. Admit only that single well-formed envelope; all surrounding
+ * prose, multiple fences, and non-JSON wrappers remain invalid.
+ */
+function decodeContributionPayload(resultText: string): unknown | undefined {
+  const trimmed = resultText.trim();
+  const fenced = /^```(?:json|JSON)\r?\n([\s\S]*?)\r?\n```$/.exec(trimmed);
+  const payload = fenced?.[1] ?? trimmed;
+  try { return JSON.parse(payload) as unknown; } catch { return undefined; }
 }
 
 /**

@@ -15,7 +15,9 @@ const predicate = (name: string): string => `urn:usf:predicate:${name}`;
 const bindingType = "urn:usf:type:LinearIssueWorkBinding";
 
 export function linearReason(error: unknown): string {
-  const code = typeof error === "object" && error !== null && "reasonCode" in error ? error.reasonCode : null;
+  const code = typeof error === "object" && error !== null
+    ? ("reasonCode" in error ? error.reasonCode : ("code" in error ? error.code : null))
+    : null;
   return typeof code === "string" && /^[A-Z][A-Z0-9_]{0,127}$/u.test(code) ? code : "HERMES_LINEAR_OPERATION_FAILED";
 }
 
@@ -262,6 +264,7 @@ async function updateRemoteState(mutations: LinearMutations, lane: LinearLane, r
   if (matches.length !== 1) refuse("LINEAR_WORKFLOW_STATE_AMBIGUOUS");
   const stateId = matches[0]!.id;
   const assigneeId = remote.team.assigneeId;
+  if (remote.issue.stateId === stateId && (assigneeId === null || remote.issue.assigneeId === assigneeId)) return;
   const request = { id: remote.issue.id, teamId: remote.team.id, stateId, ...(assigneeId === null ? {} : { assigneeId }) };
   await mutations.run({ bindingIri: lane.selector.bindingIri, operation: `issue-${target}-${canonicalDigest(evidence)}`,
     remoteOperationId: remote.issue.id }, request, async () => {
@@ -336,14 +339,21 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
       remote.set(lane.binding.authority.locator, { client, workspace, team, issue });
     } catch (error) { discoveryErrors.push({ workspace: workspace.key, teamId: team.id, reasonCode: linearReason(error), detail: linearDetail(error) }); }
   }
-  const previous = new Map(store.progress().map((item) => [item.bindingIri, item.updatedAt]));
-  const ordered = [...discovered.lanes].sort((a, b) => {
+  const previous = new Map(store.progress().map((item) => [item.bindingIri, item]));
+  const runnable = discovered.lanes.filter((lane) => {
+    const prior = previous.get(lane.selector.bindingIri);
+    return prior === undefined || prior.basisDigest !== lane.binding.basis.basisDigest
+      || (prior.stage !== "blocked" && prior.stage !== "completed")
+      || (prior.stage === "blocked" && lane.binding.attempt.state === "PREPARED");
+  });
+  const runnableIds = new Set(runnable.map((lane) => lane.selector.bindingIri));
+  const ordered = [...runnable].sort((a, b) => {
     const priority = (lane: LinearLane): number => remote.get(lane.binding.authority.locator)?.issue.priority || 5;
     return priority(a) - priority(b)
-      || (previous.get(a.selector.bindingIri) ?? "").localeCompare(previous.get(b.selector.bindingIri) ?? "")
+      || (previous.get(a.selector.bindingIri)?.updatedAt ?? "").localeCompare(previous.get(b.selector.bindingIri)?.updatedAt ?? "")
       || a.contextKey.localeCompare(b.contextKey) || a.selector.bindingIri.localeCompare(b.selector.bindingIri);
   });
-  const outcomes = await runLinearLaneCycle(ordered, concurrency, async (lane) => {
+  const executedOutcomes = await runLinearLaneCycle(ordered, concurrency, async (lane) => {
     const match = remote.get(lane.binding.authority.locator);
     if (!match || match.team.owner !== lane.binding.authority.owner) refuse("LINEAR_BOUND_ISSUE_NOT_OBSERVED");
     const before = await observeLinearBinding(lane.selector);
@@ -351,8 +361,6 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
     const delivered = await executeLinearDelivery(root, lane.selector, providerEnvFile);
     const evidence = [delivered.evidence.checkpointPath, canonicalDigest(delivered.evidence)];
     if (delivered.status !== "completed") {
-      await store.recordProgress({ bindingIri: lane.selector.bindingIri, stage: "blocked", blocker: delivered.reasonCode, evidenceRefs: evidence });
-      await commentRemoteEvidence(mutations, lane, match, delivered.reasonCode, evidence);
       return { bindingIri: lane.selector.bindingIri, status: "blocked", reasonCode: delivered.reasonCode, evidence };
     }
     const settled = await observeLinearBinding(lane.selector);
@@ -360,16 +368,26 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
     const acceptedEvidence = [...evidence, settled.integrationReceipt, settled.evidence, settled.proofResult];
     await commentRemoteEvidence(mutations, lane, match, "semantic completion verified", acceptedEvidence);
     await updateRemoteState(mutations, lane, match, "completed", acceptedEvidence);
-    await store.recordProgress({ bindingIri: lane.selector.bindingIri, stage: "completed", blocker: null, evidenceRefs: acceptedEvidence });
+    await store.recordProgress({ bindingIri: lane.selector.bindingIri, basisDigest: lane.binding.basis.basisDigest, stage: "completed", blocker: null, evidenceRefs: acceptedEvidence });
     return { bindingIri: lane.selector.bindingIri, status: "completed", evidence: acceptedEvidence };
   }, stopped);
+  const deferredOutcomes = discovered.lanes.filter((lane) => !runnableIds.has(lane.selector.bindingIri)).map((lane) => {
+    const prior = previous.get(lane.selector.bindingIri)!;
+    return {
+      bindingIri: lane.selector.bindingIri,
+      status: prior.stage === "completed" ? "completed" as const : "progress" as const,
+      reasonCode: prior.blocker ?? undefined,
+      evidence: prior.evidenceRefs,
+    };
+  });
+  const outcomes = [...executedOutcomes, ...deferredOutcomes].sort((a, b) => a.bindingIri.localeCompare(b.bindingIri));
   const updateErrors: { bindingIri: string; reasonCode: string; detail?: string }[] = [];
   for (const outcome of outcomes) {
     if (outcome.status !== "blocked") continue;
     const lane = discovered.lanes.find((item) => item.selector.bindingIri === outcome.bindingIri)!;
     const match = remote.get(lane.binding.authority.locator);
     try {
-      await store.recordProgress({ bindingIri: outcome.bindingIri, stage: "blocked", blocker: outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", evidenceRefs: outcome.evidence });
+      await store.recordProgress({ bindingIri: outcome.bindingIri, basisDigest: lane.binding.basis.basisDigest, stage: "blocked", blocker: outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", evidenceRefs: outcome.evidence });
       if (match) await commentRemoteEvidence(mutations, lane, match, outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", outcome.evidence);
     } catch (error) { updateErrors.push({ bindingIri: outcome.bindingIri, reasonCode: linearReason(error), detail: linearDetail(error) }); }
   }

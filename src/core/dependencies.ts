@@ -35,3 +35,54 @@ export function assertFresh(dependencies: readonly Dependency[], current: Curren
   const result = dependencyFreshness(dependencies, current);
   if (!result.fresh) throw new UsfError("SCOPED_DEPENDENCY_STALE", exitCodes.CURRENTNESS_FAILURE, "One or more scoped dependencies have changed.", { stale: result.stale });
 }
+
+export type DependencyImpact = "unaffected" | "affected" | "full-gate";
+
+export interface DependencyImpactInput {
+  readonly changed: readonly Dependency[];
+  readonly closure: readonly Dependency[];
+  /** Inputs whose impact cannot be bounded by the selected closure. */
+  readonly unknownKeys?: readonly string[];
+  /** Exact inputs that always require whole-gate certification. */
+  readonly fullGateKeys?: readonly string[];
+}
+
+export interface DependencyImpactResult {
+  readonly impact: DependencyImpact;
+  readonly changedKeys: readonly string[];
+  readonly affectedKeys: readonly string[];
+  readonly reasonCodes: readonly string[];
+}
+
+/**
+ * Classify a candidate against an authenticated dependency closure.
+ *
+ * This is intentionally a conservative kernel for affected-run selection:
+ * unknown inputs and explicitly whole-gate inputs fail closed, while a
+ * non-empty closure intersection is only an affected run, never proof that a
+ * complete certification can be reused. Callers still need fresh affected
+ * evidence and a fresh aggregate receipt.
+ */
+export function classifyDependencyImpact(input: DependencyImpactInput): DependencyImpactResult {
+  const changed = validated(input.changed);
+  const closure = validated(input.closure);
+  const changedKeys = Object.freeze(changed.map(dependency => dependency.key));
+  const closureKeys = new Set(closure.map(dependency => dependency.key));
+  const unknownKeys = [...new Set(input.unknownKeys ?? [])].sort();
+  const fullGateKeys = new Set(input.fullGateKeys ?? []);
+  const fullGateChangedKeys = changedKeys.filter(key => fullGateKeys.has(key));
+  const affectedKeys = Object.freeze(changedKeys.filter(key => closureKeys.has(key)));
+  const reasonCodes: string[] = [];
+  if (unknownKeys.length > 0) reasonCodes.push("IMPACT_UNKNOWN_INPUT");
+  if (fullGateChangedKeys.length > 0) reasonCodes.push("IMPACT_FULL_GATE_INPUT");
+  if (affectedKeys.length > 0) reasonCodes.push("IMPACT_CLOSURE_INTERSECTION");
+  if (reasonCodes.length > 0 && unknownKeys.length > 0 || fullGateChangedKeys.length > 0) {
+    return Object.freeze({ impact: "full-gate", changedKeys, affectedKeys, reasonCodes: Object.freeze(reasonCodes) });
+  }
+  return Object.freeze({
+    impact: affectedKeys.length === 0 ? "unaffected" : "affected",
+    changedKeys,
+    affectedKeys,
+    reasonCodes: Object.freeze(reasonCodes),
+  });
+}

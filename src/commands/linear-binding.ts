@@ -2,7 +2,7 @@ import { deriveLinearBindingDeclaration, LinearBindingError, type LinearBindingA
 export { LinearBindingError, type LinearBindingAuthority, type OwningModel } from "../graph/linear-binding.ts";
 import { createHash, randomUUID } from "node:crypto";
 import { constants } from "node:fs";
-import { link, lstat, mkdir, open, realpath, readdir, rename, unlink } from "node:fs/promises";
+import { link, lstat, mkdir, open, readFile, realpath, readdir, rename, unlink } from "node:fs/promises";
 import { dirname, parse, resolve, sep } from "node:path";
 import { canonicalDigest, canonicalJson } from "../core/canonical.ts";
 import { canonicalQuadDigest, canonicalQuadLine, parseStrictNQuads, type Quad } from "../graph/nquads.ts";
@@ -147,7 +147,28 @@ function derivePacket(graph: SemanticGraph, authority: LinearBindingAuthority): 
   if (packet.realisationStage.completion.verified !== true && packet.eligibility.construction.eligible !== true) refuse("LINEAR_BINDING_WORK_INACTIVE");
   return packet;
 }
-function promptFor(packet: WorkPacket, fixedPrompt: string): string {
+async function writeSetContext(repositoryRoot: string, packet: WorkPacket): Promise<readonly Readonly<{ path: string; encoding: "utf8" | "base64"; content: string | null }>[]> {
+  const basis = packet.realisationBasis;
+  if (basis === undefined) refuse("LINEAR_BINDING_BASIS_NONCURRENT");
+  const entries = await Promise.all([...packet.writeSet].sort().map(async (path) => {
+    const expectedDigest = basis.scope.preimages[path];
+    try {
+      const bytes = await readFile(resolve(repositoryRoot, path));
+      if (typeof expectedDigest !== "string" || sha256Bytes(bytes) !== expectedDigest) refuse("LINEAR_BINDING_BASIS_NONCURRENT");
+      const text = bytes.toString("utf8");
+      if (Buffer.from(text, "utf8").equals(bytes)) return Object.freeze({ path, encoding: "utf8" as const, content: text });
+      return Object.freeze({ path, encoding: "base64" as const, content: bytes.toString("base64") });
+    } catch (error) {
+      if (error instanceof LinearBindingError) throw error;
+      if ((error as NodeJS.ErrnoException).code === "ENOENT" && expectedDigest === undefined) {
+        return Object.freeze({ path, encoding: "utf8" as const, content: null });
+      }
+      refuse("LINEAR_BINDING_BASIS_NONCURRENT");
+    }
+  }));
+  return Object.freeze(entries);
+}
+async function promptFor(repositoryRoot: string, packet: WorkPacket, fixedPrompt: string, includeWriteSetContext: boolean): Promise<string> {
   return canonicalJson({
     fixedPrompt,
     objective: packet.objective,
@@ -157,9 +178,14 @@ function promptFor(packet: WorkPacket, fixedPrompt: string): string {
     validationPlan: packet.validationPlan,
     proofObligations: packet.proofObligations,
     constraints: packet.constraints,
+    ...(includeWriteSetContext ? { writeSetContext: await writeSetContext(repositoryRoot, packet) } : {}),
+    ...(includeWriteSetContext ? { writeSetContextResponseContract: "The writeSetContext above is input bytes, not a request to summarize. Emit only one JSON object with an operations array; emit no Markdown, prose, code fence or fileOperations key. Every operation must use kind replace, an exact unique oldText copied from writeSetContext, and the smallest safe newText. If no safe exact operation can be specified, emit {\\\"operations\\\":[]} and nothing else." } : {}),
   }, { rejectAbsolutePaths: true });
 }
-function records(authority: LinearBindingAuthority, packet: WorkPacket, bindingManifestPath: string): { unit: BoundSemanticWorkUnit; attempt: LinearAttemptRecord } {
+function sha256Bytes(bytes: Buffer): `sha256:${string}` {
+  return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+}
+async function records(repositoryRoot: string, authority: LinearBindingAuthority, packet: WorkPacket, bindingManifestPath: string): Promise<{ unit: BoundSemanticWorkUnit; attempt: LinearAttemptRecord }> {
   const basis = packet.realisationBasis!;
   const intentKey = canonicalDigest({
     locator: authority.locator,
@@ -173,7 +199,10 @@ function records(authority: LinearBindingAuthority, packet: WorkPacket, bindingM
   });
   const attemptKey = canonicalDigest({ intentKey, basisDigest: basis.basisDigest, scopedDependencyDigest: packet.scopedDependencyDigest });
   const unitIri = `urn:usf:work-unit:${attemptKey}`;
-  const prompt = promptFor(packet, authority.fixedPrompt);
+  // Existing bindings with small prompt budgets retain their historical
+  // metadata-only prompt. A source-writing binding opts into authenticated
+  // write-set context by provisioning enough budget for the bounded bytes.
+  const prompt = await promptFor(repositoryRoot, packet, authority.fixedPrompt, authority.maximumPromptTokens >= 100_000);
   if (Buffer.byteLength(prompt, "utf8") > authority.maximumPromptTokens) refuse("LINEAR_BINDING_PROMPT_POLICY_INVALID");
   const unit: BoundSemanticWorkUnit = Object.freeze({
     schema: "urn:usf:bound-semantic-work-unit:1",
@@ -399,7 +428,7 @@ async function freshlyDerived(selector: LinearBindingSelector): Promise<Prepared
   const authority = deriveLinearBindingDeclaration(bindingGraph, selector.bindingIri);
   const workGraph = loadSemanticGraph(repositoryRoot, authority.targetManifest);
   const packet = derivePacket(workGraph, authority);
-  const { unit, attempt } = records(authority, packet, selector.manifestPath);
+  const { unit, attempt } = await records(repositoryRoot, authority, packet, selector.manifestPath);
   const unitPath = `.usf/work/${unit.attemptKey.slice(7)}.nq`;
   const attemptPath = `.usf/work/linear/${unit.intentKey.slice(7)}/${unit.attemptKey.slice(7)}.json`;
   return Object.freeze({ selector: Object.freeze({ ...selector, repositoryRoot }), authority, basis: packet.realisationBasis!, unit, attempt, unitPath, attemptPath });

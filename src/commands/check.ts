@@ -244,9 +244,10 @@ function strictNodeTestPaths(command: readonly string[]): readonly string[] | nu
   if (command.length < 4 || command.length > 12 || command.some((argument) => argument.length === 0)
     || command[0] !== "node" || command[1] !== "--test" || command[2] !== "--test-isolation=none"
     || command.some(permissionAffectingNodeArgument)) return null;
-  const optionalNamePattern = command[3]?.startsWith("--test-name-pattern=") === true ? command[3] : undefined;
+  const namePatternIndex = 3;
+  const optionalNamePattern = command[namePatternIndex]?.startsWith("--test-name-pattern=") === true ? command[namePatternIndex] : undefined;
   if (optionalNamePattern !== undefined && !/^--test-name-pattern=[A-Za-z0-9._-]+$/u.test(optionalNamePattern)) return null;
-  const tests = command.slice(optionalNamePattern === undefined ? 3 : 4);
+  const tests = command.slice(optionalNamePattern === undefined ? namePatternIndex : namePatternIndex + 1);
   if (tests.length < 1 || tests.length > 8 || new Set(tests).size !== tests.length
     || tests.some((path) => !path.endsWith(".test.ts") || path.split("/").some((segment) => segment.length === 0 || segment === "." || segment === ".." || !/^[A-Za-z0-9._-]+$/u.test(segment)))) return null;
   return tests;

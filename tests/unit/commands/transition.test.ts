@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { resolveCommandHandler } from "../../../src/commands/resolve.ts";
-import { inspectTransition, transitionAdaptersForCoverage, loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
+import { inspectTransition as inspectTransitionUncached, transitionAdaptersForCoverage, loadTransitionContextGraph, observationCommandHandler, parseTransitionInterrogation, validateLocalObservationRoles, inspectObservationTransition, observationTransitionAdapters, deriveTransitionSchemaResult, transitionCommandHandler } from "../../../src/commands/transition.ts";
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, symlinkSync, lstatSync, readlinkSync, realpathSync, cpSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
@@ -251,7 +251,7 @@ test("binding proof and publication dispatch derive native work and target witho
     };
     for (const [command, mode] of [["prove completion", undefined], ["publish work-completion", "verify"]] as const) {
       const input = mode === undefined ? selection : { ...selection, mode };
-      const inspected = inspectTransition(loadTransitionContextGraph(root, selection), selection, command);
+      const inspected = cachedInspectTransition(loadTransitionContextGraph(root, selection), selection, command);
       assert.equal(inspected.context.work, nativeSelection.rootIdentity);
       assert.equal(inspected.context.binding?.targetManifest, nativeSelection.manifestPath);
       assert.equal(inspected.validator.validate(input).valid, true);
@@ -279,20 +279,43 @@ test("binding proof and publication dispatch derive native work and target witho
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
+const descriptorFixtureRoot = fileURLToPath(new URL("../../../", import.meta.url));
+const descriptorInspectionCache = new Map<string, ReturnType<typeof inspectTransitionUncached>>();
+
+function cachedInspectTransition(graph: SemanticGraph, selection: { readonly rootIdentity: string; readonly manifestPath: string }, commandPath: string) {
+  // Only the canonical synthetic fixture is safe to memoize here. External
+  // test roots intentionally mutate schema files to prove currentness, while
+  // production-loaded graphs carry a trusted semantic digest and stay uncached.
+  if (graph.semanticDigest !== "untrusted" || graph.repositoryRoot !== descriptorFixtureRoot) {
+    return inspectTransitionUncached(graph, selection, commandPath);
+  }
+  const key = canonicalDigest({ commandPath, selection, quads: graph.quads });
+  const cached = descriptorInspectionCache.get(key);
+  if (cached !== undefined) return cached;
+  const inspected = inspectTransitionUncached(graph, selection, commandPath);
+  descriptorInspectionCache.set(key, inspected);
+  return inspected;
+}
+
+let actualDescriptorGraphCache: SemanticGraph | undefined;
+
 function actualDescriptorGraph(): SemanticGraph {
-  const quads = ["cli-schema-primitives","cli-command-mode-schema","cli-inventory","cli-parser-coverage-schema","cli-parallel-safety-schema","cli-operational-support-schema","cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
-  quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
-  quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
-  const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1", "urn:usf:schema:completion-proof-bundle:1", "urn:usf:schema:work-completion-publication-result:1", "urn:usf:schema:work-completion-publication-receipt:1", "urn:usf:command:prove-completion:1", "urn:usf:command:publish-work-completion:1"]);
-  quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/profile-authority.nq", import.meta.url), "utf8"), "urn:usf:graph:profile-authority").filter(q => selected.has(q.subject)));
-  return { quads, manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [] }, semanticDigest: "untrusted", graphDigests: {}, sourceDigests: {}, repositoryRoot: fileURLToPath(new URL("../../../", import.meta.url)) };
+  if (actualDescriptorGraphCache === undefined) {
+    const quads = ["cli-schema-primitives","cli-command-mode-schema","cli-inventory","cli-parser-coverage-schema","cli-parallel-safety-schema","cli-operational-support-schema","cli-transition-definition","cli-transition-record-specifications","cli-transition-field-specifications","cli-transition-completion-field-specifications"].flatMap(name => parseStrictNQuads(readFileSync(new URL("../../../graph/" + name + ".nq", import.meta.url), "utf8"), "urn:usf:graph:" + name));
+    quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/check-execution-intent.nq", import.meta.url), "utf8"), "urn:usf:graph:check-execution-intent"));
+    quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/v3-convention.nq", import.meta.url), "utf8"), "urn:usf:graph:v3-convention"));
+    const selected = new Set(["urn:usf:schema:no-change-realisation-result:1", "urn:usf:schema:completion-evidence-candidate:1", "urn:usf:command:realise-no-change:1", "urn:usf:schema:completion-proof-bundle:1", "urn:usf:schema:work-completion-publication-result:1", "urn:usf:schema:work-completion-publication-receipt:1", "urn:usf:command:prove-completion:1", "urn:usf:command:publish-work-completion:1"]);
+    quads.push(...parseStrictNQuads(readFileSync(new URL("../../../graph/profile-authority.nq", import.meta.url), "utf8"), "urn:usf:graph:profile-authority").filter(q => selected.has(q.subject)));
+    actualDescriptorGraphCache = { quads, manifest: { schema: "urn:usf:graph-manifest:2", version: 2, imports: [], sources: [] }, semanticDigest: "untrusted", graphDigests: {}, sourceDigests: {}, repositoryRoot: fileURLToPath(new URL("../../../", import.meta.url)) };
+  }
+  return structuredClone(actualDescriptorGraphCache);
 }
 
 test("proof and publication map exact root-derived contracts without satisfying prerequisites by declaration", () => {
   const graph = actualDescriptorGraph();
   const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
   for (const [command, stage, prerequisite] of [["prove completion", "proof", "evidence"], ["publish work-completion", "publication", "proof"]] as const) {
-    const inspected = inspectTransition(graph, selection, command);
+    const inspected = cachedInspectTransition(graph, selection, command);
     const identity = `urn:usf:cli-transition:completion-${stage}:1`;
     assert.equal(inspected.transitionIdentity, identity);
     assert.deepEqual(inspected.descriptor.prerequisites, [`urn:usf:cli-transition:completion-${prerequisite}:1`]);
@@ -339,7 +362,7 @@ test("proof publication mappings refuse changed prerequisites rule roles schema 
     ];
     for (const [index, mutate] of mutations.entries()) {
       const graph = actualDescriptorGraph(); mutate(graph);
-      assert.throws(() => inspectTransition(graph, selection, command), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+      assert.throws(() => cachedInspectTransition(graph, selection, command), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
       const report = deriveCliTransitionCoverage(graph, selection, { complete: false, leaves: [] }, transitionAdaptersForCoverage());
       assert(report.diagnostics.some(d => d.subject === identity && d.field === "adapter" && d.reasonCode === "CLI_TRANSITION_UNIMPLEMENTED"), JSON.stringify({ command, mutation: index, diagnostics: report.diagnostics.filter(d => d.subject === identity || d.subject.includes("completion-")) }));
       assert.equal(report.executionAuthority, "none"); assert.equal(report.parallelSafety.state, "unproven");
@@ -747,7 +770,7 @@ test("generated no-change request and recovery cases reject opaque or caller-der
 test("generic no-change admission separates result and artifact while observation callers refuse", async () => {
   const graph = actualDescriptorGraph();
   const selection = { rootIdentity: "urn:usf:work:cli-transition-definition", manifestPath: "graph/manifests/cli-transition-definition.json" };
-  const admitted = inspectTransition(graph, selection, "realise no-change");
+  const admitted = cachedInspectTransition(graph, selection, "realise no-change");
   assert.equal(admitted.descriptor.resultSchema, "urn:usf:schema:no-change-realisation-result:1");
   assert.equal((admitted.descriptor.produces as Record<string, unknown>[])[0]!.schema, "urn:usf:schema:no-change-workspace-manifest:1");
   assert.equal(admitted.validator.validate(selection).valid, true);
@@ -777,7 +800,7 @@ test("result schema admission refuses unsafe files and malformed schemas without
     cpSync(fileURLToPath(new URL("../../../schemas", import.meta.url)), join(root, "schemas"), { recursive: true });
     const path = join(root, "schemas/no-change-realisation-result.schema.json");
     const graph = { ...actualDescriptorGraph(), repositoryRoot: root };
-    const inspect = () => inspectTransition(graph, selection, "realise no-change");
+    const inspect = () => cachedInspectTransition(graph, selection, "realise no-change");
     writeFileSync(path, original);
     assert.doesNotThrow(inspect, "valid file must reach admission in the same fixture");
     rmSync(path);
@@ -821,7 +844,7 @@ test("selective check input is root-only and admits the exact shared native-inte
 
   const graph = actualDescriptorGraph();
   const selection = { rootIdentity: input.rootIdentity, manifestPath: input.manifestPath };
-  const admitted = inspectTransition(graph, selection, "check");
+  const admitted = cachedInspectTransition(graph, selection, "check");
   assert.equal(admitted.implementation.effectClass, "check-receipt-persistence");
   assert.equal(admitted.validator.validate(input).valid, true);
   assert.deepEqual(admitted.readResultSchema(), {
@@ -833,12 +856,12 @@ test("selective check input is root-only and admits the exact shared native-inte
   const admissionRemoved = structuredClone(graph);
   admissionRemoved.quads = admissionRemoved.quads.filter(q => !(q.subject === "urn:usf:contract:cli-transition-definition:1"
     && q.predicate === "urn:usf:predicate:admitsEffectAdapter" && q.object === "urn:usf:cli-adapter:completion-check-receipts:1"));
-  assert.throws(() => inspectTransition(admissionRemoved, selection, "check"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  assert.throws(() => cachedInspectTransition(admissionRemoved, selection, "check"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
 
   const movedIntent = structuredClone(graph);
   const intent = movedIntent.quads.find(q => q.subject === "urn:usf:rule:completion-check-receipts-execution-intent:1" && q.predicate === "urn:usf:predicate:text")!;
   intent.object += " changed";
-  assert.throws(() => inspectTransition(movedIntent, selection, "check"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+  assert.throws(() => cachedInspectTransition(movedIntent, selection, "check"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
 
 });
 
@@ -876,7 +899,7 @@ test("no-change compatibility refuses changed effect recovery and result binding
     const rows = graph.quads.filter(q => q.subject === subject && q.predicate === "urn:usf:predicate:" + predicate);
     assert(rows.length > 0, subject + "/" + predicate);
     for (const row of rows) row.object = object!;
-    assert.throws(() => inspectTransition(graph, selection, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" }, subject + "/" + predicate);
+    assert.throws(() => cachedInspectTransition(graph, selection, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" }, subject + "/" + predicate);
   }
   const root = mkdtempSync(join(tmpdir(), "usf-no-change-result-schema-"));
   try {
@@ -885,7 +908,7 @@ test("no-change compatibility refuses changed effect recovery and result binding
     const original = JSON.parse(readFileSync(new URL("../../../schemas/no-change-realisation-result.schema.json", import.meta.url), "utf8"));
     writeFileSync(path, JSON.stringify({ ...original, $id: "urn:test:wrong-result" }));
     const graph = { ...actualDescriptorGraph(), repositoryRoot: root };
-    assert.throws(() => inspectTransition(graph, selection, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
+    assert.throws(() => cachedInspectTransition(graph, selection, "realise no-change"), { code: "CLI_TRANSITION_UNIMPLEMENTED" });
     assert.deepEqual(readdirSync(root), ["schemas"]);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
