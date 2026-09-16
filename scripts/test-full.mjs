@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
-import { closeSync, globSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync, writeSync } from "node:fs";
+import { closeSync, constants, fstatSync, globSync, lstatSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync, writeSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { createGateChildOwner } from "./full-gate-children.ts";
 import { acquireFullGateLock } from "./full-gate-lock.ts";
-import { runCompletionCohort } from "./completion-throughput.ts";
+import {
+  completionSourceIdentity, createGateTelemetry, fullGateHelp, parseFullGateOptions,
+  producerCase, readCompletionResources, recoveryAdmission, recoveryCases,
+  runCompletionBenchmark, runCompletionCohort,
+} from "./completion-throughput.ts";
 
 const repositoryRoot = process.cwd();
 const usf = resolve(repositoryRoot, "bin/usf");
@@ -66,6 +70,9 @@ const maxBuffer = 16 * 1024 * 1024;
 let retainedLog = null;
 let releaseFullGateLock;
 let gateChildren;
+let gateTelemetry;
+let actualOrdinaryWorkers;
+const pendingSeedCleanups = [];
 const childResults = [];
 const fixtureCheckResults = [];
 const phaseDurations = [];
@@ -98,12 +105,13 @@ function progress(phase, details = {}) {
 }
 
 function beginRetention(mode) {
-  const directory = resolve(repositoryRoot, ".usf/logs/full-gate");
+  const relativeDirectory = mode === "--benchmark-workers" ? ".usf/logs/full-gate-benchmarks" : ".usf/logs/full-gate";
+  const directory = resolve(repositoryRoot, relativeDirectory);
   mkdirSync(directory, { recursive: true, mode: 0o700 });
   const runId = `${new Date().toISOString().replaceAll(/[^0-9A-Za-z]/gu, "")}-${process.pid}`;
   const logPath = resolve(directory, `${runId}.log`);
   const reportPath = resolve(directory, `${runId}.json`);
-  return Object.freeze({ mode, runId, logPath, reportPath, handle: openSync(logPath, "wx", 0o600) });
+  return Object.freeze({ mode, runId, relativeDirectory, logPath, reportPath, handle: openSync(logPath, "wx", 0o600) });
 }
 
 function finishRetention(retention, terminal) {
@@ -114,9 +122,9 @@ function finishRetention(retention, terminal) {
   const report = Object.freeze({
     ...terminal,
     runId: retention.runId,
-    logPath: `.usf/logs/full-gate/${retention.runId}.log`,
+    logPath: `${retention.relativeDirectory}/${retention.runId}.log`,
     logDigest: digest(rawLog),
-    nonClaims: Object.freeze(["semantic-completion", "publication", "deployment"]),
+    nonClaims: Object.freeze(["semantic-completion", "publication", "deployment", ...(terminal.certification === false ? ["certification", "native-validation", "global-optimum"] : [])]),
   });
   const withDigest = Object.freeze({ ...report, resultDigest: digest(JSON.stringify(report)) });
   const pending = `${retention.reportPath}.pending`;
@@ -124,7 +132,7 @@ function finishRetention(retention, terminal) {
   writeFileSync(pending, bytes, { flag: "wx", mode: 0o600 });
   renameSync(pending, retention.reportPath);
   if (readFileSync(retention.reportPath, "utf8") !== bytes) throw new GateError("FULL_GATE_RESULT_NOT_RETAINED");
-  process.stdout.write(`${JSON.stringify({ schema: "urn:usf:full-gate-retention:1", reportPath: `.usf/logs/full-gate/${retention.runId}.json`, resultDigest: withDigest.resultDigest })}\n`);
+  process.stdout.write(`${JSON.stringify({ schema: terminal.certification === false ? "urn:usf:full-gate-benchmark-retention:1" : "urn:usf:full-gate-retention:1", reportPath: `${retention.relativeDirectory}/${retention.runId}.json`, resultDigest: withDigest.resultDigest })}\n`);
 }
 
 class GateError extends Error {
@@ -167,15 +175,17 @@ function ordinaryTests() {
   return Object.freeze(ordinary);
 }
 
-async function runTestChild(arguments_, label) {
+async function runTestChild(arguments_, label, metadata = {}) {
   const started = performance.now();
   const child = gateChildren.spawn(process.execPath, arguments_, { cwd: repositoryRoot, stdio: childStdio() });
+  gateTelemetry?.track(child, label);
   child.stdout.on("data", (chunk) => observedWrite(process.stdout, chunk));
   child.stderr.on("data", (chunk) => observedWrite(process.stderr, chunk));
   let launchError;
   const result = await new Promise((accept) => {
     child.once("error", error => { launchError = error.code ?? error.name; });
-    child.once("close", (code, signal) => accept({
+      child.once("close", (code, signal) => accept({
+        ...metadata,
       label, pid: child.pid, exitCode: code ?? 1, signal,
       elapsedMilliseconds: Math.round(performance.now() - started),
       ...(launchError === undefined ? {} : { launchError }),
@@ -264,14 +274,160 @@ function assertActiveConstruction(work) {
   }
 }
 
-async function runOrdinaryTests(paths) {
+function benchmarkInventory(paths) {
+  return paths.filter(path => path !== completionTest);
+}
+
+function assertBenchmarkCoverage(benchmark, ordinary) {
+  const rounds = benchmark?.rounds;
+  const results = benchmark?.results;
+  if (benchmark?.certification !== false || benchmark.producerSelection !== "genuine-witness-only"
+    || benchmark.ordinaryInventoryIncluded !== true || !Array.isArray(results)
+    || !Array.isArray(rounds) || rounds.length < 1 || rounds.length > 2
+    || !/^[0-9a-f]{64}$/u.test(benchmark.seed?.sourceFingerprint ?? "")
+    || benchmark.recommendedOrdinaryWorkers !== 4
+    || ![2, 3].includes(benchmark.recommendedRecoveryWorkers)) {
+    fail("FULL_GATE_BENCHMARK_COVERAGE_INVALID");
+  }
+  const passedNames = result => {
+    const passed = sortedStrings(result?.passed);
+    if (result?.exitCode !== 0 || passed === null) fail("FULL_GATE_BENCHMARK_CHILD_INVALID");
+    return passed;
+  };
+  const expectedAggregate = [producerCase];
+  let expectedChildren = 1;
+  for (const [index, round] of rounds.entries()) {
+    const workers = index === 0 ? 2 : 3;
+    if (round?.workers !== workers || round.ordinaryWorkers !== 4
+      || !Array.isArray(round.results) || round.results.length !== workers
+      || round.ordinary?.exitCode !== 0 || round.ordinary.concurrency !== 4
+      || round.ordinary.ordinaryInventoryDigest !== digest(JSON.stringify(ordinary))) {
+      fail("FULL_GATE_BENCHMARK_ROUND_INVALID", { round: index });
+    }
+    if (!equalStrings(round.results.flatMap(passedNames).sort(), [...recoveryCases].sort())) {
+      fail("FULL_GATE_BENCHMARK_RECOVERY_COVERAGE_INVALID", { round: index });
+    }
+    expectedAggregate.push(...recoveryCases);
+    expectedChildren += workers;
+  }
+  if (results.length !== expectedChildren
+    || !equalStrings(results.flatMap(passedNames).sort(), expectedAggregate.sort())
+    || results.filter(result => equalStrings(passedNames(result), [producerCase])).length !== 1) {
+    fail("FULL_GATE_BENCHMARK_PRODUCER_COVERAGE_INVALID");
+  }
+  if (benchmark.recommendedRecoveryWorkers > 2) {
+    const observation = benchmark.finalistObservation;
+    if (rounds.length !== 2 || observation?.complete !== true || observation.ordinaryWorkers !== 4
+      || !Number.isFinite(observation.ordinaryPeakBytes) || observation.ordinaryPeakBytes <= 0
+      || !Number.isFinite(observation.recoveryPeakBytes) || observation.recoveryPeakBytes <= 0
+      || benchmark.finalistRecommendationAdmission?.admitted !== true
+      || benchmark.finalistRecommendationAdmission.workers !== 3
+      || benchmark.finalistRecommendationAdmission.ordinaryWorkers !== 4) {
+      fail("FULL_GATE_BENCHMARK_FINALIST_TELEMETRY_INCOMPLETE");
+    }
+  }
+}
+
+function readPrivateBenchmarkFile(path) {
+  const directory = resolve(repositoryRoot, ".usf/logs/full-gate-benchmarks");
+  if (dirname(path) !== directory) fail("FULL_GATE_BENCHMARK_PATH_INVALID");
+  for (const parent of [resolve(repositoryRoot, ".usf"), resolve(repositoryRoot, ".usf/logs"), directory]) {
+    const stat = lstatSync(parent);
+    if (!stat.isDirectory() || stat.isSymbolicLink() || (stat.mode & 0o022) !== 0
+      || stat.uid !== process.getuid?.()) fail("FULL_GATE_BENCHMARK_DIRECTORY_UNTRUSTED");
+  }
+  const selected = lstatSync(path);
+  if (!selected.isFile() || selected.nlink !== 1 || (selected.mode & 0o077) !== 0
+    || selected.uid !== process.getuid?.() || selected.size > maxBuffer) {
+    fail("FULL_GATE_BENCHMARK_FILE_UNTRUSTED");
+  }
+  const handle = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  try {
+    const stat = fstatSync(handle);
+    if (!stat.isFile() || stat.nlink !== 1 || (stat.mode & 0o077) !== 0
+      || stat.uid !== process.getuid?.() || stat.size > maxBuffer
+      || stat.dev !== selected.dev || stat.ino !== selected.ino) {
+      fail("FULL_GATE_BENCHMARK_FILE_UNTRUSTED");
+    }
+    const bytes = readFileSync(handle);
+    if (bytes.length !== stat.size) fail("FULL_GATE_BENCHMARK_FILE_CHANGED");
+    return bytes;
+  } finally {
+    closeSync(handle);
+  }
+}
+
+function loadBenchmarkRecommendation(options, paths) {
+  if (options.benchmarkReport === undefined) return null;
+  const report = JSON.parse(readPrivateBenchmarkFile(resolve(repositoryRoot, options.benchmarkReport)).toString("utf8"));
+  const { resultDigest, ...body } = report;
+  const ordinary = benchmarkInventory(paths);
+  const sourceIdentity = completionSourceIdentity(repositoryRoot, ordinary);
+  if (resultDigest !== digest(JSON.stringify(body))
+    || body.schema !== "urn:usf:full-gate-benchmark-result:1"
+    || body.status !== "passed" || body.exitCode !== 0 || body.certification !== false
+    || body.drainConfirmed !== true || body.sourceIdentity !== sourceIdentity
+    || !Array.isArray(body.ordinaryInventory) || !equalStrings(body.ordinaryInventory, ordinary)
+    || typeof body.logPath !== "string"
+    || body.logDigest !== digest(readPrivateBenchmarkFile(resolve(repositoryRoot, body.logPath)))) {
+    fail("FULL_GATE_BENCHMARK_REPORT_INVALID");
+  }
+  assertBenchmarkCoverage(body.benchmark, ordinary);
+  const benchmark = body.benchmark;
+  if (benchmark.sourceIdentity !== sourceIdentity
+    || options.ordinaryWorkers !== benchmark.recommendedOrdinaryWorkers
+    || options.recoveryWorkers !== benchmark.recommendedRecoveryWorkers) {
+    fail("FULL_GATE_BENCHMARK_RECOMMENDATION_MISMATCH");
+  }
+  const observation = options.recoveryWorkers > 2 ? benchmark.finalistObservation : benchmark.observation;
+  const admission = recoveryAdmission(readCompletionResources(), options.recoveryWorkers, options.ordinaryWorkers, observation);
+  if (!admission.admitted) fail("FULL_GATE_BENCHMARK_CURRENT_ADMISSION_REFUSED", { admission });
+  return { observation, sourceIdentity, seedFingerprint: benchmark.seed.sourceFingerprint, resultDigest };
+}
+
+async function cleanupCompletedSeeds() {
+  for (const cleanup of pendingSeedCleanups.splice(0)) await cleanup();
+}
+
+async function runOrdinaryTests(paths, options, recommendation) {
   const ordinary = paths.filter((path) => path !== completionTest);
-  const children = [runTestChild(["--test", "--test-concurrency=4", ...ordinary], "ordinary")];
+  const resources = readCompletionResources();
+  const cpuWorkers = resources.complete && Number.isFinite(resources.cpuCount)
+    ? Math.max(1, Math.floor(resources.cpuCount)) : 1;
+  actualOrdinaryWorkers = Math.min(options.ordinaryWorkers, cpuWorkers);
+  const parallelAdmission = recoveryAdmission(resources, 1, actualOrdinaryWorkers, recommendation?.observation);
+  if (!parallelAdmission.admitted) actualOrdinaryWorkers = 1;
+  if (recommendation !== null && actualOrdinaryWorkers !== options.ordinaryWorkers) {
+    fail("FULL_GATE_BENCHMARK_CURRENT_WORKERS_CHANGED", { requested: options.ordinaryWorkers, actual: actualOrdinaryWorkers });
+  }
+  progress("ordinary-admission", {
+    status: "admitted", requestedOrdinaryWorkers: options.ordinaryWorkers,
+    actualOrdinaryWorkers, concurrentCompletionLane: parallelAdmission.admitted,
+    requestedRecoveryWorkers: options.recoveryWorkers, resourceAdmission: parallelAdmission,
+  });
+  const ordinaryChild = runTestChild(["--test", `--test-concurrency=${actualOrdinaryWorkers}`, ...ordinary], "ordinary", {
+    concurrency: actualOrdinaryWorkers, ordinaryInventoryDigest: digest(JSON.stringify(ordinary)),
+  });
+  const children = [ordinaryChild];
+  if (!parallelAdmission.admitted) {
+    const result = await ordinaryChild;
+    if (result.exitCode !== 0) fail("ORDINARY_TESTS_FAILED", { results: [result] });
+  }
   if (paths.includes(completionTest)) {
     children.push(runCompletionCohort({
       repositoryRoot,
       childOwner: gateChildren,
       lockDescriptor: releaseFullGateLock?.descriptor,
+      recoveryWorkers: options.recoveryWorkers,
+      ordinaryWorkers: actualOrdinaryWorkers,
+      telemetry: gateTelemetry,
+      deferCleanup: cleanup => pendingSeedCleanups.push(cleanup),
+      sourceIdentity: () => completionSourceIdentity(repositoryRoot, ordinary),
+      ...(recommendation === null ? {} : {
+        admissionObservation: recommendation.observation,
+        expectedSeedFingerprint: recommendation.seedFingerprint,
+        expectedSourceIdentity: recommendation.sourceIdentity,
+      }),
       onOutput: (channel, bytes) => observedWrite(channel === "stdout" ? process.stdout : process.stderr, bytes),
       onEvent: event => observedJson({ schema: "urn:usf:full-gate-completion-progress:1", ...event }),
     }).then(result => { childResults.push(result); return result; }).catch(error => {
@@ -362,7 +518,71 @@ async function runFixtureChecks(candidate) {
   if (failures.length > 0) fail("FIXTURE_PROCESS_CHECKS_FAILED", { failures });
 }
 
-function plan(paths, work) {
+async function runWorkerBenchmark(paths, options) {
+  if (!paths.includes(completionTest)) fail("FULL_GATE_COMPLETION_TEST_MISSING");
+  const ordinary = benchmarkInventory(paths);
+  const sourceIdentity = completionSourceIdentity(repositoryRoot, ordinary);
+  const retention = beginRetention(options.mode);
+  retainedLog = retention;
+  const started = performance.now();
+  const startedAt = new Date().toISOString();
+  let benchmark = null;
+  let failure = null;
+  let drainConfirmed = false;
+  try {
+    progress("worker-benchmark", { status: "started", certification: false, ordinaryTestCount: ordinary.length });
+    benchmark = await runCompletionBenchmark({
+      repositoryRoot,
+      childOwner: gateChildren,
+      lockDescriptor: releaseFullGateLock?.descriptor,
+      ordinaryWorkers: 4,
+      budgetMilliseconds: options.budgetMilliseconds,
+      telemetry: gateTelemetry,
+      deferCleanup: cleanup => pendingSeedCleanups.push(cleanup),
+      sourceIdentity: () => completionSourceIdentity(repositoryRoot, ordinary),
+      runOrdinaryRound: (workers, label) => runTestChild(["--test", `--test-concurrency=${workers}`, ...ordinary], label, {
+        concurrency: workers, ordinaryInventoryDigest: digest(JSON.stringify(ordinary)),
+      }),
+      onOutput: (channel, bytes) => observedWrite(channel === "stdout" ? process.stdout : process.stderr, bytes),
+      onEvent: event => observedJson({ schema: "urn:usf:full-gate-completion-progress:1", ...event }),
+    });
+    assertBenchmarkCoverage(benchmark, ordinary);
+    if (benchmark.sourceIdentity !== sourceIdentity) fail("FULL_GATE_BENCHMARK_SOURCE_CHANGED");
+    progress("worker-benchmark", { status: "passed", certification: false });
+  } catch (error) {
+    progress("worker-benchmark", { status: "failed", certification: false });
+    failure = {
+      reasonCode: error?.code ?? "FULL_GATE_BENCHMARK_FAILED",
+      ...(error instanceof GateError ? error.details : {}),
+      diagnostic: String(error),
+      ...(error?.results === undefined ? {} : { partialResults: error.results }),
+      ...(error?.rounds === undefined ? {} : { partialRounds: error.rounds }),
+      ...(error?.seed === undefined ? {} : { seed: error.seed }),
+      ...(error?.stopReason === undefined ? {} : { stopReason: error.stopReason }),
+    };
+  }
+  try {
+    await gateChildren.close();
+    drainConfirmed = true;
+    if (failure === null && completionSourceIdentity(repositoryRoot, ordinary) !== sourceIdentity) {
+      fail("FULL_GATE_BENCHMARK_SOURCE_CHANGED");
+    }
+    if (failure === null) await cleanupCompletedSeeds();
+  } catch (error) {
+    failure = { reasonCode: error?.code ?? (drainConfirmed ? "FULL_GATE_SEED_CLEANUP_FAILED" : "FULL_GATE_TREE_DRAIN_UNCONFIRMED") };
+  }
+  finishRetention(retention, {
+    schema: "urn:usf:full-gate-benchmark-result:1", certification: false,
+    status: failure === null ? "passed" : "failed", exitCode: failure === null ? 0 : 1,
+    mode: options.mode, startedAt, completedAt: new Date().toISOString(),
+    elapsedMilliseconds: Math.round(performance.now() - started),
+    sourceIdentity, ordinaryInventory: ordinary, drainConfirmed,
+    benchmark, childResults, phaseDurations, telemetry: gateTelemetry.report(), ...(failure ?? {}),
+  });
+  if (failure !== null) process.exitCode = 1;
+}
+
+function plan(paths, work, options) {
   const authorityReady = work.construction?.eligible === true
     && work.construction?.authority === "active-permission"
     && work.construction?.maximumThrough === "integrate"
@@ -375,8 +595,10 @@ function plan(paths, work) {
     ordinaryTestCount: paths.length,
     directFixtureTestExcluded: specialTest,
     serialTests,
-    ordinaryConcurrency: 4,
-    completionRecoveryMaximumProcesses: 2,
+    ordinaryConcurrency: options.ordinaryWorkers,
+    completionRecoveryMaximumProcesses: options.recoveryWorkers,
+    workerCountsAreRequests: true,
+    workerAdmission: "fresh-effective-resources-before-launch",
     completionSeedPreparation: "genuine-producer-witness-once",
     serialConcurrency: 1,
     selection,
@@ -387,17 +609,37 @@ function plan(paths, work) {
   });
 }
 
-try {
-  const mode = process.argv[2] ?? "--all";
-  if (!["--all", "--plan", "--fixtures-only"].includes(mode) || process.argv.length > 3) {
-    fail("FULL_GATE_ARGUMENTS_INVALID", { accepted: ["--plan", "--fixtures-only"] });
+async function main() {
+  let options;
+  try {
+    options = parseFullGateOptions(process.argv.slice(2));
+  } catch (error) {
+    fail("FULL_GATE_ARGUMENTS_INVALID", { diagnostic: String(error) });
   }
+  const mode = options.mode;
+  if (mode === "--help") {
+    process.stdout.write(`${fullGateHelp()}\n`);
+    return;
+  }
+  if (mode === "--benchmark-workers" && options.ordinaryWorkers !== 4) {
+    fail("FULL_GATE_ARGUMENTS_INVALID", { diagnostic: "Benchmark ordinary inventory runs at exactly four workers." });
+  }
+  if (mode !== "--benchmark-workers" && (options.ordinaryWorkers > 4 || options.recoveryWorkers > 2)
+    && options.benchmarkReport === undefined) {
+    fail("FULL_GATE_BENCHMARK_REPORT_REQUIRED");
+  }
+  const paths = ordinaryTests();
+  const recommendation = loadBenchmarkRecommendation(options, paths);
   gateChildren = createGateChildOwner();
   if (mode !== "--plan") releaseFullGateLock = acquireFullGateLock(repositoryRoot);
-  const paths = ordinaryTests();
+  if (mode !== "--plan") gateTelemetry = createGateTelemetry();
+  if (mode === "--benchmark-workers") {
+    await runWorkerBenchmark(paths, options);
+    return;
+  }
   const work = await currentFixtureWork();
   if (mode === "--plan") {
-    process.stdout.write(`${JSON.stringify(plan(paths, work), null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify(plan(paths, work, options), null, 2)}\n`);
   } else {
     const startedAt = new Date().toISOString();
     const started = performance.now();
@@ -411,8 +653,8 @@ try {
       progress(phase, { status: "passed" });
       if (mode === "--all") {
         phase = "ordinary-tests";
-        progress(phase, { status: "started", ordinaryTestCount: paths.length, concurrency: 4 });
-        await runOrdinaryTests(paths);
+        progress(phase, { status: "started", ordinaryTestCount: paths.length, requestedConcurrency: options.ordinaryWorkers });
+        await runOrdinaryTests(paths, options, recommendation);
         progress(phase, { status: "passed", ordinaryTestCount: paths.length });
         phase = "serial-tests";
         progress(phase, { status: "started", serialTests, concurrency: 1 });
@@ -430,11 +672,14 @@ try {
         ? { reasonCode: error.code, ...error.details }
         : { reasonCode: gateChildren?.interrupted ? "FULL_GATE_INTERRUPTED" : "FULL_GATE_INTERNAL_ERROR" };
     }
+    let drainConfirmed = false;
     try {
       await gateChildren.close();
+      drainConfirmed = true;
+      if (failure === null) await cleanupCompletedSeeds();
     } catch {
-      failure = { reasonCode: "FULL_GATE_TREE_DRAIN_UNCONFIRMED" };
-      phase = "process-drain";
+      failure = { reasonCode: drainConfirmed ? "FULL_GATE_SEED_CLEANUP_FAILED" : "FULL_GATE_TREE_DRAIN_UNCONFIRMED" };
+      phase = drainConfirmed ? "seed-cleanup" : "process-drain";
     }
     const terminal = Object.freeze({
       schema: "urn:usf:full-gate-result:1",
@@ -452,11 +697,21 @@ try {
       childResults,
       fixtureCheckResults,
       phaseDurations,
+      requestedOrdinaryWorkers: options.ordinaryWorkers,
+      actualOrdinaryWorkers: actualOrdinaryWorkers ?? null,
+      requestedRecoveryWorkers: options.recoveryWorkers,
+      benchmarkRecommendationDigest: recommendation?.resultDigest ?? null,
+      drainConfirmed,
+      telemetry: gateTelemetry.report(),
       ...(failure ?? {}),
     });
     finishRetention(retention, terminal);
     if (failure !== null) process.exitCode = 1;
   }
+}
+
+try {
+  await main();
 } catch (error) {
   const failure = error instanceof GateError
     ? { schema: "urn:usf:full-gate-error:1", status: "failed", reasonCode: error.code, ...error.details }
@@ -476,6 +731,7 @@ try {
       })}\n`);
     } catch { /* closed diagnostics cannot clear the unresolved fence */ }
   } finally {
+    gateTelemetry?.stop();
     releaseFullGateLock?.();
   }
 }

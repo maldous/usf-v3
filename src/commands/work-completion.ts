@@ -42,6 +42,9 @@ import {
 } from "../realisation/index.ts";
 import {
   completionPublicationIntentDigest,
+  assessCompletionPublicationStart,
+  completionTerminalEvaluatorMatches,
+  completionTerminalArtifactMatches,
   createCompletionEvidenceCandidate,
   createCompletionProofBundle,
   createWorkCompletionPublicationReceipt,
@@ -1072,9 +1075,10 @@ export function evaluateCanonicalCompletionTerminal(root: string, request: Canon
     const authority = deriveNoChangeCompletionAuthority(graph, packet.id);
     const rule = graph.quads.filter(q => q.subject === evaluator);
     const ruleValues = (name: string) => rule.filter(q => q.predicate === predicate(name) && q.objectKind === "iri").map(q => q.object);
-    if (canonicalQuadDigest(rule) !== "sha256:b9c8fd3a8e648ecb1ddb6e1bbdca0d4e536ebfeffdfd8f204a38287370b0ea3d"
-      || canonicalJson(ruleValues("algorithm")) !== canonicalJson([authority.publicationAlgorithmIri])
-      || canonicalJson(ruleValues("publicationPolicy")) !== canonicalJson([authority.policy.iri])) {
+    if (!completionTerminalEvaluatorMatches({
+      digest: canonicalQuadDigest(rule), algorithms: ruleValues("algorithm"), policies: ruleValues("publicationPolicy"),
+      expectedAlgorithm: authority.publicationAlgorithmIri, expectedPolicy: authority.policy.iri,
+    })) {
       refuse("WORK_COMPLETION_TERMINAL_EVALUATOR_INVALID", "Terminal evaluator does not select the native publication authority.", exitCodes.CURRENTNESS_FAILURE);
     }
     const result = evaluateCurrentNoChangeCompletion(graph, { workIri: packet.id, profileIri: context.profile });
@@ -1097,9 +1101,13 @@ export function evaluateCanonicalCompletionTerminal(root: string, request: Canon
       const expected: Record<string, string> = { type: "urn:usf:type:CliArtifactContract",
         producer: "urn:usf:cli-transition:completion-publication:1", schema: authority.publicationReceiptSchemaIri,
         work: packet.id, profile: context.profile, proofObligation: packet.realisationAuthority!.completionProofObligation! };
-      if (canonicalQuadDigest(artifactRows) !== "sha256:d09e7915796bd640dda4332327d2f26710358a0088fa742b085c4314786f5981"
-        || Object.entries(expected).some(([name, value]) => canonicalJson(artifactRows.filter(q => q.predicate === predicate(name) && q.objectKind === "iri").map(q => q.object)) !== canonicalJson([value]))
-        || canonicalJson(graph.quads.filter(q => q.subject === expected.producer && q.predicate === predicate("produces") && q.objectKind === "iri").map(q => q.object)) !== canonicalJson(declarations)) {
+      if (!completionTerminalArtifactMatches({
+        digest: canonicalQuadDigest(artifactRows), declarations, expected,
+        values: Object.fromEntries(Object.keys(expected).map(name => [name,
+          artifactRows.filter(q => q.predicate === predicate(name) && q.objectKind === "iri").map(q => q.object)])),
+        producerArtifacts: graph.quads.filter(q => q.subject === expected.producer
+          && q.predicate === predicate("produces") && q.objectKind === "iri").map(q => q.object),
+      })) {
         refuse("WORK_COMPLETION_TERMINAL_ARTIFACT_INVALID", "Artifact contract or native producer lineage differs from the compiled semantic boundary.", exitCodes.CURRENTNESS_FAILURE);
       }
       for (const artifact of [...new Set(declarations)].sort()) artifacts.push(Object.freeze({
@@ -2203,20 +2211,27 @@ async function applyPublicationSnapshot(
   const finalReceipt = pending === "linked"
     ? resolve(root, prepared.receipt.publicationReceiptPath)
     : publicationReceiptPath(root, prepared.receipt.publicationReceiptPath, false);
-  if (source.bytes.equals(sourceBefore) && (pending !== "absent" || existsSync(finalReceipt))) {
-    refuse("WORK_COMPLETION_PUBLICATION_PARTIAL_STATE", "Receipt state exists before its source publication.", exitCodes.INTEGRATION_CONFLICT);
-  }
-  if (request.mode === "verify") {
-    if (pending !== "absent" || existsSync(resolve(root, sourcePending)) || (source.bytes.equals(sourceAfter) && !existsSync(finalReceipt))) {
+  const start = assessCompletionPublicationStart({
+    mode: request.mode,
+    source: source.bytes.equals(sourceBefore) ? "preimage" : source.bytes.equals(sourceAfter) ? "postimage" : "other",
+    sourceModeMatches: source.mode === sourceMode,
+    receiptPending: pending, receiptExists: existsSync(finalReceipt),
+    sourcePendingExists: existsSync(resolve(root, sourcePending)),
+  });
+  if (start.action === "refuse") {
+    if (start.reasonCode === "WORK_COMPLETION_PUBLICATION_RECONCILIATION_REQUIRED") {
       refuse("WORK_COMPLETION_PUBLICATION_RECONCILIATION_REQUIRED", "The exact retained publication requires apply-mode reconciliation.", exitCodes.CURRENTNESS_FAILURE,
         { publicationIntentDigest: prepared.receipt.publicationIntentDigest });
     }
-    if (source.bytes.equals(sourceBefore)) return publicationResult(root, "verify", "absent", prepared.receipt, authority);
+    refuse(start.reasonCode, "Retained publication source, mode or receipt ordering is inconsistent.", exitCodes.INTEGRATION_CONFLICT);
+  }
+  if (request.mode === "verify") {
+    if (start.action === "verify-absent") return publicationResult(root, "verify", "absent", prepared.receipt, authority);
     const verified = await preparePublication(root, request, bundles, false);
     return publicationResult(root, "verify", verified.state, verified.receipt, verified.authority);
   }
   let changed = false;
-  if (source.bytes.equals(sourceBefore)) {
+  if (start.action === "apply-source") {
     if (existsSync(resolve(root, sourcePending))) {
       const retainedPending = readPublicationFile(root, sourcePending, false, binding.root);
       if (retainedPending.mode !== sourceMode || !retainedPending.bytes.equals(sourceAfter)) {

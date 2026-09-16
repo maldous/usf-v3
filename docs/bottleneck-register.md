@@ -119,3 +119,27 @@ actual pressure during execution. Swap occupancy alone does not prove thrashing.
 Keep MySQL and Claude running while measuring. RAM-backed fixtures, reflinks
 or snapshots need measured I/O benefit and independent-write/recovery evidence
 before adoption.
+
+## 2026-09-16: whole-process worker tuning
+
+The retained engineering baseline is commit `a0186e9`, not certification of later edits. Its successful report is `.usf/logs/full-gate/20260915T225239099Z-107075.json`, result `sha256:128ad7351f8f70386cf1501950278f2162a0c0294adfecfcc324f3ebc3627d3b`.
+
+| Observed boundary | Duration | Interpretation |
+| --- | ---: | --- |
+| Successful terminal gate | 40m32.578s | 1135 passing tests, one intentional skip, five native fixture obligations |
+| First attempt through successful gate | 53m26.737s | Includes the failed inherited-umask invocation and focused invocation correction |
+| Successful gate through push observation | About 14m26s | Elapsed delivery interval, not measured controller CPU time |
+| First attempt through push observation | About 67m53s | Whole delivery observation, not semantic issue-completion proof |
+
+The ordinary process took 7m41.730s and overlapped completion production. The producer process took 23m27.171s, including a genuine seed-producing test of 17m12.369s. Two recovery workers took 15m48.320s and 15m13.788s; the completion cohort occupied 39m15.492s. Private clone copying was about one second per case, while clone authentication was approximately 92-101 seconds. These observations favor critical-path and repeated-authentication work over speculative RAMdisk or filesystem migration. Historical different-source gate comparisons are not controlled speedup measurements.
+
+Worker tuning must preserve these boundaries:
+
+- Requested concurrency is a limit to evaluate, not proof of resource capacity or Hermes parallel safety. Apply effective inherited CPU quotas, memory limits and current host headroom; account for competing workloads without changing their service state.
+- Sample simultaneous aggregate descendant resources, report sampling and process-identity limitations, and retain positive descendant-drain acknowledgement. Parent maximum RSS and swap occupancy alone do not establish safe fanout.
+- Use one genuinely checked experiment-owned seed with private mutable clones and currentness authentication. The earlier high-level cohort deletes its seed after success; the separate cache has no warm-only guarantee and must not be used for speculative concurrent cold builds.
+- Feasibility subsets are explicitly noncertifying. Compare at most two shortlisted caps against the same complete six recovery cases, record requested versus admitted workers and refusal reasons, and include preparation/authentication/drain cost. Do not imply cross-cycle warm reuse from one experiment-wide producer.
+- Keep complete production test inventories independent of benchmark selectors. Keep lifecycle-sensitive work, same-candidate native checks and authority mutation serialized. Local help must not launch work or acquire a durable admission fence.
+- A scheduler, fixture protocol or gate-harness change still requires one terminal full gate after the complete selected source cohort is frozen. The impact classifier remains unintegrated; manual affected-family annotations cannot authorize receipt reuse, suppress obligations or certify this cohort.
+
+Read-only resource interpretation follows the kernel's [cgroup v2 interfaces](https://docs.kernel.org/admin-guide/cgroup-v2.html) and [pressure stall information](https://docs.kernel.org/accounting/psi.html). Missing non-root-only files at the root and disabled leaf controllers must be distinguished from unreadable applicable ancestor limits. No host cgroup, filesystem, MySQL, provider or semantic execution-authority change is implied by this tuning work.

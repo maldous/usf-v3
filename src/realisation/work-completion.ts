@@ -79,6 +79,74 @@ export const workCompletionNonClaims = Object.freeze([
   "No provider, credential, network, runtime, staging, production, ANQR or terminal proof is claimed.",
 ]);
 
+export interface CompletionPublicationStartObservation {
+  readonly mode: "apply" | "verify";
+  readonly source: "preimage" | "postimage" | "other";
+  readonly sourceModeMatches: boolean;
+  readonly receiptPending: "absent" | "pending" | "linked";
+  readonly receiptExists: boolean;
+  readonly sourcePendingExists: boolean;
+}
+
+export type CompletionPublicationStartDecision =
+  | Readonly<{ action: "refuse"; reasonCode: "WORK_COMPLETION_PUBLICATION_PARTIAL_STATE" | "WORK_COMPLETION_PUBLICATION_RECONCILIATION_REQUIRED" }>
+  | Readonly<{ action: "verify-absent" | "verify-current" | "apply-source" | "apply-receipt" }>;
+
+/** Pure decision only. The caller must authenticate observations and recheck before effects. */
+export function assessCompletionPublicationStart(input: CompletionPublicationStartObservation): CompletionPublicationStartDecision {
+  if (input.source === "other" || !input.sourceModeMatches
+    || (input.source === "preimage" && (input.receiptPending !== "absent" || input.receiptExists))) {
+    return Object.freeze({ action: "refuse", reasonCode: "WORK_COMPLETION_PUBLICATION_PARTIAL_STATE" });
+  }
+  if (input.mode === "verify") {
+    if (input.receiptPending !== "absent" || input.sourcePendingExists
+      || (input.source === "postimage" && !input.receiptExists)) {
+      return Object.freeze({ action: "refuse", reasonCode: "WORK_COMPLETION_PUBLICATION_RECONCILIATION_REQUIRED" });
+    }
+    return Object.freeze({ action: input.source === "preimage" ? "verify-absent" : "verify-current" });
+  }
+  if (input.source === "preimage") return Object.freeze({ action: "apply-source" });
+  if (input.sourcePendingExists) {
+    return Object.freeze({ action: "refuse", reasonCode: "WORK_COMPLETION_PUBLICATION_PARTIAL_STATE" });
+  }
+  return Object.freeze({ action: "apply-receipt" });
+}
+
+function completionDecisionSingleton(values: readonly string[] | undefined, expected: string): boolean {
+  return Array.isArray(values) && values.length === 1 && values[0] === expected;
+}
+
+/** Compare authenticated graph projections; this does not authenticate bytes or grant authority. */
+export function completionTerminalEvaluatorMatches(input: Readonly<{
+  digest: string;
+  algorithms: readonly string[];
+  policies: readonly string[];
+  expectedAlgorithm: string;
+  expectedPolicy: string;
+}>): boolean {
+  return input.digest === "sha256:b9c8fd3a8e648ecb1ddb6e1bbdca0d4e536ebfeffdfd8f204a38287370b0ea3d"
+    && completionDecisionSingleton(input.algorithms, input.expectedAlgorithm)
+    && completionDecisionSingleton(input.policies, input.expectedPolicy);
+}
+
+/** Preserve the pinned complete resource, exact field denominator, and producer backlink. */
+export function completionTerminalArtifactMatches(input: Readonly<{
+  digest: string;
+  declarations: readonly string[];
+  values: Readonly<Record<string, readonly string[]>>;
+  expected: Readonly<Record<string, string>>;
+  producerArtifacts: readonly string[];
+}>): boolean {
+  const fields = ["type", "producer", "schema", "work", "profile", "proofObligation"] as const;
+  if (input.digest !== "sha256:d09e7915796bd640dda4332327d2f26710358a0088fa742b085c4314786f5981"
+    || input.declarations.length !== 1 || Object.keys(input.expected).length !== fields.length
+    || fields.some(field => !Object.hasOwn(input.expected, field) || typeof input.expected[field] !== "string")) {
+    return false;
+  }
+  return fields.every(field => completionDecisionSingleton(input.values[field], input.expected[field]!))
+    && completionDecisionSingleton(input.producerArtifacts, input.declarations[0]!);
+}
+
 function exactValues(graph: SemanticGraph, subject: string, name: string, kind: "iri" | "literal"): string[] {
   const values = objectsFor(graph, subject, predicate(name));
   if (values.some((value) => value.objectKind !== kind)) throw new Error(`WORK_COMPLETION_${name.toUpperCase()}_KIND_INVALID`);

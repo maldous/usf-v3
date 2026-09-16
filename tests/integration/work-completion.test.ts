@@ -41,6 +41,7 @@ import {
   workCompletionRecordLines,
   type NoChangeCompletionAuthority, type WorkCompletionPublicationMember,
   type CompletionEvidenceCandidate, type CompletionProofBundle, type WorkCompletionPublicationReceipt,
+  type CompletionPublicationSnapshot,
 } from "../../src/realisation/work-completion.ts";
 import { constructionReceiptPath, deriveConstructionAuthority, validateConstructionReceiptShape, type ConstructionAuthorityPublicationReceipt } from "../../src/realisation/construction-authority.ts";
 import { freshCheckedCompletion } from "../fixtures/realisation/checked-completion.ts";
@@ -61,7 +62,7 @@ const completionCohortRunDirectory = process.env.USF_COMPLETION_COHORT_DIRECTORY
 assert.equal(completionCohortRole === undefined, completionCohortRunDirectory === undefined,
   "completion cohort role and private directory must be supplied together");
 if (completionCohortRole !== undefined) {
-  assert.match(completionCohortRole, /^(?:producer|recovery-[01])$/u);
+  assert.match(completionCohortRole, /^(?:producer|recovery-[0-5])$/u);
   assert.equal(isConfinedFixtureProcess, false, "direct-lane cohort configuration must not enter confined fixtures");
 }
 
@@ -1516,7 +1517,7 @@ async function retainCompletionCohortSeed(root: string, candidateDigest: string,
 
 async function readCompletionCohortSeed(): Promise<CheckedCanonicalPrepublicationSeed> {
   const directory = await completionCohortDirectory();
-  assert.match(completionCohortRole!, /^recovery-[01]$/u);
+  assert.match(completionCohortRole!, /^recovery-[0-5]$/u);
   const marker = resolve(directory, "seed.json");
   const metadata = await lstat(marker);
   assert.equal(metadata.isFile(), true);
@@ -1864,6 +1865,160 @@ test("v2 completion publication retains a genuine two-member independent cohort 
 
 const canonicalPublicationRecoveryBoundaries = ["before-source", "source-before-receipt", "receipt-pending-before-link", "receipt-linked-before-cleanup", "receipt-before-ack"] as const;
 
+type CanonicalPublicationRecoveryExercise = (input: Readonly<{
+  boundary: CanonicalPublicationBoundary;
+  publish: (mode: "apply" | "verify") => Promise<Readonly<Record<string, unknown>>>;
+  observe: (result: Readonly<Record<string, unknown>>) => Promise<Readonly<Record<string, unknown>>>;
+}>) => Promise<void>;
+
+// Keep the arrow body JavaScript-compatible so cheap unit tests can execute
+// this exact orchestration without importing or registering native fixtures.
+const exerciseCanonicalPublicationRecovery: CanonicalPublicationRecoveryExercise = async ({ boundary, publish, observe }) => {
+  const immutableFields = [
+    "schema", "profileIri", "manifestPath", "memberCount", "works",
+    "publicationIntentDigest", "publicationReceiptPath", "receiptDigest",
+    "resultingSemanticDigest",
+  ];
+  const modes = boundary === "receipt-linked-before-cleanup"
+    ? ["apply", "apply", "verify"] : ["apply", "apply"];
+  let initialIdentity = "";
+  let initialObservation = "";
+  for (const [index, mode] of modes.entries()) {
+    const result = await publish(mode === "verify" ? "verify" : "apply");
+    assert.equal(result.mode, mode);
+    assert.equal(result.memberCount, 1, `${boundary} must retain the exact singleton cohort`);
+    assert.equal(result.status, "verified");
+    if (index === 0) {
+      assert.ok(result.publicationState === "created" || result.publicationState === "matching");
+    } else {
+      assert.equal(result.publicationState, "matching");
+    }
+    for (const field of immutableFields) {
+      assert.ok(Object.hasOwn(result, field) && result[field] !== undefined, `missing publication result field: ${field}`);
+    }
+    const identity = JSON.stringify(immutableFields.map(field => [field, result[field]]));
+    if (index > 0) assert.equal(identity, initialIdentity, `${boundary} ${mode} changed immutable publication identity`);
+
+    // Observe before the next native operation can repair unfinished state.
+    // Serialize immediately so even reused mutable callback objects cannot
+    // change the retained baseline retrospectively.
+    const observation = JSON.stringify(await observe(result));
+    if (index === 0) {
+      initialIdentity = identity;
+      initialObservation = observation;
+    } else {
+      assert.equal(observation, initialObservation, `${boundary} ${mode} changed terminal files`);
+    }
+  }
+};
+
+async function observeCanonicalRecoveryTerminal(
+  root: string,
+  request: Readonly<{ rootIdentity: string; manifestPath: string }>,
+  sourcePath: string,
+  result: Readonly<Record<string, unknown>>,
+  retained: Readonly<{ path: string; bytes: Buffer; inode: number }> | null,
+): Promise<Readonly<Record<string, unknown>>> {
+  assert.equal(result.profileIri, canonicalNoChangeProfile);
+  assert.equal(result.manifestPath, request.manifestPath);
+  assert.deepEqual(result.works, [request.rootIdentity]);
+  assert.match(result.publicationIntentDigest as string, /^sha256:[0-9a-f]{64}$/u);
+  const works = [...result.works as string[]].sort((left, right) => Buffer.compare(Buffer.from(left), Buffer.from(right)));
+  const group = canonicalDigest({
+    profile: result.profileIri, manifestPath: result.manifestPath, works,
+  }, { rejectAbsolutePaths: true });
+  const directory = resolve(root, ".usf/candidates/work-completion/publication-snapshots",
+    group.slice(7), (result.publicationIntentDigest as string).slice(7));
+  const metadata = JSON.parse(await readFile(resolve(directory, "snapshot.json"), "utf8")) as CompletionPublicationSnapshot;
+  assert.equal(metadata.schema, "urn:usf:completion-publication-snapshot:1");
+  assert.equal(metadata.profile, result.profileIri);
+  assert.equal(metadata.manifestPath, request.manifestPath);
+  assert.equal(metadata.publicationIntentDigest, result.publicationIntentDigest);
+  assert.equal(metadata.sourcePath, sourcePath);
+  assert.equal(metadata.receiptPath, result.publicationReceiptPath);
+  assert.equal(metadata.receiptDigest, result.receiptDigest);
+  assert.equal(metadata.members.length, 1);
+  assert.deepEqual(metadata.members.map(member => member.work), works);
+
+  const preimages = metadata.files.filter(file => file.role === "source-preimage");
+  const postimages = metadata.files.filter(file => file.role === "source-postimage");
+  const receipts = metadata.files.filter(file => file.role === "expected-receipt");
+  assert.equal(preimages.length, 1);
+  assert.equal(postimages.length, 1);
+  assert.equal(receipts.length, 1);
+  const preimage = preimages[0]!;
+  const postimage = postimages[0]!;
+  const expectedReceiptFile = receipts[0]!;
+  const sourceMode = preimage.sourceMode;
+  assert.ok(typeof sourceMode === "number" && Number.isInteger(sourceMode) && sourceMode >= 0 && sourceMode <= 0o7777);
+  for (const file of [preimage, postimage]) {
+    if (file.sourcePath !== undefined) assert.equal(file.sourcePath, metadata.sourcePath);
+    if (file.sourceMode !== undefined) assert.equal(file.sourceMode, sourceMode);
+  }
+  const payloads: Buffer[] = [];
+  for (const file of [postimage, expectedReceiptFile]) {
+    assert.match(file.path, /^files\/[0-9]{4}\.bin$/u);
+    const bytes = await readFile(resolve(directory, file.path));
+    assert.equal(bytes.length, file.byteLength);
+    assert.equal(`sha256:${createHash("sha256").update(bytes).digest("hex")}`, file.digest);
+    payloads.push(bytes);
+  }
+  const expectedSourceBytes = payloads[0]!;
+  const expectedReceiptBytes = payloads[1]!;
+  const receipt = JSON.parse(expectedReceiptBytes.toString("utf8")) as WorkCompletionPublicationReceipt;
+  assertV2PublicationReceipt(receipt, 1);
+  assert.equal(receipt.publicationIntentDigest, metadata.publicationIntentDigest);
+  assert.equal(receipt.publicationReceiptPath, metadata.receiptPath);
+  assert.equal(receipt.receiptDigest, metadata.receiptDigest);
+  assert.equal(receipt.semanticSourcePath, metadata.sourcePath);
+  assert.equal(receipt.profileIri, metadata.profile);
+  assert.equal(receipt.manifestPath, metadata.manifestPath);
+  assert.deepEqual(receipt.members.map(member => member.workIri), works);
+  assert.equal(result.resultingSemanticDigest, receipt.resultingSemanticDigest);
+
+  const finalSourcePath = resolve(root, metadata.sourcePath);
+  const finalReceiptPath = resolve(root, metadata.receiptPath);
+  assert.ok(finalReceiptPath.startsWith(`${resolve(root, "evidence/work-completion")}/`));
+  const sourceStat = await lstat(finalSourcePath);
+  const receiptStat = await lstat(finalReceiptPath);
+  assert.equal(sourceStat.isFile(), true);
+  assert.equal(receiptStat.isFile(), true);
+  assert.equal(sourceStat.uid, process.getuid?.());
+  assert.equal(receiptStat.uid, process.getuid?.());
+  assert.equal(sourceStat.mode & 0o7777, sourceMode);
+  assert.equal(receiptStat.mode & 0o022, 0);
+  assert.equal(receiptStat.nlink, 1, "terminal receipt must have no remaining pending hard link");
+  const sourceBytes = await readFile(finalSourcePath);
+  const receiptBytes = await readFile(finalReceiptPath);
+  assert.deepEqual(sourceBytes, expectedSourceBytes, "resume must expose the authenticated source postimage");
+  assert.deepEqual(receiptBytes, expectedReceiptBytes, "resume must expose the exact authenticated singleton receipt");
+  await assert.rejects(() => lstat(resolve(directory, "source.pending")), { code: "ENOENT" });
+  await assert.rejects(() => lstat(resolve(directory, "receipt.pending")), { code: "ENOENT" });
+  if (retained !== null) {
+    assert.equal(receiptStat.ino, retained.inode);
+    assert.deepEqual(receiptBytes, retained.bytes);
+    await assert.rejects(() => lstat(retained.path), { code: "ENOENT" });
+  }
+  return Object.freeze({
+    sourcePath: metadata.sourcePath,
+    sourceBytes: sourceBytes.toString("base64"),
+    sourceMode: sourceStat.mode & 0o7777,
+    sourceDevice: sourceStat.dev,
+    sourceInode: sourceStat.ino,
+    sourceOwner: sourceStat.uid,
+    sourceLinks: sourceStat.nlink,
+    receiptPath: metadata.receiptPath,
+    receiptBytes: receiptBytes.toString("base64"),
+    receiptMode: receiptStat.mode & 0o7777,
+    receiptDevice: receiptStat.dev,
+    receiptInode: receiptStat.ino,
+    receiptOwner: receiptStat.uid,
+    receiptLinks: receiptStat.nlink,
+    sourcePendingAbsent: true,
+    receiptPendingAbsent: true,
+  });
+}
+
 for (const boundary of canonicalPublicationRecoveryBoundaries) {
   test(`canonical completion publication resumes the exact retained intent at ${boundary}`, async () => {
     await completionCohortEvent({ kind: "case-started", name: `canonical completion publication resumes the exact retained intent at ${boundary}` });
@@ -1893,22 +2048,15 @@ for (const boundary of canonicalPublicationRecoveryBoundaries) {
         assert.equal(final.ino, pending.ino);
         retained = Object.freeze({ path: interrupted.receiptPendingPath!, bytes: await readFile(interrupted.receiptPendingPath!), inode: pending.ino });
       }
-      const resumed = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "apply" }));
-      const replay = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "apply" }));
-      const verified = await native.runCanonicalCompletionPublication(isolated.root, Object.freeze({ ...request, mode: "verify" }));
-      assert.equal((resumed as { memberCount: number }).memberCount, 1, `${boundary} recovery must retain the exact singleton cohort`);
-      assert.equal((replay as { publicationState: string }).publicationState, "matching", `${boundary} replay must not publish a second receipt`);
-      assert.equal((verified as { publicationState: string }).publicationState, "matching", `${boundary} verify must read the recovered native receipt`);
-      const receipt = JSON.parse(await readFile(resolve(isolated.root, (resumed as { publicationReceiptPath: string }).publicationReceiptPath), "utf8"));
-      assertV2PublicationReceipt(receipt, 1);
-      if (retained !== null) {
-        const receiptPath = resolve(isolated.root, (resumed as { publicationReceiptPath: string }).publicationReceiptPath);
-        const final = await lstat(receiptPath);
-        assert.equal(final.ino, retained.inode, `${boundary} recovery must retain the original durable receipt inode`);
-        assert.deepEqual(await readFile(receiptPath), retained.bytes, `${boundary} recovery must retain the original durable receipt bytes`);
-        await assert.rejects(() => lstat(retained.path), { code: "ENOENT" });
-        assert.equal((await lstat(receiptPath)).ino, final.ino, `${boundary} replay must not replace the recovered receipt`);
-      }
+      await exerciseCanonicalPublicationRecovery({
+        boundary,
+        publish: async mode => await native.runCanonicalCompletionPublication(
+          isolated.root, Object.freeze({ ...request, mode }),
+        ) as Readonly<Record<string, unknown>>,
+        observe: result => observeCanonicalRecoveryTerminal(
+          isolated.root, request, authority.sourcePath, result, retained,
+        ),
+      });
     } finally { await isolated.cleanup(); }
     await completionCohortEvent({ kind: "case-passed", name: `canonical completion publication resumes the exact retained intent at ${boundary}` });
   });
