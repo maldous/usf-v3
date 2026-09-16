@@ -444,3 +444,10 @@
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/unit/commands/linear-binding.test.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:repositoryReadFile> "src/graph/linear-binding.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:readPath> "src/graph/linear-binding.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "src/graph/linear-binding.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:predicate:realisationDisposition> <urn:usf:predicate:type> <urn:usf:type:SemanticPredicate> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "tests/integration/linear-native-completion.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/integration/linear-native-completion.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "src/graph/linear-binding.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "src/realisation/index.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "src/realisation/index.ts" <urn:usf:graph:linear-work-binding> .

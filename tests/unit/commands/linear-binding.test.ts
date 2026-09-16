@@ -14,9 +14,11 @@ import { bindingSelector } from "../../../src/commands/hermes.ts";
 import {
   LinearBindingError,
   afterHermesResult,
+  afterHermesRefusal,
   beforeHermesDispatch,
   observeLinearBinding,
   prepareLinearBinding,
+  withNativeLinearCompletion,
   type GraphExecutionEvidenceDigest,
   type LinearBindingSelector,
 } from "../../../src/commands/linear-binding.ts";
@@ -492,4 +494,232 @@ test("owner-private ancestry rejects symlinks", async () => {
   await mkdir(resolve(selector.repositoryRoot, ".usf"), { recursive: true, mode: 0o700 });
   await symlink(resolve(selector.repositoryRoot, "graph"), resolve(selector.repositoryRoot, ".usf/work"));
   await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_RUNTIME_UNSAFE"));
+});
+
+
+test("native no-change binding keeps complete scope but does not build provider source context", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  await writeFile(path, (await readFile(path, "utf8")).replace('"20000"', '"100000"')
+    + nq(selector.bindingIri, "realisationDisposition", "no-change") + "\n");
+  const prepared = await prepareLinearBinding(selector);
+  assert.equal(prepared.status, "PREPARED");
+  assert.equal(prepared.binding.authority.realisationDisposition, "no-change");
+  assert.equal(prepared.binding.unit.packet.writeSet.includes("src/commands/linear-binding.ts"), true);
+  assert.equal("writeSetContext" in JSON.parse(prepared.binding.unit.prompt), false);
+  await assert.rejects(beforeHermesDispatch(selector), reason("LINEAR_BINDING_NATIVE_NO_CHANGE_ONLY"));
+  assert.equal((await observeLinearBinding(selector)).status, "PREPARED");
+});
+
+test("native no-change disposition rejects malformed declarations", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  await writeFile(path, (await readFile(path, "utf8"))
+    + nq(selector.bindingIri, "realisationDisposition", "skip-proof") + "\n");
+  await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_REALISATION_DISPOSITION_INVALID"));
+});
+
+test("native no-change disposition is part of immutable binding intent", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  await prepareLinearBinding(selector);
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  await writeFile(path, (await readFile(path, "utf8"))
+    + nq(selector.bindingIri, "realisationDisposition", "no-change") + "\n");
+  await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_SUPERSESSION_REQUIRED"));
+});
+
+test("native no-change metadata still obeys the conservative UTF-8 byte bound", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  await writeFile(path, (await readFile(path, "utf8")).replace('"20000"', '"100000"')
+    .replace('"Use only graph-derived semantic work."', JSON.stringify("\u00e9".repeat(60000)))
+    + nq(selector.bindingIri, "realisationDisposition", "no-change") + "\n");
+  await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_PROMPT_POLICY_INVALID"));
+});
+
+test("native no-change provider hand-dispatch never enters STARTED", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  await writeFile(path, (await readFile(path, "utf8"))
+    + nq(selector.bindingIri, "realisationDisposition", "no-change") + "\n");
+  await prepareLinearBinding(selector);
+  await assert.rejects(beforeHermesDispatch(selector), reason("LINEAR_BINDING_NATIVE_NO_CHANGE_ONLY"));
+  assert.equal((await observeLinearBinding(selector)).status, "PREPARED");
+});
+
+test("native no-change settlement requires genuine terminal proof and serializes competing effects", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  await writeFile(path, (await readFile(path, "utf8"))
+    + nq(selector.bindingIri, "realisationDisposition", "no-change") + "\n");
+  const prepared = await prepareLinearBinding(selector);
+  let active = 0;
+  let peak = 0;
+  let calls = 0;
+  const effect = async () => {
+    calls += 1;
+    active += 1;
+    peak = Math.max(peak, active);
+    await new Promise(resolve => setTimeout(resolve, 20));
+    active -= 1;
+    return { claimedComplete: true };
+  };
+  const outcomes = await Promise.allSettled([
+    withNativeLinearCompletion(selector, prepared.binding.unit.attemptKey, effect),
+    withNativeLinearCompletion(selector, prepared.binding.unit.attemptKey, effect),
+  ]);
+  assert.equal(peak, 1);
+  assert.ok(calls >= 1);
+  assert.equal(outcomes.every(value => value.status === "rejected"), true);
+  assert.equal((await observeLinearBinding(selector)).status, "PREPARED");
+});
+
+
+test("candidate lock initialization tolerates concurrent issuers without relaxing directory safety", async (context) => {
+  const { withCandidateLock } = await import("../../../src/realisation/index.ts");
+  const { chmod, stat } = await import("node:fs/promises");
+  const root = await mkdtemp(join(tmpdir(), "usf-binding-lock-"));
+  context.after(() => rm(root, { recursive: true, force: true }));
+  let entered = 0;
+  const results = await Promise.allSettled(Array.from({ length: 4 }, (_, issuer) =>
+    withCandidateLock(root, canonicalDigest({ issuer }), async () => { entered += 1; })));
+  assert.equal(results.every(result => result.status === "fulfilled"), true,
+    results.filter(result => result.status === "rejected").map(result => String(result.reason)).join("\n"));
+  assert.equal(entered, 4);
+  const directory = resolve(root, ".usf/locks/candidates");
+  await chmod(directory, 0o755);
+  await assert.rejects(
+    withCandidateLock(root, canonicalDigest({ issuer: "unsafe" }), async () => { entered += 1; }),
+    (error: unknown) => (error as { reasonCode?: string }).reasonCode === "CANDIDATE_LOCK_UNAVAILABLE",
+  );
+  assert.equal((await stat(directory)).mode & 0o777, 0o755);
+  assert.equal(entered, 4);
+});
+
+test("legacy prepared binding intent remains immutable without a current intent index", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  await prepareLinearBinding(selector);
+  // Test-only removal models a record produced before the intent index existed.
+  const key = canonicalDigest({ bindingIri: selector.bindingIri });
+  await rm(resolve(selector.repositoryRoot, ".usf/work/linear/bindings", key.slice(7) + ".json"), { force: true });
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  await writeFile(path, (await readFile(path, "utf8"))
+    + nq(selector.bindingIri, "realisationDisposition", "no-change") + "\n");
+  await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_SUPERSESSION_REQUIRED"));
+  await assert.rejects(observeLinearBinding(selector), reason("LINEAR_BINDING_SUPERSESSION_REQUIRED"));
+});
+
+async function settledProviderPredecessor(selector: LinearBindingSelector, state: "SETTLED" | "REFUSED" = "SETTLED") {
+  const started = await beforeHermesDispatch(selector);
+  assert.equal(started.status, "STARTED");
+  const sourceGraph = "urn:usf:graph:hermes-input:" + started.binding.unit.attemptKey;
+  const graphText = await readFile(resolve(selector.repositoryRoot, started.binding.unitPath), "utf8");
+  const sourceAssertionDigest = canonicalQuadDigest(parseStrictNQuads(graphText, sourceGraph));
+  const successful = state === "SETTLED";
+  const resultText = "synthetic predecessor fixture, not provider contact";
+  const evidence = {
+    schema: "urn:usf:graph-execution-evidence:1", version: 1, status: successful ? "ok" : "refused",
+    observedAt: "2026-09-16T00:00:00.000Z", sourceGraph, sourceGraphDigest: sourceAssertionDigest,
+    economicsClosureDigest: canonicalDigest("fixture economics"), resultGraph: "urn:test:predecessor-result",
+    resultGraphDigest: canonicalDigest("fixture result graph"), workUnitCount: 1, declaredUnitCount: 1,
+    dependencyEdgeCount: 0, dependencyAcyclic: true, selectedUnits: [started.binding.unit.unitIri],
+    externallySatisfiedDependencies: [], succeededCount: successful ? 1 : 0, authoritySnapshot: {},
+    catalogue: {}, concurrency: {}, localAgentDispositions: [], nonClaims: ["synthetic fixture only"],
+    deferredRouteCount: 0,
+    units: [{ unit: started.binding.unit.unitIri, sourceAssertionDigest, requiredCapabilities: [...started.binding.unit.modelCapabilities],
+      candidatesConsidered: 1, attempts: [], status: successful ? "ok" : "refused",
+      selectedCandidateId: successful ? "fixture" : null, transport: successful ? "fixture" : null,
+      actualModel: null, invocationIdentity: null, usage: null, transportReportedCostUsd: null,
+      resultDigest: successful ? canonicalDigest(resultText) : null, resultText: successful ? resultText : null }],
+  };
+  const evidenceDigest = canonicalDigest(evidence) as GraphExecutionEvidenceDigest;
+  const evidencePath = resolve(selector.repositoryRoot, ".usf/graph-executions/" + evidenceDigest.slice(7) + ".json");
+  await mkdir(resolve(selector.repositoryRoot, ".usf/graph-executions"), { recursive: true, mode: 0o700 });
+  await writeFile(evidencePath, canonicalJson(evidence) + "\n", { mode: 0o600 });
+  const terminal = successful ? await afterHermesResult(selector, evidenceDigest) : await afterHermesRefusal(selector, evidenceDigest);
+  assert.equal(terminal.status, state);
+  const issuePath = resolve(selector.repositoryRoot, ".usf/work/linear/issues/" + canonicalDigest({ locator: terminal.binding.authority.locator }).slice(7) + ".json");
+  return { terminal, issuePath, evidencePath, graphPath: resolve(selector.repositoryRoot, terminal.binding.unitPath),
+    attemptPath: resolve(selector.repositoryRoot, terminal.binding.attemptPath) };
+}
+async function addNativeSuccessor(selector: LinearBindingSelector): Promise<LinearBindingSelector> {
+  const path = resolve(selector.repositoryRoot, bindingGraphPath);
+  const before = await readFile(path, "utf8");
+  const bindingIri = selector.bindingIri + ":native";
+  await writeFile(path, before + before.replaceAll("<" + selector.bindingIri + ">", "<" + bindingIri + ">")
+    + nq(bindingIri, "supersedesBinding", selector.bindingIri, true) + "\n"
+    + nq(bindingIri, "realisationDisposition", "no-change") + "\n");
+  return { ...selector, bindingIri };
+}
+
+test("native successor admits terminal provider history without borrowing completion or repeating effects", async () => {
+  for (const state of ["SETTLED", "REFUSED"] as const) {
+    const previous = await addBinding(await fixtureRoot());
+    const retained = await settledProviderPredecessor(previous, state);
+    const history = await Promise.all([retained.issuePath, retained.attemptPath, retained.evidencePath, retained.graphPath]
+      .map(async path => [path, await readFile(path)] as const));
+    const selector = await addNativeSuccessor(previous);
+    const prepared = await prepareLinearBinding(selector);
+    assert.equal(prepared.status, "PREPARED");
+    assert.deepEqual(await readFile(retained.issuePath), history[0]![1], "prepare must not reserve or overwrite the predecessor");
+    let effects = 0;
+    const results = await Promise.allSettled([1, 2].map(() =>
+      withNativeLinearCompletion(selector, prepared.binding.unit.attemptKey, async () => {
+        effects += 1;
+        return { claimedComplete: true };
+      })));
+    assert.equal(effects, 1, "one successor reservation must exclude every competing effect");
+    assert.equal(results.every(result => result.status === "rejected"), true);
+    assert.equal((await observeLinearBinding(selector)).status, "PREPARED", "old provider settlement is not new native completion");
+    const archive = resolve(selector.repositoryRoot, ".usf/work/linear/" + prepared.binding.unit.intentKey.slice(7) + "/predecessor-issue.json");
+    assert.deepEqual(await readFile(archive), history[0]![1]);
+    for (const [path, bytes] of history.slice(1)) assert.deepEqual(await readFile(path), bytes);
+    const reserved = JSON.parse(await readFile(retained.issuePath, "utf8"));
+    assert.equal(reserved.bindingIri, selector.bindingIri);
+    assert.equal(reserved.state, "PREPARED");
+    assert.equal(reserved.realisationDisposition, "no-change");
+    await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN"));
+    assert.equal(effects, 1);
+  }
+});
+
+test("native successor rejects unresolved mismatched and unauthenticated predecessor history without mutation", async () => {
+  const previous = await addBinding(await fixtureRoot());
+  const retained = await settledProviderPredecessor(previous);
+  const selector = await addNativeSuccessor(previous);
+  const declarationPath = resolve(selector.repositoryRoot, bindingGraphPath);
+  const paths = [retained.issuePath, retained.attemptPath, retained.evidencePath, retained.graphPath, declarationPath];
+  const original = new Map(await Promise.all(paths.map(async path => [path, await readFile(path, "utf8")] as const)));
+  const issue = JSON.parse(original.get(retained.issuePath)!);
+  const attempt = JSON.parse(original.get(retained.attemptPath)!);
+  const cases: Array<readonly [string, () => Promise<unknown>]> = [
+    ["started", () => writeFile(retained.issuePath, canonicalJson({ ...issue, state: "STARTED" }) + "\n")],
+    ["unknown", () => writeFile(retained.issuePath, canonicalJson({ ...issue, state: "UNKNOWN" }) + "\n")],
+    ["wrong locator", () => writeFile(retained.issuePath, canonicalJson({ ...issue, locator: "workspace-main:123e4567-e89b-42d3-a456-426614174001" }) + "\n")],
+    ["wrong intent", () => writeFile(retained.issuePath, canonicalJson({ ...issue, intentKey: canonicalDigest("foreign") }) + "\n")],
+    ["unsettled attempt", () => writeFile(retained.attemptPath, canonicalJson({ ...attempt, state: "STARTED", executionResultIri: null, executionResultDigest: null }) + "\n")],
+    ["missing attempt", () => rm(retained.attemptPath)],
+    ["missing evidence", () => rm(retained.evidencePath)],
+    ["changed result", () => writeFile(retained.attemptPath, canonicalJson({ ...attempt, executionResultDigest: canonicalDigest("wrong result") }) + "\n")],
+    ["changed evidence", () => writeFile(retained.evidencePath, original.get(retained.evidencePath)!.replace("synthetic predecessor fixture", "altered predecessor fixture"))],
+    ["changed assertion", () => writeFile(retained.graphPath, original.get(retained.graphPath)!.replace("Use only graph-derived semantic work.", "Altered historical prompt."))],
+    ["missing supersession", () => writeFile(declarationPath, original.get(declarationPath)!.replace(nq(selector.bindingIri, "supersedesBinding", previous.bindingIri, true) + "\n", ""))],
+    ["changed predecessor intent", () => writeFile(declarationPath, original.get(declarationPath)!.replace(
+      nq(previous.bindingIri, "fixedPrompt", "Use only graph-derived semantic work."), nq(previous.bindingIri, "fixedPrompt", "Changed predecessor.")))],
+  ];
+  for (const [name, mutate] of cases) {
+    for (const [path, bytes] of original) await writeFile(path, bytes, { mode: 0o600 });
+    await mutate();
+    const before = await Promise.all(paths.map(path => readFile(path).catch(error => {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw error;
+    })));
+    await assert.rejects(prepareLinearBinding(selector), error => error instanceof LinearBindingError, name);
+    assert.deepEqual(await Promise.all(paths.map(path => readFile(path).catch(error => {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw error;
+    }))), before, name + " must not rewrite history");
+  }
+  for (const [path, bytes] of original) await writeFile(path, bytes, { mode: 0o600 });
+  assert.equal((await prepareLinearBinding(selector)).status, "PREPARED", "the fully restored authenticated control must be admitted");
 });

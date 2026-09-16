@@ -350,7 +350,7 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
     const before = await observeLinearBinding(lane.selector);
     if (before.status !== "COMPLETED") await updateRemoteState(mutations, lane, match, "started", [lane.binding.basis.basisDigest]);
     const delivered = await executeLinearDelivery(root, lane.selector, providerEnvFile);
-    const evidence = [delivered.evidence.checkpointPath, canonicalDigest(delivered.evidence)];
+    const evidence = [delivered.evidence.checkpointPath, canonicalDigest(delivered.evidence)].filter(reference => reference.length > 0);
     if (delivered.status !== "completed") {
       await store.recordProgress({ bindingIri: lane.selector.bindingIri, basisDigest: lane.binding.basis.basisDigest,
         stage: "blocked", blocker: delivered.reasonCode, evidenceRefs: evidence });

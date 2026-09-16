@@ -367,3 +367,39 @@ its ceiling. The foreground composer's default `check` ceiling does not describe
 the detached supervisor's transaction effects. Report live contribution,
 integration, semantic completion and deployment only for the exact scope and
 evidence observed.
+
+## Native no-change Linear delivery
+
+A binding may explicitly declare `realisationDisposition "no-change"`.
+That declaration is immutable binding intent, not a provider prompt convention.
+Changing an existing binding requires an additive superseding binding. Bindings
+without the declaration retain the provider-contribution path.
+
+Native no-change bindings retain their full graph-derived scope and conservative
+UTF-8 byte budget, but do not embed provider source context. Provider dispatch
+must refuse them before entering STARTED. Under issue ownership, native delivery
+requires current construction authority, native realisation, every declared
+validation obligation, completion evidence and proof, verification before
+publication, authenticated ledger settlement, and independent completed readback.
+A successful callback, empty provider operations, or a direct test log is not
+completion authority. Unresolved provider attempts cannot become native attempts.
+
+The USF-1202 clone completion policy remains proofblocked. Its required unit and
+integration validation command and five-minute native execution bound remain
+unchanged. The native route must preserve that refusal until the required native
+execution evidence and policy authority can genuinely be established. A focused
+or full development gate does not by itself satisfy that admission boundary.
+
+### Immutable binding intent and issue ownership
+
+Preparation retains an owner-private immutable intent index keyed by binding IRI.
+A changed intent requires a distinct superseding binding; an unresolved issue still
+refuses with its unknown-outcome boundary. Status remains read-only. Before an
+index exists, retained legacy attempts are inspected with explicit bounds of 256
+directory entries and 1024 attempt-directory entries. Excess or malformed state
+refuses; it is never discarded to make a binding selectable.
+
+Same-process claimants queue by repository and issue locator. Cross-process
+exclusion remains the kernel candidate lock. Concurrent private-directory creation
+accepts EEXIST only after the existing owner, mode, directory and containment checks
+have validated the actual entry; it does not repair permissions or accept symlinks.

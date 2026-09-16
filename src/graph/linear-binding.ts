@@ -16,6 +16,7 @@ export interface LinearBindingAuthority {
   readonly fixedPrompt: string;
   readonly maximumPromptTokens: number;
   readonly supersedes: string | null;
+  readonly realisationDisposition?: "no-change";
 }
 
 export class LinearBindingError extends Error {
@@ -67,5 +68,9 @@ export function deriveLinearBindingDeclaration(graph: SemanticGraph, bindingIri:
   const fixedPrompt = one("fixedPrompt", "literal", "LINEAR_BINDING_PROMPT_POLICY_INVALID", 4 * 1024 * 1024);
   if (new TextEncoder().encode(fixedPrompt).byteLength > 4 * 1024 * 1024) refuse("LINEAR_BINDING_PROMPT_POLICY_INVALID");
   const supersedes = field("supersedesBinding", "iri", "LINEAR_BINDING_SUPERSESSION_INVALID", true);
-  return Object.freeze({ bindingIri, locator, workspace, issueUuid, owner, profile, targetManifest, workIri, fixedPrompt, maximumPromptTokens, supersedes });
+  const realisationDisposition = field("realisationDisposition", "literal", "LINEAR_BINDING_REALISATION_DISPOSITION_INVALID", true);
+  if (realisationDisposition !== null && realisationDisposition !== "no-change") refuse("LINEAR_BINDING_REALISATION_DISPOSITION_INVALID");
+  return Object.freeze({ bindingIri, locator, workspace, issueUuid, owner, profile, targetManifest, workIri, fixedPrompt, maximumPromptTokens, supersedes,
+    ...(realisationDisposition === null ? {} : { realisationDisposition }),
+  });
 }

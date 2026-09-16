@@ -289,8 +289,13 @@ async function readPrivateUsfDirectory(root: string, repositoryPath: string, cre
     } catch (error: unknown) {
       if (!create && allowMissing && (error as NodeJS.ErrnoException).code === "ENOENT") return null;
       if (!create || (error as NodeJS.ErrnoException).code !== "ENOENT") throw new RealisationError("CANDIDATE_LOCK_UNAVAILABLE", "Private state ancestry is unavailable");
-      await mkdir(cursor, { mode: 0o700 });
-      created = true;
+      try {
+        await mkdir(cursor, { mode: 0o700 });
+        created = true;
+      } catch (creationError: unknown) {
+        if ((creationError as NodeJS.ErrnoException).code !== "EEXIST") throw creationError;
+        // A concurrent creator grants nothing: revalidate the full entry below.
+      }
     }
     const entry = await lstat(cursor);
     if (entry.isSymbolicLink() || !entry.isDirectory() || entry.uid !== processUid(entry.uid) || (entry.mode & 0o077) !== 0) {

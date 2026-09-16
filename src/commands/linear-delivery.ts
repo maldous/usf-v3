@@ -6,7 +6,7 @@ import { constructionAwarePublishCommandHandler, evidenceCommandHandler, proveCo
 import { hermesCommand } from "./hermes.ts";
 import {
   observeLinearBinding,
-  prepareLinearBinding,
+  prepareLinearBinding, withNativeLinearCompletion,
   type LinearBindingResult,
   type LinearBindingSelector,
 } from "./linear-binding.ts";
@@ -157,56 +157,86 @@ function evidenceFor(selector: LinearBindingSelector, checkpointRecordKey: strin
   };
 }
 
-async function completionAfterIntegration(
+function completionRefusal(output: unknown, fallback: string): Error {
+  const code = reasonCode(output, fallback);
+  return Object.assign(new Error(code), { reasonCode: code });
+}
+
+async function completeCurrentWork(
   root: string,
-  binding: Extract<LinearBindingResult, { readonly binding: unknown }>,
+  binding: LinearBindingResult,
   candidateDigest: string,
-): Promise<unknown> {
+) {
   const { profile, manifestPath, workIri } = binding.binding.unit;
+  const selection = ["--work", workIri, "--profile", profile, "--manifest", manifestPath];
   const realised = await realiseCommandHandler({
-    command: "realise",
-    repositoryRoot: root,
-    args: ["no-change", "--work", workIri, "--profile", profile, "--manifest", manifestPath],
+    command: "realise", repositoryRoot: root,
+    args: ["no-change", ...selection],
   });
   const realisedOutput = resultObject(realised.output);
   const noChangeDigest = realisedOutput?.candidateDigest;
-  if (typeof noChangeDigest !== "string") throw new Error("LINEAR_DELIVERY_NO_CHANGE_REALISATION_REFUSED");
-  const completionValidationIds = [...new Set(binding.binding.unit.packet.realisationAuthority?.completionValidationObligations ?? [])].sort();
-  if (completionValidationIds.length === 0) throw new Error("LINEAR_DELIVERY_COMPLETION_VALIDATION_MISSING");
+  if ((realised.exitCode ?? 0) !== 0
+    || realisedOutput?.schema !== "urn:usf:no-change-realisation-result:1"
+    || typeof noChangeDigest !== "string"
+    || !/^sha256:[a-f0-9]{64}$/u.test(noChangeDigest)) {
+    throw completionRefusal(realised.output, "LINEAR_DELIVERY_NO_CHANGE_REALISATION_REFUSED");
+  }
+  const authority = binding.binding.unit.packet.realisationAuthority;
+  const completionValidationIds = [...new Set(authority?.completionValidationObligations ?? [])].sort();
+  if (!completionValidationIds.length) {
+    throw completionRefusal(null, "LINEAR_DELIVERY_COMPLETION_VALIDATION_MISSING");
+  }
+  const obligation = authority?.completionProofObligation;
+  if (typeof obligation !== "string" || obligation.length === 0) {
+    throw completionRefusal(null, "LINEAR_DELIVERY_COMPLETION_PROOF_OBLIGATION_MISSING");
+  }
   const completionReceiptPaths: string[] = [];
   for (const validationId of completionValidationIds) {
     const checked = await runGraphDerivedCheck(root, noChangeDigest, validationId);
-    if (checked.status !== "pass" || typeof checked.receiptPath !== "string") {
-      throw new Error(checked.status === "refused" ? checked.reasonCode : "LINEAR_DELIVERY_COMPLETION_CHECK_REFUSED");
+    if (checked.status !== "pass" || typeof checked.receiptPath !== "string" || checked.receiptPath.length === 0) {
+      throw completionRefusal(checked, "LINEAR_DELIVERY_COMPLETION_CHECK_REFUSED");
     }
     completionReceiptPaths.push(checked.receiptPath);
   }
-  const evidencePath = `.usf/candidates/work-completion/${candidateDigest.slice("sha256:".length)}.evidence.json`;
+  const artifactStem = ".usf/candidates/work-completion/" + candidateDigest.slice("sha256:".length);
+  const evidencePath = artifactStem + ".evidence.json";
   const evidence = await completionAwareEvidenceCommandHandler({
-    command: "evidence",
-    repositoryRoot: root,
-    args: ["completion", "--candidate", noChangeDigest, "--work", workIri, "--profile", profile, "--manifest", manifestPath, "--output", evidencePath],
+    command: "evidence", repositoryRoot: root,
+    args: ["completion", "--candidate", noChangeDigest, ...selection, "--output", evidencePath],
   });
-  if ((resultObject(evidence.output)?.schema) !== "urn:usf:completion-evidence-candidate:1") throw new Error("LINEAR_DELIVERY_COMPLETION_EVIDENCE_REFUSED");
-  const obligation = binding.binding.unit.packet.realisationAuthority?.completionProofObligation;
-  if (typeof obligation !== "string") throw new Error("LINEAR_DELIVERY_COMPLETION_PROOF_OBLIGATION_MISSING");
-  const proofPath = `.usf/candidates/work-completion/${candidateDigest.slice("sha256:".length)}.proof.json`;
+  if ((evidence.exitCode ?? 0) !== 0 || resultObject(evidence.output)?.schema !== "urn:usf:completion-evidence-candidate:1") {
+    throw completionRefusal(evidence.output, "LINEAR_DELIVERY_COMPLETION_EVIDENCE_REFUSED");
+  }
+  const proofPath = artifactStem + ".proof.json";
   const proof = await completionAwareProveCommandHandler({
-    command: "prove",
-    repositoryRoot: root,
-    args: ["completion", "--obligation", obligation, "--evidence", evidencePath, "--profile", profile, "--manifest", manifestPath, "--output", proofPath],
+    command: "prove", repositoryRoot: root,
+    args: ["completion", "--obligation", obligation, "--evidence", evidencePath,
+      "--profile", profile, "--manifest", manifestPath, "--output", proofPath],
   });
-  if ((resultObject(proof.output)?.schema) !== "urn:usf:completion-proof-bundle:1") throw new Error("LINEAR_DELIVERY_COMPLETION_PROOF_REFUSED");
+  if ((proof.exitCode ?? 0) !== 0 || resultObject(proof.output)?.schema !== "urn:usf:completion-proof-bundle:1") {
+    throw completionRefusal(proof.output, "LINEAR_DELIVERY_COMPLETION_PROOF_REFUSED");
+  }
+  const publicationArgs = ["work-completion", "--bundle", proofPath, "--profile", profile, "--manifest", manifestPath];
+  const verification = await completionAwarePublishCommandHandler({
+    command: "publish", repositoryRoot: root, args: [...publicationArgs, "--verify"],
+  });
+  const verificationOutput = resultObject(verification.output);
+  if ((verification.exitCode ?? 0) !== 0 || verificationOutput?.status !== "verified" || verificationOutput.mode !== "verify") {
+    throw completionRefusal(verification.output, "LINEAR_DELIVERY_COMPLETION_VERIFICATION_REFUSED");
+  }
   const publication = await completionAwarePublishCommandHandler({
-    command: "publish",
-    repositoryRoot: root,
-    args: ["work-completion", "--bundle", proofPath, "--profile", profile, "--manifest", manifestPath, "--apply"],
+    command: "publish", repositoryRoot: root, args: [...publicationArgs, "--apply"],
   });
   const publicationOutput = resultObject(publication.output);
-  if (publicationOutput?.status !== "verified" || publicationOutput.mode !== "apply") {
-    throw new Error("LINEAR_DELIVERY_COMPLETION_PUBLICATION_REFUSED");
+  if ((publication.exitCode ?? 0) !== 0 || publicationOutput?.status !== "verified" || publicationOutput.mode !== "apply") {
+    throw completionRefusal(publication.output, "LINEAR_DELIVERY_COMPLETION_PUBLICATION_REFUSED");
   }
-  return Object.freeze({ realised: realised.output, checkReceiptPaths: Object.freeze(completionReceiptPaths), evidence: evidence.output, proof: proof.output, publication: publication.output });
+  return Object.freeze({
+    realised: realised.output,
+    checkReceiptPaths: Object.freeze(completionReceiptPaths),
+    evidence: evidence.output, proof: proof.output,
+    verification: verification.output, publication: publication.output,
+  });
 }
 
 async function refreshConstructionAuthority(
@@ -257,6 +287,35 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
   let evidence = evidenceFor(selector, checkpointRecordKey, prepared.status);
   if (prepared.status === "COMPLETED") return Object.freeze({ status: "completed", evidence });
   if (prepared.status === "UNKNOWN") return refusal("LINEAR_BINDING_OUTCOME_UNKNOWN", evidence);
+    if (prepared.binding.authority.realisationDisposition === "no-change") {
+      if (prepared.status !== "PREPARED") {
+        return refusal("LINEAR_BINDING_NATIVE_COMPLETION_REQUIRES_PREPARED", evidence);
+      }
+      try {
+        const native = await withNativeLinearCompletion(
+          { ...selector, repositoryRoot },
+          prepared.binding.unit.attemptKey,
+          current => completeCurrentWork(repositoryRoot, current, current.binding.unit.attemptKey),
+        );
+        evidence = {
+          ...evidence,
+          settledStatus: native.binding.status,
+          checkReceiptPaths: native.result?.checkReceiptPaths ?? [],
+          completion: native.result,
+        };
+        if (native.binding.status !== "COMPLETED") {
+          return refusal("LINEAR_DELIVERY_COMPLETION_READBACK_REFUSED", evidence);
+        }
+        const completed = await observeLinearBinding({ ...selector, repositoryRoot });
+        if (completed.status !== "COMPLETED") {
+          return refusal("LINEAR_DELIVERY_COMPLETION_READBACK_REFUSED", evidence);
+        }
+        return Object.freeze({ status: "completed", evidence: Object.freeze(evidence) });
+      } catch (error) {
+        return refusal(reasonCode(error, "LINEAR_DELIVERY_NATIVE_COMPLETION_REFUSED"), evidence);
+      }
+    }
+
 
   let settled: SettledLinearBinding;
   let beforeDispatchCheckpoint: DeliveryCheckpoint | null;
@@ -331,7 +390,7 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
     const construction = await refreshConstructionAuthority(repositoryRoot, settled, candidateDigest);
     checkpointRecordKey = await persistCheckpoint(repositoryRoot, settled, "before-completion-publication", { candidateDigest });
     evidence = { ...evidence, checkpointRecordKey };
-    const completion = await completionAfterIntegration(repositoryRoot, settled, candidateDigest);
+    const completion = await completeCurrentWork(repositoryRoot, settled, candidateDigest);
     const final = await observeLinearBinding(Object.freeze({ ...selector, repositoryRoot }));
     if (final.status !== "COMPLETED") return refusal("LINEAR_DELIVERY_COMPLETION_READBACK_REFUSED", { ...evidence, completion: Object.freeze({ construction, completion }) });
     return Object.freeze({ status: "completed", evidence: { ...evidence, settledStatus: final.status, completion: Object.freeze({ construction, completion }) } });

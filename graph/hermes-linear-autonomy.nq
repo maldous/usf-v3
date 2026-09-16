@@ -31,8 +31,8 @@
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/graph-execute.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/help.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-linear.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-linear-autonomy.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes-linear.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/hermes.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/linear-client.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "src/commands/linear-contribution.ts" <urn:usf:graph:hermes-linear-autonomy> .
@@ -47,6 +47,7 @@
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "tests/integration/hermes-linear.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "tests/unit/linear/client.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "tests/unit/linear/contribution.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "tests/unit/linear/native-completion.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "tests/unit/linear/state.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:privacy> "public" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:realisationPermission> <urn:usf:permission:hermes-linear-autonomy> <urn:usf:graph:hermes-linear-autonomy> .
@@ -265,6 +266,8 @@
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "config/providers.json" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "config/qualification.json" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/completion-clone-optimization-grants.nq" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/completion-clone-optimization.nq" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/fixture-process-runtime-grants.nq" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/fixture-process-runtime.nq" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/fixture-process-validation-grants.nq" <urn:usf:graph:hermes-linear-autonomy> .
@@ -274,6 +277,7 @@
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/linear-issue-bindings.nq" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/linear-work-binding-grants.nq" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/manifest.json" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/completion-clone-optimization.json" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/fixture-process-runtime.json" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/fixture-process-validation.json" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "graph/manifests/linear-issue-bindings.json" <urn:usf:graph:hermes-linear-autonomy> .
@@ -307,22 +311,22 @@
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/construction-authority.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/execute.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-integrity.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-execute.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-integrity.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/help.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-implement.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-linear-autonomy.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-linear.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-realise.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-stewardship.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-supervisor-foreground.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/linear-binding.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/linear-client.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/linear-contribution.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/linear-delivery.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/linear-state.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-implement.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-realise.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/hermes-stewardship.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/linear-binding.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/models.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/probe.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/commands/publish.ts" <urn:usf:graph:hermes-linear-autonomy> .
@@ -346,13 +350,13 @@
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/graph/runtime-authority.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work-dependency.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/capabilities.ts" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/cli-transports.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/architecture-observation.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/artefact-validation.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/authority-snapshot.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/capabilities.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/catalogue.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/classification.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/cli-transports.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/config.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/delivery-generators.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/providers/dispatch-accounting.ts" <urn:usf:graph:hermes-linear-autonomy> .
@@ -385,10 +389,11 @@
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/schema/index.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/proposal-packet.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/providers/models-dev.json" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "tests/unit/linear/native-completion.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:version> "1" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:applicability> "required" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:command> "node --test --test-isolation=none tests/integration/hermes-linear.test.ts tests/unit/linear/client.test.ts tests/unit/linear/contribution.test.ts tests/unit/linear/state.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:command> "node --test --test-isolation=none tests/integration/hermes-linear.test.ts tests/unit/linear/client.test.ts tests/unit/linear/contribution.test.ts tests/unit/linear/state.test.ts tests/unit/linear/native-completion.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:hermes-linear-autonomy> .
@@ -440,6 +445,7 @@
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "src/commands/graph-execute.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "src/commands/help.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "src/commands/hermes-lifecycle.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "src/commands/hermes-linear-autonomy.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "src/commands/hermes-linear.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "src/commands/hermes.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "src/commands/linear-client.ts" <urn:usf:graph:hermes-linear-autonomy> .
@@ -455,4 +461,5 @@
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/integration/hermes-linear.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/client.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/contribution.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/native-completion.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/state.test.ts" <urn:usf:graph:hermes-linear-autonomy> .

@@ -220,3 +220,27 @@
 <urn:usf:linear-binding:usf-1162-fixture-repair:6> <urn:usf:predicate:targetManifest> "graph/manifests/linear-work-binding.json" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:linear-binding:usf-1162-fixture-repair:6> <urn:usf:predicate:type> <urn:usf:type:LinearIssueWorkBinding> <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:linear-binding:usf-1162-fixture-repair:6> <urn:usf:predicate:workIri> <urn:usf:work:linear-work-binding> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:type> <urn:usf:type:LinearIssueWorkBinding> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:issueWorkspace> "maldous" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:issueUuid> "603a984b-b550-4ea0-b1ac-6d2e0521a842" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:canonicalIssueLocator> "maldous:603a984b-b550-4ea0-b1ac-6d2e0521a842" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:owningModel> "USF" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:selectedProfile> <urn:usf:profile:completion-clone-optimization:1> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:targetManifest> "graph/manifests/completion-clone-optimization.json" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:workIri> <urn:usf:work:completion-clone-optimization> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:supersedesBinding> <urn:usf:linear-binding:usf-1202:12> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:maximumPromptTokens> "180000" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:realisationDisposition> "no-change" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1202:13> <urn:usf:predicate:fixedPrompt> "Complete the current completion-clone-optimization work only through the graph-admitted native no-change realisation, every declared validation obligation, completion evidence and proof, verified publication, authenticated binding settlement and independent completed readback. Do not dispatch a provider or interpret empty operations as completion. Preserve proofblocked policy, scope, executionAuthority, parallelSafety, permission and runtime limits; refuse any missing authority or evidence." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:canonicalIssueLocator> "maldous:4cb48b98-2c3b-45c0-b805-612ee7fd1875" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:fixedPrompt> "Complete the already-repaired linear-work-binding implementation through its exact graph-selected native no-change lifecycle: realise, every declared validation, completion evidence and proof, publication verify/apply, then authenticated terminal issue/attempt settlement and durable replay. Preserve all fixture isolation, immutable binding intent, issue ownership and refusal boundaries. Do not dispatch a provider, fabricate operations or treat passing focused tests as current semantic completion. The independent USF-1163 takeover evidence remains separate; this binding does not claim programme-wide BAU or completion of USF-1202." <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:issueUuid> "4cb48b98-2c3b-45c0-b805-612ee7fd1875" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:issueWorkspace> "maldous" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:maximumPromptTokens> "32000" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:owningModel> "USF" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:selectedProfile> <urn:usf:profile:linear-work-binding:1> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:supersedesBinding> <urn:usf:linear-binding:usf-1162-fixture-repair:6> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:targetManifest> "graph/manifests/linear-work-binding.json" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:type> <urn:usf:type:LinearIssueWorkBinding> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:workIri> <urn:usf:work:linear-work-binding> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:linear-binding:usf-1162-fixture-repair:7> <urn:usf:predicate:realisationDisposition> "no-change" <urn:usf:graph:linear-issue-bindings> .
