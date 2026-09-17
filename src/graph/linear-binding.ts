@@ -3,6 +3,13 @@ import { isRepositoryRelativePath } from "../core/scope.ts";
 
 export type OwningModel = "ANQR" | "USF" | "UXF" | "UIF";
 
+export interface LinearSourceContextSelection {
+  readonly path: string;
+  readonly start: string;
+  readonly end: string;
+  readonly maximumBytes: number;
+}
+
 /** A semantic declaration, not runtime admission or authenticated supersession. */
 export interface LinearBindingAuthority {
   readonly bindingIri: string;
@@ -17,6 +24,7 @@ export interface LinearBindingAuthority {
   readonly maximumPromptTokens: number;
   readonly supersedes: string | null;
   readonly realisationDisposition?: "no-change";
+  readonly sourceContext?: readonly LinearSourceContextSelection[];
 }
 
 export class LinearBindingError extends Error {
@@ -35,6 +43,33 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const SAFE_PART = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
 const IRI = /^[A-Za-z][A-Za-z0-9+.-]*:[^\s]+$/u;
 function refuse(reason: string): never { throw new LinearBindingError(reason); }
+
+function sourceContextSelections(text: string | null): readonly LinearSourceContextSelection[] | undefined {
+  if (text === null) return undefined;
+  let value: unknown;
+  try { value = JSON.parse(text); } catch { refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID"); }
+  if (!Array.isArray(value) || value.length === 0 || value.length > 16) refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID");
+  const paths = new Set<string>();
+  let maximumBytes = 0;
+  const selections = value.map((item: unknown): LinearSourceContextSelection => {
+    if (item === null || typeof item !== "object" || Array.isArray(item)
+      || Object.keys(item).sort().join(",") !== "end,maximumBytes,path,start") refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID");
+    const entry = item as Record<string, unknown>;
+    if (typeof entry.path !== "string" || !isRepositoryRelativePath(entry.path)
+      || entry.path.includes("\\") || entry.path.includes("\u0000")
+      || entry.path.split("/").some(part => part === "" || part === "." || part === "..")
+      || paths.has(entry.path)
+      || typeof entry.start !== "string" || entry.start.length === 0 || Buffer.byteLength(entry.start, "utf8") > 1024
+      || typeof entry.end !== "string" || entry.end.length === 0 || Buffer.byteLength(entry.end, "utf8") > 1024
+      || typeof entry.maximumBytes !== "number" || !Number.isSafeInteger(entry.maximumBytes)
+      || entry.maximumBytes < 1 || entry.maximumBytes > 16384) refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID");
+    paths.add(entry.path);
+    maximumBytes += entry.maximumBytes;
+    if (maximumBytes > 65536) refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID");
+    return Object.freeze({ path: entry.path, start: entry.start, end: entry.end, maximumBytes: entry.maximumBytes });
+  });
+  return Object.freeze(selections);
+}
 
 export function deriveLinearBindingDeclaration(graph: SemanticGraph, bindingIri: string): LinearBindingAuthority {
   if (typeof bindingIri !== "string" || bindingIri.length > 4096 || !IRI.test(bindingIri)) refuse("LINEAR_BINDING_SELECTOR_INVALID");
@@ -70,7 +105,10 @@ export function deriveLinearBindingDeclaration(graph: SemanticGraph, bindingIri:
   const supersedes = field("supersedesBinding", "iri", "LINEAR_BINDING_SUPERSESSION_INVALID", true);
   const realisationDisposition = field("realisationDisposition", "literal", "LINEAR_BINDING_REALISATION_DISPOSITION_INVALID", true);
   if (realisationDisposition !== null && realisationDisposition !== "no-change") refuse("LINEAR_BINDING_REALISATION_DISPOSITION_INVALID");
+  const sourceContext = sourceContextSelections(field("sourceContext", "literal", "LINEAR_BINDING_SOURCE_CONTEXT_INVALID", true, 65536));
+  if (sourceContext !== undefined && realisationDisposition !== null) refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID");
   return Object.freeze({ bindingIri, locator, workspace, issueUuid, owner, profile, targetManifest, workIri, fixedPrompt, maximumPromptTokens, supersedes,
     ...(realisationDisposition === null ? {} : { realisationDisposition }),
+    ...(sourceContext === undefined ? {} : { sourceContext }),
   });
 }
