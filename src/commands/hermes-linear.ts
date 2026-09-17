@@ -1,5 +1,5 @@
-import { lstat, readFile, realpath } from "node:fs/promises";
-import { resolve, relative, sep } from "node:path";
+import { lstat } from "node:fs/promises";
+import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph, objectValues } from "../graph/index.ts";
@@ -8,7 +8,8 @@ import { deriveWork } from "../graph/work.ts";
 import type { PreparedLinearBinding, LinearBindingSelector } from "./linear-binding.ts";
 import { observeLinearBinding } from "./linear-binding.ts";
 import { loadCredentialEnvFile, type CredentialEnvironment } from "../providers/config.ts";
-import { LinearClient, parseLinearPolicy, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "./linear-client.ts";
+import { LinearClient, readLinearPolicySource, parseLinearPolicy, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "./linear-client.ts";
+export { readLinearPolicySource } from "./linear-client.ts";
 import { LinearStateStore, readLinearRecord, writeLinearRecord, type LinearRecordValue } from "./linear-state.ts";
 import { linuxProcessInspector } from "../continuous/lifecycle.ts";
 import { acquireSupervisorLifetimeLock, claimStewardship, releaseStewardship, withSupervisorActivity } from "../continuous/stewardship.ts";
@@ -16,6 +17,7 @@ import { currentStewardshipDependencies } from "./hermes-stewardship.ts";
 import { registerForegroundSupervisor, unregisterForegroundSupervisor, foregroundSupervisorStopRequested, type HermesSupervisorRecord } from "./hermes-supervisor-foreground.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import { executeLinearDelivery } from "./linear-delivery.ts";
+import { reconcileHistoricalLinearComments } from "./hermes-linear-autonomy.ts";
 import type { CommandResult } from "./dispatcher.ts";
 
 const predicate = (name: string): string => `urn:usf:predicate:${name}`;
@@ -81,25 +83,6 @@ export async function loadLinearCredentials(root: string, path: string, names: r
   }
 }
 
-export async function readLinearPolicySource(root: string, manifest: string, policyIri: string, runtime = false): Promise<unknown> {
-  const graph = loadSemanticGraph(root, manifest);
-  const paths = objectValues(graph, policyIri, predicate("repositoryPath"));
-  const contracts = objectValues(graph, policyIri, predicate("forContract"));
-  if (paths.length !== 1 || contracts.length !== 1) refuse("LINEAR_POLICY_AUTHORITY_MISSING");
-  const result = deriveWork(graph, { profile: "urn:usf:profile:hermes-linear-autonomy:1", selector: "urn:usf:work:hermes-linear-autonomy" });
-  const packet = result.items?.[0];
-  if (result.status !== "ok" || packet?.contract !== contracts[0]
-    || (packet.eligibility?.construction.eligible !== true && packet.realisationStage?.completion.verified !== true)) refuse("LINEAR_POLICY_AUTHORITY_INACTIVE");
-  if (runtime && packet.realisationStage?.completion.verified !== true) refuse("LINEAR_POLICY_RUNTIME_UNPROVEN");
-  const path = paths[0]!;
-  if (!/^config\/[A-Za-z0-9._/-]+\.json$/u.test(path)) refuse("LINEAR_POLICY_PATH_INVALID");
-  const absolute = resolve(root, path);
-  const relation = relative(await realpath(root), await realpath(absolute));
-  if (relation.startsWith(`..${sep}`) || relation === ".." || relation !== path) refuse("LINEAR_POLICY_PATH_INVALID");
-  const metadata = await lstat(absolute);
-  if (!metadata.isFile() || metadata.isSymbolicLink() || metadata.size > 65536) refuse("LINEAR_POLICY_PATH_INVALID");
-  return JSON.parse(await readFile(absolute, "utf8")) as unknown;
-}
 
 export interface LinearLane {
   readonly selector: LinearBindingSelector;
@@ -310,6 +293,7 @@ export async function createDeclaredLinearIssues(root: string, policy: LinearPol
 export async function runHermesLinearCycle(root: string, policy: LinearPolicy, credentials: CredentialEnvironment,
   store: LinearStateStore, providerEnvFile: string, concurrency: number, stopped: () => boolean): Promise<unknown> {
   const mutations = new LinearMutations(store);
+  const reconciliation = await reconcileHistoricalLinearComments(root, policy, credentials, store, stopped);
   const proposals = await createDeclaredLinearIssues(root, policy, credentials, mutations);
   const discovered = await discoverLinearLanes(root, policy.bindingManifests);
   const remote = new Map<string, RemoteLane>();
@@ -381,7 +365,7 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
   const unbound = [...remote.entries()].filter(([locator]) => !boundLocators.has(locator)).map(([locator]) => locator).sort();
   return { schema: "urn:usf:hermes-linear-cycle:1", observedAt: new Date().toISOString(), policyDigest: canonicalDigest(policy),
     remoteIssueCount: remote.size, boundLaneCount: discovered.lanes.length, outcomes, discoveryErrors, updateErrors,
-    authorityBlockers: discovered.blocked, proposals, unboundIssueLocators: unbound, state: store.summary(),
+    authorityBlockers: discovered.blocked, proposals, reconciliation, unboundIssueLocators: unbound, state: store.summary(),
     terminal: discoveryErrors.length === 0 && updateErrors.length === 0 && discovered.blocked.length === 0 && unbound.length === 0
       && linearMutationLedgerSettled(store.summary())
       && proposals.every((proposal) => proposal.reasonCode === undefined)

@@ -1,6 +1,36 @@
+import { lstat, readFile, realpath } from "node:fs/promises";
+import { relative, resolve, sep } from "node:path";
+import { exitCodes, UsfError } from "../core/errors.ts";
+import { loadSemanticGraph, objectValues } from "../graph/index.ts";
+import { deriveWork } from "../graph/work.ts";
+import { canonicalDigest } from "../core/canonical.ts";
+
 const LINEAR_ENDPOINT = "https://api.linear.app/graphql";
+const linearPolicySourcePredicate = (name: string): string => `urn:usf:predicate:${name}`;
+function refuseLinearPolicySource(code: string): never { throw new UsfError(code, exitCodes.CURRENTNESS_FAILURE, code); }
+
+export async function readLinearPolicySource(root: string, manifest: string, policyIri: string, runtime = false): Promise<unknown> {
+  const graph = loadSemanticGraph(root, manifest);
+  const paths = objectValues(graph, policyIri, linearPolicySourcePredicate("repositoryPath"));
+  const contracts = objectValues(graph, policyIri, linearPolicySourcePredicate("forContract"));
+  if (paths.length !== 1 || contracts.length !== 1) refuseLinearPolicySource("LINEAR_POLICY_AUTHORITY_MISSING");
+  const result = deriveWork(graph, { profile: "urn:usf:profile:hermes-linear-autonomy:1", selector: "urn:usf:work:hermes-linear-autonomy" });
+  const packet = result.items?.[0];
+  if (result.status !== "ok" || packet?.contract !== contracts[0]
+    || (packet.eligibility?.construction.eligible !== true && packet.realisationStage?.completion.verified !== true)) refuseLinearPolicySource("LINEAR_POLICY_AUTHORITY_INACTIVE");
+  if (runtime && packet.realisationStage?.completion.verified !== true) refuseLinearPolicySource("LINEAR_POLICY_RUNTIME_UNPROVEN");
+  const path = paths[0]!;
+  if (!/^config\/[A-Za-z0-9._/-]+\.json$/u.test(path)) refuseLinearPolicySource("LINEAR_POLICY_PATH_INVALID");
+  const absolute = resolve(root, path);
+  const relation = relative(await realpath(root), await realpath(absolute));
+  if (relation.startsWith(`..${sep}`) || relation === ".." || relation !== path) refuseLinearPolicySource("LINEAR_POLICY_PATH_INVALID");
+  const metadata = await lstat(absolute);
+  if (!metadata.isFile() || metadata.isSymbolicLink() || metadata.size > 65536) refuseLinearPolicySource("LINEAR_POLICY_PATH_INVALID");
+  return JSON.parse(await readFile(absolute, "utf8")) as unknown;
+}
 const POLICY_SCHEMA = "urn:usf:hermes-linear-policy:1";
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
+const digestPattern = /^sha256:[0-9a-f]{64}$/u;
 const workspaceKeyPattern = /^[A-Z][A-Z0-9_]{1,31}$/u;
 const organizationUrlKeyPattern = /^[a-z0-9][a-z0-9-]{1,63}$/u;
 const credentialNamePattern = /^[A-Z][A-Z0-9_]{2,127}$/u;
@@ -78,6 +108,11 @@ export interface LinearComment {
   readonly id: string;
   readonly body: string;
   readonly issueId: string;
+}
+
+export interface LinearExpectedCommentRequest {
+  readonly requestDigest: string;
+  readonly bodyDigest: string;
 }
 
 export interface LinearCreateIssueInput {
@@ -222,6 +257,15 @@ function comment(value: unknown): LinearComment {
   return Object.freeze({ id: string(record.id, uuidPattern, "LINEAR_RESPONSE_INVALID"), body: string(record.body, undefined, "LINEAR_RESPONSE_INVALID"), issueId: string(object(record.issue, "LINEAR_RESPONSE_INVALID").id, uuidPattern, "LINEAR_RESPONSE_INVALID") });
 }
 
+function expectedCommentRequest(value: unknown): LinearExpectedCommentRequest {
+  const record = object(value, "LINEAR_INPUT_INVALID");
+  exactKeys(record, ["requestDigest", "bodyDigest"], "LINEAR_INPUT_INVALID");
+  return Object.freeze({
+    requestDigest: string(record.requestDigest, digestPattern, "LINEAR_INPUT_INVALID"),
+    bodyDigest: string(record.bodyDigest, digestPattern, "LINEAR_INPUT_INVALID"),
+  });
+}
+
 function nonEmpty(value: string, code = "LINEAR_INPUT_INVALID"): string {
   if (value.length === 0 || value.length > 100_000 || value.includes("\u0000")) fail(code);
   return value;
@@ -293,15 +337,24 @@ export class LinearClient {
     await this.#authorizedTeam(teamId);
     await this.#readIssue(issueId, teamId);
     for (let attempt = 0; attempt < commentReadbackAttempts; attempt += 1) {
-      const data = await this.#request("IssueComments", "query IssueComments($id: String!) { issue(id: $id) { comments { nodes { id body issue { id } } } } }", { id: issueId });
-      const comments = object(object(object(data).issue, "LINEAR_RESPONSE_INVALID").comments, "LINEAR_RESPONSE_INVALID").nodes;
-      if (!Array.isArray(comments)) fail("LINEAR_RESPONSE_INVALID");
-      const matches = comments.map(comment).filter((item) => item.body === body);
+      const matches = (await this.#readIssueComments(issueId, teamId)).filter((item) => item.body === body);
       if (matches.length > 1) fail("LINEAR_COMMENT_READBACK_AMBIGUOUS");
       if (matches[0] !== undefined) return matches[0];
       if (attempt + 1 < commentReadbackAttempts) await new Promise((resolve) => setTimeout(resolve, commentReadbackDelayMs));
     }
     return null;
+  }
+
+  async findCommentRequestMatches(issueId: string, teamId: string, expectedRequests: readonly LinearExpectedCommentRequest[]): Promise<readonly LinearComment[]> {
+    if (!uuidPattern.test(issueId)) fail("LINEAR_INPUT_INVALID");
+    if (!uuidPattern.test(teamId) || !this.#workspace.teams.some((team) => team.id === teamId)) fail("LINEAR_TEAM_NOT_ALLOWED");
+    if (!Array.isArray(expectedRequests) || expectedRequests.length > this.#policy.pageSize * this.#policy.maxPages) fail("LINEAR_INPUT_INVALID");
+    const expected = expectedRequests.map(expectedCommentRequest);
+    if (expected.length === 0) return Object.freeze([]);
+    await this.#authorizedTeam(teamId);
+    const expectedPairs = new Set(expected.map((request) => `${request.requestDigest}\u0000${request.bodyDigest}`));
+    const comments = await this.#readIssueComments(issueId, teamId);
+    return Object.freeze(comments.filter((item) => expectedPairs.has(`${canonicalDigest({ issueId: item.issueId, body: item.body })}\u0000${canonicalDigest(item.body)}`)));
   }
 
   async createIssue(input: LinearCreateIssueInput): Promise<LinearIssue> {
@@ -376,6 +429,33 @@ export class LinearClient {
     const result = comment(object(data).comment);
     if (result.issueId !== expectedIssueId) fail("LINEAR_READBACK_MISMATCH");
     return result;
+  }
+
+  async #readIssueComments(issueId: string, expectedTeamId: string): Promise<readonly LinearComment[]> {
+    const comments: LinearComment[] = [];
+    const cursors = new Set<string>();
+    let cursor: string | null = null;
+    for (let page = 0; page < this.#policy.maxPages; page += 1) {
+      const data = await this.#request("IssueComments", "query IssueComments($id: String!, $first: Int!, $after: String) { issue(id: $id) { id team { id } comments(first: $first, after: $after) { nodes { id body issue { id } } pageInfo { hasNextPage endCursor } } } }", { id: issueId, first: this.#policy.pageSize, after: cursor });
+      const observedIssue = object(object(data).issue, "LINEAR_RESPONSE_INVALID");
+      if (string(observedIssue.id, uuidPattern, "LINEAR_RESPONSE_INVALID") !== issueId) fail("LINEAR_READBACK_MISMATCH");
+      if (string(object(observedIssue.team, "LINEAR_RESPONSE_INVALID").id, uuidPattern, "LINEAR_RESPONSE_INVALID") !== expectedTeamId) fail("LINEAR_TEAM_NOT_ALLOWED");
+      const connection = object(observedIssue.comments, "LINEAR_RESPONSE_INVALID");
+      if (!Array.isArray(connection.nodes) || connection.nodes.length > this.#policy.pageSize) fail("LINEAR_RESPONSE_INVALID");
+      for (const node of connection.nodes) {
+        const parsed = comment(node);
+        if (parsed.issueId !== issueId) fail("LINEAR_READBACK_MISMATCH");
+        comments.push(parsed);
+      }
+      const pageInfo = object(connection.pageInfo, "LINEAR_RESPONSE_INVALID");
+      if (typeof pageInfo.hasNextPage !== "boolean") fail("LINEAR_RESPONSE_INVALID");
+      if (!pageInfo.hasNextPage) return Object.freeze(comments);
+      const next = string(pageInfo.endCursor, undefined, "LINEAR_RESPONSE_INVALID");
+      if (cursors.has(next)) fail("LINEAR_PAGINATION_INVALID");
+      cursors.add(next);
+      cursor = next;
+    }
+    fail("LINEAR_COMMENT_READBACK_INCOMPLETE");
   }
 
   #validateCreateIssue(input: LinearCreateIssueInput): void {

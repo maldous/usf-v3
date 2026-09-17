@@ -1,8 +1,8 @@
 {
-  "candidateDigest": "sha256:04adea99748e92c041257675ad517117c3b2085b6330d9edc186c6add67b27ff",
+  "candidateDigest": "sha256:3b3a782640c8ce77bedb886584a41a03d84e07d062bb87b037d48534eb1f0403",
   "fixtureSourceSet": {
-    "canonicalHead": "e01c94bf425881ab8b7cbd6ce514a0cbf40741e4",
-    "canonicalTree": "d8978c4ca3d5a17c38c333c88a72813ecef33630",
+    "canonicalHead": "26a8411ea4a1b57cb8220a962d64e763d357de50",
+    "canonicalTree": "6e668fd376b9a161899a6383cf9499c3fef10723",
     "excludedTopLevelEntries": [
       ".git",
       ".usf",
@@ -10,21 +10,21 @@
       "node_modules"
     ]
   },
-  "fixtureSourceSetDigest": "sha256:f66a5e44ea50f064c4e4b0131a7f07768c4e6e9497c3e5bb6a9a0dc7fed76af7",
+  "fixtureSourceSetDigest": "sha256:45fc9ee57b8275cd9738b56510b75dd38938cc1e5bbd832da518a4b50bd17ab2",
   "generatorCommand": [
     "node",
     "scripts/generate-checked-receipt-fixture.mjs"
   ],
   "generatorCommandDigest": "sha256:f904bb93b63f3aee9622f70d4f568b3a6cae8f90ea680d41f278c5a2a6f84762",
-  "originalConstructionBasisDigest": "sha256:d478944d49851ac5f4cfa7ed8e25de1906ab09b7c2def31855afde48e846d2d8",
-  "receiptDigest": "sha256:5fbc9f59f5c246b60486179153d1460bc5dd74ccf0ad583f229f2c6e8db05f82",
-  "receiptPath": ".usf/receipts/check/04adea99748e92c041257675ad517117c3b2085b6330d9edc186c6add67b27ff/aac23ef22ee0185dd6d987154fae096c22be61eeb031ec25f7cf55f68cb5dbf7.json",
-  "receiptRawSha256": "sha256:4148a0f9e9fe760144c6f5919d410cbfa8ba39034d07089e5a4cdc20086d2206",
+  "originalConstructionBasisDigest": "sha256:f7a7699960592886458b4e113b9a91022fe8da12bdf36f1e947518220393aa1f",
+  "receiptDigest": "sha256:ade09dcfc12c53a8a157929866364382c47b4aa5971c0b2fb13fe08852ff9be3",
+  "receiptPath": ".usf/receipts/check/3b3a782640c8ce77bedb886584a41a03d84e07d062bb87b037d48534eb1f0403/aac23ef22ee0185dd6d987154fae096c22be61eeb031ec25f7cf55f68cb5dbf7.json",
+  "receiptRawSha256": "sha256:761f5afac1e7b94ff1ee049d855a62bb25ffcaa8f6311a147924c5391c23fd9b",
   "schema": "urn:usf:checked-candidate-receipt-fixture-provenance:1",
-  "scopedDependencyDigest": "sha256:aec788d9bb6b00051b1ecf2dda0aa161da07c2ef4520e8e8d4965f9f7a340415",
+  "scopedDependencyDigest": "sha256:6080ba63fcee2b0d0d338081688bc4cbe686432c587092a33c3f744dfa226ec9",
   "sourceManifestPath": "graph/manifests/integration.json",
   "sourceProfileIri": "urn:usf:profile:v3-self-host:1",
   "sourceValidationIri": "urn:usf:validation:repository-path-tests",
   "sourceWorkIri": "urn:usf:work:repository-path-scope",
-  "workspaceIdentityDigest": "sha256:f65c56d0a8cce950b92476361df5f9823107fa8dd0e45ae1a97ea3938cb22833"
+  "workspaceIdentityDigest": "sha256:084fa6d598fe964b778904d8efc595d9c8324dde6c5874cdaa0be119764d90f5"
 }

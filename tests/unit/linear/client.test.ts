@@ -3,11 +3,13 @@ import test from "node:test";
 import {
   LinearClient, LinearClientError, parseLinearPolicy, type LinearFetch, type LinearPolicy,
 } from "../../../src/commands/linear-client.ts";
+import { canonicalDigest } from "../../../src/core/canonical.ts";
 
 const teamId = "77f0a87a-f966-460f-b744-98e75634f128";
 const otherTeamId = "53f584e7-70a1-4b1e-b982-b815210e47d4";
 const issueId = "11111111-1111-4111-8111-111111111111";
 const commentId = "22222222-2222-4222-8222-222222222222";
+const secondCommentId = "33333333-3333-4333-8333-333333333333";
 
 function policy(overrides: Record<string, unknown> = {}): LinearPolicy {
   return parseLinearPolicy({
@@ -23,6 +25,15 @@ function response(data: unknown, status = 200): Response { return new Response(J
 function identity(): Response { return response({ data: { viewer: { organization: { urlKey: "usf" }, teams: { nodes: [{ id: teamId }] } } } }); }
 function remoteIssue(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return { id: issueId, identifier: "USF-1", title: "Title", description: "Description", priority: 2, updatedAt: "2026-09-07T00:00:00.000Z", team: { id: teamId }, state: { id: "66666666-6666-4666-8666-666666666666", type: "started" }, assignee: null, ...overrides };
+}
+function remoteComment(body = "Body", overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return { id: commentId, body, issue: { id: issueId }, ...overrides };
+}
+function commentsPage(nodes: readonly unknown[], hasNextPage = false, endCursor: string | null = null, issueOverrides: Record<string, unknown> = {}): Response {
+  return response({ data: { issue: { id: issueId, team: { id: teamId }, comments: { nodes, pageInfo: { hasNextPage, endCursor } }, ...issueOverrides } } });
+}
+function expectedComment(body: string, expectedIssueId = issueId): { requestDigest: string; bodyDigest: string } {
+  return { requestDigest: canonicalDigest({ issueId: expectedIssueId, body }), bodyDigest: canonicalDigest(body) };
 }
 function queued(...responses: Response[]): LinearFetch {
   return async () => responses.shift() ?? (() => { throw new Error("unexpected fetch"); })();
@@ -110,10 +121,79 @@ test("comment lookup tolerates a bounded eventual-consistency gap", async () => 
     if (operationName === "IssueReadback") return response({ data: { issue: remoteIssue() } });
     assert.equal(operationName, "IssueComments");
     commentQueries += 1;
-    return response({ data: { issue: { comments: { nodes: commentQueries === 1 ? [] : [{ id: commentId, body: "Body", issue: { id: issueId } }] } } } });
+    return commentsPage(commentQueries === 1 ? [] : [remoteComment()]);
   }).findComment(issueId, teamId, "Body");
   assert.equal(found?.id, commentId);
   assert.equal(commentQueries, 2);
+});
+
+test("comment lookup follows bounded pagination instead of rereading the first page", async () => {
+  const after: (string | null)[] = [];
+  const found = await client(async (_url, init) => {
+    const request = JSON.parse(String(init?.body)) as { operationName: string; variables: { after: string | null } };
+    if (request.operationName === "ViewerIdentity") return identity();
+    if (request.operationName === "IssueReadback") return response({ data: { issue: remoteIssue() } });
+    assert.equal(request.operationName, "IssueComments");
+    after.push(request.variables.after);
+    return request.variables.after === null
+      ? commentsPage([remoteComment("Other")], true, "next")
+      : commentsPage([remoteComment("Body", { id: secondCommentId })]);
+  }).findComment(issueId, teamId, "Body");
+  assert.equal(found?.id, secondCommentId);
+  assert.deepEqual(after, [null, "next"]);
+});
+
+test("historical comment requests are matched in one query by both canonical digests", async () => {
+  const bodies = Array.from({ length: 14 }, (_, index) => `Body-${index}`);
+  const requests: { operationName: string; query: string; variables: { first?: number; after?: string | null } }[] = [];
+  const found = await client(async (_url, init) => {
+    const request = JSON.parse(String(init?.body)) as { operationName: string; query: string; variables: { first?: number; after?: string | null } };
+    requests.push(request);
+    if (request.operationName === "ViewerIdentity") return identity();
+    assert.equal(request.operationName, "IssueComments");
+    assert.equal(request.variables.first, 20);
+    assert.equal(request.variables.after, null);
+    return commentsPage([remoteComment("Body-7"), remoteComment("Unrelated", { id: secondCommentId })]);
+  }, policy({ pageSize: 20 })).findCommentRequestMatches(issueId, teamId, bodies.map((body) => expectedComment(body)));
+  assert.deepEqual(found, [{ id: commentId, body: "Body-7", issueId }]);
+  assert.deepEqual(requests.map((request) => request.operationName), ["ViewerIdentity", "IssueComments"]);
+  assert.equal(requests.every((request) => request.query.trimStart().startsWith("query ") && !request.query.includes("mutation")), true);
+});
+
+test("comment request matching rejects wrong bodies and mismatched digest pairs", async () => {
+  const wrongBody = await client(queued(identity(), commentsPage([remoteComment("Changed")]))).findCommentRequestMatches(issueId, teamId, [expectedComment("Body")]);
+  assert.deepEqual(wrongBody, []);
+  const tampered = { requestDigest: canonicalDigest({ issueId, body: "Body" }), bodyDigest: canonicalDigest("Changed") };
+  const mismatched = await client(queued(identity(), commentsPage([remoteComment("Body")]))).findCommentRequestMatches(issueId, teamId, [tampered]);
+  assert.deepEqual(mismatched, []);
+});
+
+test("comment request matching fails closed on wrong issue identities", async () => {
+  await rejectsCode(() => client(queued(identity(), commentsPage([remoteComment()], false, null, { id: commentId }))).findCommentRequestMatches(issueId, teamId, [expectedComment("Body")]), "LINEAR_READBACK_MISMATCH");
+  await rejectsCode(() => client(queued(identity(), commentsPage([remoteComment("Body", { issue: { id: commentId } })]))).findCommentRequestMatches(issueId, teamId, [expectedComment("Body")]), "LINEAR_READBACK_MISMATCH");
+});
+
+test("comment request matching fails closed on malformed, missing, repeated, or incomplete pages", async () => {
+  await rejectsCode(() => client(queued(identity(), commentsPage([remoteComment("Body", { body: 7 })]))).findCommentRequestMatches(issueId, teamId, [expectedComment("Body")]), "LINEAR_RESPONSE_INVALID");
+  await rejectsCode(() => client(queued(identity(), response({ data: { issue: { id: issueId, team: { id: teamId }, comments: { nodes: [remoteComment()] } } } }))).findCommentRequestMatches(issueId, teamId, [expectedComment("Body")]), "LINEAR_RESPONSE_INVALID");
+  await rejectsCode(() => client(queued(identity(), commentsPage([], true, "same"), commentsPage([], true, "same"))).findCommentRequestMatches(issueId, teamId, [expectedComment("Body")]), "LINEAR_PAGINATION_INVALID");
+  await rejectsCode(() => client(queued(identity(), commentsPage([], true, "one"), commentsPage([], true, "two"))).findCommentRequestMatches(issueId, teamId, [expectedComment("Body")]), "LINEAR_COMMENT_READBACK_INCOMPLETE");
+});
+
+test("empty and overbound comment request batches perform no credential or remote contact", async () => {
+  let credentialReads = 0;
+  let contacts = 0;
+  const api = new LinearClient({
+    policy: policy(), workspaceKey: "USF",
+    credentials: { getCredential: () => { credentialReads += 1; return "private-secret"; } },
+    fetch: async () => { contacts += 1; return identity(); },
+  });
+  const empty = await api.findCommentRequestMatches(issueId, teamId, []);
+  assert.deepEqual(empty, []);
+  assert.equal(Object.isFrozen(empty), true);
+  await rejectsCode(() => api.findCommentRequestMatches(issueId, teamId, Array.from({ length: 5 }, (_, index) => expectedComment(`Body-${index}`))), "LINEAR_INPUT_INVALID");
+  assert.equal(credentialReads, 0);
+  assert.equal(contacts, 0);
 });
 
 test("an exact issue read remains available for a completed bound issue", async () => {

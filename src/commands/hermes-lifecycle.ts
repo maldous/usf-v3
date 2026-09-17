@@ -933,8 +933,21 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
       const transactions: Record<string, unknown>[] = [];
       const blockers: Record<string, unknown>[] = [];
 
+      // A retained authenticated continuation precedes every ordinary lane.
+      // Its failure must not allow another lane to move the protected inputs.
+      let continuationBlocker: string | null = null;
+      if (parsed.manifest === deliveryManifest) {
+        try {
+          const { resumeLinearDeliveryContinuation } = await import("./linear-delivery.ts");
+          await resumeLinearDeliveryContinuation(repositoryRoot);
+        } catch (error) {
+          continuationBlocker = error instanceof Error ? error.message.slice(0, 300) : "LINEAR_CONTINUATION_UNKNOWN";
+          blockers.push(Object.freeze({ lane: "linear-continuation", reason: continuationBlocker }));
+        }
+      }
+
       // Product implementation first: it is the work the phase exists for.
-      const implementation = await implementCommand(repositoryRoot, [
+      const implementation = continuationBlocker !== null ? null : await implementCommand(repositoryRoot, [
         "--apply", "--env-file", parsed.envFile, "--manifest", parsed.manifest,
         "--limit", String(parsed.dispatchLimit), "--concurrency", String(parsed.concurrency),
       ]).then((result) => result.output as Record<string, unknown>,
@@ -972,7 +985,7 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
       // are available, which is the opposite of selecting a profile. The lane is
       // recorded as deliberately not applicable rather than silently skipped.
       const artefactLaneApplies = parsed.manifest === deliveryManifest;
-      const artefact = !artefactLaneApplies ? null
+      const artefact = continuationBlocker !== null || !artefactLaneApplies ? null
         : await realisePlanCommand(repositoryRoot, ["--apply", "--env-file", parsed.envFile])
         .then((result) => result.output as Record<string, unknown>,
           (error: unknown) => {
@@ -993,6 +1006,7 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
       // allowing the product lane to remain healthy and observable.
       const linear = await (async (): Promise<Record<string, unknown>> => {
         try {
+          if (continuationBlocker !== null) throw new Error(continuationBlocker);
           const policy = parseLinearPolicy(await readLinearPolicySource(
             repositoryRoot, linearAutonomyManifest, linearAutonomyPolicy));
           const credentials = await loadLinearCredentials(

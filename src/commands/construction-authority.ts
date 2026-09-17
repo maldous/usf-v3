@@ -77,6 +77,7 @@ interface PublishConstructionRequest {
 
 interface PreparedPublication {
   readonly graph: LoadedSemanticGraph;
+  readonly authority: ConstructionAuthorityDescriptor;
   readonly receipt: ConstructionAuthorityPublicationReceipt;
   readonly receiptBytes: string;
   readonly sourceBefore: string;
@@ -84,6 +85,55 @@ interface PreparedPublication {
   readonly recordLines: readonly string[];
   readonly state: "absent" | "matching";
   readonly affectedWorks: readonly string[];
+  readonly workBasisDigests: Readonly<Record<string, string>>;
+}
+
+export interface PublicationEffect {
+  readonly kind: "construction" | "completion";
+  readonly workIris: readonly string[];
+  readonly sourcePath: string;
+  readonly beforeDigest: string;
+  readonly afterDigest: string;
+  readonly receiptPath: string;
+  readonly receiptFileDigest: string;
+  readonly receiptDigest: string;
+}
+
+export type PublicationCheckpoint = (effect: PublicationEffect) => Promise<void>;
+
+function constructionPublicationEffect(
+  prepared: Pick<PreparedPublication, "receipt" | "receiptBytes" | "sourceBefore" | "sourceAfter" | "affectedWorks">,
+): PublicationEffect {
+  return Object.freeze({
+    kind: "construction" as const,
+    workIris: Object.freeze([...prepared.affectedWorks]),
+    sourcePath: prepared.receipt.semanticSourcePath,
+    beforeDigest: sha256(Buffer.from(prepared.sourceBefore, "utf8")),
+    afterDigest: sha256(Buffer.from(prepared.sourceAfter, "utf8")),
+    receiptPath: prepared.receipt.publicationReceiptPath,
+    receiptFileDigest: sha256(Buffer.from(prepared.receiptBytes, "utf8")),
+    receiptDigest: prepared.receipt.receiptDigest,
+  });
+}
+
+function constructionWorkBasisDigests(
+  authenticated: readonly Readonly<{ bundle: ConstructionProofBundle; packet: WorkPacket }>[],
+): Readonly<Record<string, string>> {
+  return Object.freeze(Object.fromEntries(authenticated.map(({ bundle, packet }) => {
+    if (packet.realisationBasis === undefined) refuse("CONSTRUCTION_BASIS_MISSING", "Publication basis is absent.", exitCodes.CURRENTNESS_FAILURE);
+    return [bundle.evidence.workIri, packet.realisationBasis.basisDigest];
+  })));
+}
+
+function constructionGraphCurrentness(graph: LoadedSemanticGraph): string {
+  return canonicalJson({
+    manifestPath: graph.manifestPath,
+    manifests: graph.manifests.map(({ path, digest }) => ({ path, digest })),
+    sources: graph.sources,
+    semanticDigest: graph.semanticDigest,
+    graphDigests: graph.graphDigests,
+    sourceDigests: graph.sourceDigests,
+  });
 }
 
 function refuse(code: string, message: string, exitCode: ExitCode = exitCodes.INVALID_INPUT, details?: Record<string, unknown>): never {
@@ -545,6 +595,7 @@ function preparePublication(root: string, request: PublishConstructionRequest, v
     || authenticated.some((entry) => canonicalJson(entry.authority) !== canonicalJson(authority))) {
     refuse("CONSTRUCTION_PUBLICATION_AUTHORITY_MIXED", "A publication batch must bind one exact graph-selected authority policy.", exitCodes.CURRENTNESS_FAILURE);
   }
+  const workBasisDigests = constructionWorkBasisDigests(authenticated);
   if (new Set(authenticated.map(({ bundle }) => bundle.evidence.workIri)).size !== authenticated.length) refuse("CONSTRUCTION_BUNDLE_WORK_DUPLICATE", "A publication batch cannot repeat a work.");
   const profileVersions = new Set(authenticated.map(({ packet }) => selectedProfileVersion(packet)));
   if (profileVersions.size !== 1) refuse("CONSTRUCTION_PROFILE_VERSION_MIXED", "A publication batch must bind one profile version.", exitCodes.CURRENTNESS_FAILURE);
@@ -579,7 +630,7 @@ function preparePublication(root: string, request: PublishConstructionRequest, v
       const packet = result.status === "ok" ? result.items?.[0] : undefined;
       if (packet?.realisationAuthority?.permission?.activationState !== constructionAuthorityConstants.activeState || packet.eligibility?.activation.eligible !== true) refuse("CONSTRUCTION_PUBLICATION_MATCHING_READBACK_INVALID", "Existing construction authority did not authenticate on readback.", exitCodes.CURRENTNESS_FAILURE);
     }
-    return Object.freeze({ graph, receipt, receiptBytes: `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, sourceBefore, sourceAfter: sourceBefore, recordLines: Object.freeze(recordLines), state: "matching" as const, affectedWorks: Object.freeze(authenticated.map(({ bundle }) => bundle.evidence.workIri)) });
+    return Object.freeze({ graph, authority, receipt, receiptBytes: `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, sourceBefore, sourceAfter: sourceBefore, recordLines: Object.freeze(recordLines), state: "matching" as const, affectedWorks: Object.freeze(authenticated.map(({ bundle }) => bundle.evidence.workIri)), workBasisDigests });
   }
   const sourceAfter = sourcePostimage(sourceBefore, recordLines);
   const temporary = copyCandidateRepository(root);
@@ -609,7 +660,36 @@ function preparePublication(root: string, request: PublishConstructionRequest, v
     const validatedDigest = validateCandidateRepository(root, sourceAfter, receipt, authenticated.map(({ bundle }) => bundle.evidence.workIri), request.profile, authority);
     if (validatedDigest !== resultingSemanticDigest) refuse("CONSTRUCTION_CANDIDATE_SEMANTIC_DIGEST_MISMATCH", "Candidate semantic digest changed during validation.", exitCodes.CURRENTNESS_FAILURE);
   }
-  return Object.freeze({ graph, receipt, receiptBytes, sourceBefore, sourceAfter, recordLines: Object.freeze(recordLines), state: "absent" as const, affectedWorks: Object.freeze(authenticated.map(({ bundle }) => bundle.evidence.workIri)) });
+  return Object.freeze({ graph, authority, receipt, receiptBytes, sourceBefore, sourceAfter, recordLines: Object.freeze(recordLines), state: "absent" as const, affectedWorks: Object.freeze(authenticated.map(({ bundle }) => bundle.evidence.workIri)), workBasisDigests });
+}
+
+function assertConstructionPublicationCurrentAfterCheckpoint(
+  root: string,
+  request: PublishConstructionRequest,
+  values: readonly unknown[],
+  locked: PreparedPublication,
+  expectedSourceMode: number,
+): void {
+  const graph = loadSemanticGraph(root, request.manifestPath);
+  const authenticated = values.map((value) => authenticateBundle(root, graph, request.profile, request.manifestPath, value))
+    .sort((left, right) => utf8Compare(left.bundle.evidence.workIri, right.bundle.evidence.workIri));
+  const authority = authenticated[0]?.authority;
+  const affectedWorks = authenticated.map(({ bundle }) => bundle.evidence.workIri);
+  if (authority === undefined
+    || canonicalJson(authority) !== canonicalJson(locked.authority)
+    || constructionGraphCurrentness(graph) !== constructionGraphCurrentness(locked.graph)
+    || canonicalJson(affectedWorks) !== canonicalJson(locked.affectedWorks)
+    || canonicalJson(constructionWorkBasisDigests(authenticated)) !== canonicalJson(locked.workBasisDigests)) {
+    refuse("CONSTRUCTION_PUBLICATION_CURRENTNESS_CHANGED", "Construction publication authority or protected inputs changed during its checkpoint.", exitCodes.INTEGRATION_CONFLICT);
+  }
+  const sourceAbsolute = resolve(root, locked.authority.sourcePath);
+  const receiptAbsolute = publicationReceiptPath(root, locked.receipt.publicationReceiptPath, false);
+  const currentSourceMode = statSync(sourceAbsolute).mode & 0o777;
+  if (readFileSync(sourceAbsolute, "utf8") !== locked.sourceBefore
+    || currentSourceMode !== expectedSourceMode
+    || existsSync(receiptAbsolute)) {
+    refuse("CONSTRUCTION_PUBLICATION_PREIMAGE_CHANGED", "Construction publication preimage changed during its checkpoint.", exitCodes.INTEGRATION_CONFLICT);
+  }
 }
 
 function publicationResult(mode: "verify" | "apply", state: "verified-without-publication" | "created" | "matching", receipt: ConstructionAuthorityPublicationReceipt): Record<string, unknown> {
@@ -629,7 +709,12 @@ function publicationResult(mode: "verify" | "apply", state: "verified-without-pu
   });
 }
 
-async function publishConstruction(root: string, request: PublishConstructionRequest, values: readonly unknown[]): Promise<Record<string, unknown>> {
+async function publishConstruction(
+  root: string,
+  request: PublishConstructionRequest,
+  values: readonly unknown[],
+  checkpoint?: PublicationCheckpoint,
+): Promise<Record<string, unknown>> {
   const prepared = preparePublication(root, request, values, true);
   if (request.mode === "verify") return publicationResult("verify", "verified-without-publication", prepared.receipt);
   const lock = await acquirePrimaryMutationLock(root);
@@ -642,6 +727,10 @@ async function publishConstruction(root: string, request: PublishConstructionReq
     if (readFileSync(sourceAbsolute, "utf8") !== locked.sourceBefore || existsSync(receiptAbsolute)) refuse("CONSTRUCTION_PUBLICATION_PREIMAGE_CHANGED", "Construction publication preimage changed under lock.", exitCodes.INTEGRATION_CONFLICT);
     const sourceMode = statSync(sourceAbsolute).mode & 0o777;
     let receiptCreated = false;
+    if (checkpoint !== undefined) {
+      await checkpoint(constructionPublicationEffect(locked));
+      assertConstructionPublicationCurrentAfterCheckpoint(root, request, values, locked, sourceMode);
+    }
     try {
       atomicWrite(sourceAbsolute, locked.sourceAfter, sourceMode);
       atomicCreate(receiptAbsolute, locked.receiptBytes, 0o644); receiptCreated = true;
@@ -656,6 +745,23 @@ async function publishConstruction(root: string, request: PublishConstructionReq
   } finally {
     await lock.handle.close();
   }
+}
+
+async function executeConstructionPublication(
+  command: CommandRequest,
+  checkpoint?: PublicationCheckpoint,
+): Promise<CommandResult> {
+  const request = parsePublishConstructionRequest(command.args);
+  const stdinState: { value?: Buffer } = {};
+  const values = request.bundlePaths.map((path) => parseJsonInput(command.repositoryRoot, path, stdinState));
+  return { output: await publishConstruction(command.repositoryRoot, request, values, checkpoint) };
+}
+
+export function publishConstructionWithCheckpoint(
+  command: CommandRequest,
+  checkpoint: PublicationCheckpoint,
+): Promise<CommandResult> {
+  return executeConstructionPublication(command, checkpoint);
 }
 
 export const evidenceCommandHandler: CommandHandler = ({ args, repositoryRoot }) => {
@@ -680,9 +786,6 @@ export const proveCommandHandler: CommandHandler = ({ args, repositoryRoot }) =>
 export const constructionAwarePublishCommandHandler: CommandHandler = async (command: CommandRequest): Promise<CommandResult> => {
   if (command.args[0] !== "construction-authority") return publishCommandHandler(command);
   try {
-    const request = parsePublishConstructionRequest(command.args);
-    const stdinState: { value?: Buffer } = {};
-    const values = request.bundlePaths.map((path) => parseJsonInput(command.repositoryRoot, path, stdinState));
-    return { output: await publishConstruction(command.repositoryRoot, request, values) };
+    return await executeConstructionPublication(command);
   } catch (error) { return asUsfError(error, "CONSTRUCTION_PUBLICATION_REFUSED"); }
 };

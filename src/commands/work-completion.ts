@@ -68,7 +68,13 @@ import { acquirePrimaryMutationLock, inspectCandidateIntegrationRecovery, type C
 import { createJsonSchemaValidator } from "../schema/index.ts";
 import { readGraphDerivedCheckReceipt, readGraphDerivedCheckReceiptAtAuthenticatedWorkspace, readGraphDerivedCheckReceiptForRecoveryAtAuthenticatedWorkspace, readGraphDerivedCheckFailureDiagnostic, ensureGraphDerivedCheck, executionIntentPresent, authenticateGraphDerivedCheckIntentAtAuthenticatedWorkspace, type CheckedCandidateReceipt } from "./check.ts";
 import { parseCommandInput, readCommandInput } from "./command-input.ts";
-import { evidenceCommandHandler, proveCommandHandler, constructionAwarePublishCommandHandler } from "./construction-authority.ts";
+import {
+  evidenceCommandHandler,
+  proveCommandHandler,
+  constructionAwarePublishCommandHandler,
+  type PublicationCheckpoint,
+  type PublicationEffect,
+} from "./construction-authority.ts";
 import type { CommandHandler, CommandRequest, CommandResult } from "./dispatcher.ts";
 
 
@@ -106,6 +112,42 @@ interface PreparedPublication {
   readonly state: "absent" | "matching";
   readonly affectedWorks: readonly string[];
   readonly authority: NoChangeCompletionAuthority;
+  readonly workBasisDigests: Readonly<Record<string, string>>;
+}
+
+function completionPublicationEffect(
+  prepared: Pick<PreparedPublication, "receipt" | "receiptBytes" | "sourceBefore" | "sourceAfter" | "affectedWorks" | "authority">,
+): PublicationEffect {
+  return Object.freeze({
+    kind: "completion" as const,
+    workIris: Object.freeze([...prepared.affectedWorks]),
+    sourcePath: prepared.authority.sourcePath,
+    beforeDigest: sha256(Buffer.from(prepared.sourceBefore, "utf8")),
+    afterDigest: sha256(Buffer.from(prepared.sourceAfter, "utf8")),
+    receiptPath: prepared.receipt.publicationReceiptPath,
+    receiptFileDigest: sha256(Buffer.from(prepared.receiptBytes, "utf8")),
+    receiptDigest: prepared.receipt.receiptDigest,
+  });
+}
+
+function completionWorkBasisDigests(
+  authenticated: readonly Readonly<{ bundle: CompletionProofBundle; packet: WorkPacket }>[],
+): Readonly<Record<string, string>> {
+  return Object.freeze(Object.fromEntries(authenticated.map(({ bundle, packet }) => {
+    if (packet.realisationBasis === undefined) refuse("WORK_COMPLETION_BASIS_MISSING", "Publication basis is absent.", exitCodes.CURRENTNESS_FAILURE);
+    return [bundle.evidence.workIri, packet.realisationBasis.basisDigest];
+  })));
+}
+
+function completionGraphCurrentness(graph: LoadedSemanticGraph): string {
+  return canonicalJson({
+    manifestPath: graph.manifestPath,
+    manifests: graph.manifests.map(({ path, digest }) => ({ path, digest })),
+    sources: graph.sources,
+    semanticDigest: graph.semanticDigest,
+    graphDigests: graph.graphDigests,
+    sourceDigests: graph.sourceDigests,
+  });
 }
 
 interface PublicationSnapshotBinding {
@@ -1644,6 +1686,7 @@ async function preparePublication(
   const graph = loadSemanticGraph(root, request.manifestPath);
   const authenticated = (await Promise.all(values.map((value) => authenticateBundle(root, graph, request.profile, value))))
     .sort((left, right) => utf8Compare(left.bundle.evidence.workIri, right.bundle.evidence.workIri));
+  const workBasisDigests = completionWorkBasisDigests(authenticated);
   if (new Set(authenticated.map(({ bundle }) => bundle.evidence.workIri)).size !== authenticated.length) {
     refuse("WORK_COMPLETION_BUNDLE_WORK_DUPLICATE", "A completion batch cannot repeat a work.");
   }
@@ -1695,7 +1738,7 @@ async function preparePublication(
         refuse("WORK_COMPLETION_PUBLICATION_MATCHING_READBACK_INVALID", "Existing completion authority did not authenticate on readback.", exitCodes.CURRENTNESS_FAILURE);
       }
     }
-    return Object.freeze({ graph, authority, receipt, receiptBytes: `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, sourceBefore, sourceAfter: sourceBefore, recordLines: Object.freeze(recordLines), state: "matching" as const, affectedWorks: Object.freeze([...workSet]) });
+    return Object.freeze({ graph, authority, receipt, receiptBytes: `${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n`, sourceBefore, sourceAfter: sourceBefore, recordLines: Object.freeze(recordLines), state: "matching" as const, affectedWorks: Object.freeze([...workSet]), workBasisDigests });
   }
 
   const sourceAfter = sourcePostimage(sourceBefore, recordLines);
@@ -1729,7 +1772,7 @@ async function preparePublication(
     const validatedDigest = validateCandidateRepository(root, sourceAfter, receipt, [...workSet], request.profile, authority);
     if (validatedDigest !== resultingSemanticDigest) refuse("WORK_COMPLETION_CANDIDATE_SEMANTIC_DIGEST_MISMATCH", "Candidate semantic digest changed during validation.", exitCodes.CURRENTNESS_FAILURE);
   }
-  return Object.freeze({ graph, authority, receipt, receiptBytes, sourceBefore, sourceAfter, recordLines: Object.freeze(recordLines), state: "absent" as const, affectedWorks: Object.freeze([...workSet]) });
+  return Object.freeze({ graph, authority, receipt, receiptBytes, sourceBefore, sourceAfter, recordLines: Object.freeze(recordLines), state: "absent" as const, affectedWorks: Object.freeze([...workSet]), workBasisDigests });
 }
 
 function publicationResult(
@@ -2193,9 +2236,35 @@ function authenticateReceiptPending(root: string, pendingPath: string, finalPath
   } finally { closeSync(fd); }
 }
 
+function assertRetainedPublicationSnapshotCurrent(
+  root: string,
+  binding: PublicationSnapshotBinding,
+  directory: string,
+  retained: PreparedPublicationSnapshot,
+): void {
+  const current = readPublicationSnapshot(root, binding, directory);
+  if (canonicalJson(current.metadata) !== canonicalJson(retained.metadata)) {
+    refuse(
+      "WORK_COMPLETION_SNAPSHOT_STALE",
+      "The retained publication snapshot changed during the checkpoint.",
+      exitCodes.CURRENTNESS_FAILURE,
+    );
+  }
+  for (const file of current.metadata.files.filter((entry) => entry.role === "authority-input")) {
+    const authorityInput = readPublicationFile(root, file.sourcePath!);
+    if (authorityInput.mode !== file.sourceMode || !authorityInput.bytes.equals(current.bytes.get(file.path)!)) {
+      refuse(
+        "WORK_COMPLETION_SNAPSHOT_STALE",
+        "An original authority or runtime input changed outside the publication effect.",
+        exitCodes.CURRENTNESS_FAILURE,
+      );
+    }
+  }
+}
+
 async function applyPublicationSnapshot(
   root: string, request: PublishRequest, binding: PublicationSnapshotBinding, directory: string,
-  retained: PreparedPublicationSnapshot,
+  retained: PreparedPublicationSnapshot, checkpoint?: PublicationCheckpoint,
 ): Promise<Record<string, unknown>> {
   const graph = loadSemanticGraph(root, request.manifestPath);
   const authority = deriveNoChangeCompletionAuthority(graph, retained.metadata.members[0]!.work);
@@ -2230,6 +2299,7 @@ async function applyPublicationSnapshot(
     const verified = await preparePublication(root, request, bundles, false);
     return publicationResult(root, "verify", verified.state, verified.receipt, verified.authority);
   }
+  let checkpointPassed = false;
   let changed = false;
   if (start.action === "apply-source") {
     if (existsSync(resolve(root, sourcePending))) {
@@ -2245,6 +2315,28 @@ async function applyPublicationSnapshot(
     const finalPending = readPublicationFile(root, sourcePending, false, binding.root);
     if (finalPending.mode !== sourceMode || !finalPending.bytes.equals(sourceAfter)) {
       refuse("WORK_COMPLETION_SOURCE_PENDING_CONFLICT", "Pending source changed before publication.", exitCodes.INTEGRATION_CONFLICT);
+    }
+    if (!checkpointPassed && checkpoint !== undefined) {
+      const expectedReceiptPending = pending;
+      await checkpoint(completionPublicationEffect(prepared));
+      assertRetainedPublicationSnapshotCurrent(root, binding, directory, retained);
+      const currentSource = readPublicationFile(root, authority.sourcePath);
+      const currentSourcePending = readPublicationFile(root, sourcePending);
+      if (
+        currentSource.mode !== sourceMode
+        || !currentSource.bytes.equals(sourceBefore)
+        || currentSourcePending.mode !== sourceMode
+        || !currentSourcePending.bytes.equals(sourceAfter)
+        || authenticateReceiptPending(root, receiptPending, prepared.receipt.publicationReceiptPath, receiptBytes) !== expectedReceiptPending
+        || existsSync(publicationReceiptPath(root, prepared.receipt.publicationReceiptPath, false))
+      ) {
+        refuse(
+          "WORK_COMPLETION_PUBLICATION_CURRENTNESS_CHANGED",
+          "The retained publication preimage changed during the checkpoint.",
+          exitCodes.INTEGRATION_CONFLICT,
+        );
+      }
+      checkpointPassed = true;
     }
     renameSync(resolve(root, sourcePending), resolve(root, authority.sourcePath));
     fsyncDirectory(dirname(resolve(root, authority.sourcePath)));
@@ -2266,6 +2358,25 @@ async function applyPublicationSnapshot(
       refuse("WORK_COMPLETION_RECEIPT_PENDING_CONFLICT", "Receipt publication is not an exact pending singleton.", exitCodes.INTEGRATION_CONFLICT);
     }
     const destination = publicationReceiptPath(root, prepared.receipt.publicationReceiptPath, true);
+    if (!checkpointPassed && checkpoint !== undefined) {
+      await checkpoint(completionPublicationEffect(prepared));
+      assertRetainedPublicationSnapshotCurrent(root, binding, directory, retained);
+      const currentSource = readPublicationFile(root, authority.sourcePath);
+      if (
+        currentSource.mode !== sourceMode
+        || !currentSource.bytes.equals(sourceAfter)
+        || authenticateReceiptPending(root, receiptPending, prepared.receipt.publicationReceiptPath, receiptBytes) !== "pending"
+        || existsSync(destination)
+        || existsSync(resolve(root, sourcePending))
+      ) {
+        refuse(
+          "WORK_COMPLETION_PUBLICATION_CURRENTNESS_CHANGED",
+          "The retained publication state changed during the checkpoint.",
+          exitCodes.INTEGRATION_CONFLICT,
+        );
+      }
+      checkpointPassed = true;
+    }
     linkSync(resolve(root, receiptPending), destination);
     fsyncDirectory(dirname(destination));
     changed = true;
@@ -2286,7 +2397,64 @@ async function applyPublicationSnapshot(
   return publicationResult(root, "apply", changed ? "created" : "matching", readback.receipt, readback.authority);
 }
 
-async function publishCompletion(root: string, request: PublishRequest, values: readonly unknown[]): Promise<Record<string, unknown>> {
+async function authenticateCompletionPublicationAfterCheckpoint(
+  root: string,
+  request: PublishRequest,
+  values: readonly unknown[],
+): Promise<readonly Readonly<{ bundle: CompletionProofBundle; packet: WorkPacket }>[]> {
+  const authenticationGraph = loadSemanticGraph(root, request.manifestPath);
+  return (await Promise.all(
+    values.map((value) => authenticateBundle(root, authenticationGraph, request.profile, value)),
+  )).sort((left, right) => utf8Compare(left.bundle.evidence.workIri, right.bundle.evidence.workIri));
+}
+
+function assertCompletionPublicationCurrentAfterCheckpoint(
+  root: string,
+  request: PublishRequest,
+  authenticated: readonly Readonly<{ bundle: CompletionProofBundle; packet: WorkPacket }>[],
+  locked: PreparedPublication,
+  expectedSourceMode: number,
+): void {
+  const graph = loadSemanticGraph(root, request.manifestPath);
+  const current = authenticated.map(({ bundle }) => Object.freeze({
+    bundle,
+    packet: exactPacket(graph, request.profile, bundle.evidence.workIri),
+  }));
+  const authorities = current.map(({ packet }) => deriveNoChangeCompletionAuthority(graph, packet.id));
+  const affectedWorks = current.map(({ bundle }) => bundle.evidence.workIri);
+  if (
+    authorities.length === 0
+    || authorities.some((authority) => canonicalJson(authority) !== canonicalJson(locked.authority))
+    || completionGraphCurrentness(graph) !== completionGraphCurrentness(locked.graph)
+    || canonicalJson(affectedWorks) !== canonicalJson(locked.affectedWorks)
+    || canonicalJson(completionWorkBasisDigests(current)) !== canonicalJson(locked.workBasisDigests)
+  ) {
+    refuse(
+      "WORK_COMPLETION_PUBLICATION_CURRENTNESS_CHANGED",
+      "Completion authority or protected graph inputs changed during the checkpoint.",
+      exitCodes.CURRENTNESS_FAILURE,
+    );
+  }
+  const sourceAbsolute = resolve(root, locked.receipt.semanticSourcePath);
+  const receiptAbsolute = publicationReceiptPath(root, locked.receipt.publicationReceiptPath, false);
+  const currentSourceMode = statSync(sourceAbsolute).mode & 0o777;
+  if (readFileSync(sourceAbsolute, "utf8") !== locked.sourceBefore
+    || currentSourceMode !== expectedSourceMode
+    || existsSync(receiptAbsolute)) {
+    refuse(
+      "WORK_COMPLETION_PUBLICATION_PREIMAGE_CHANGED",
+      "Completion publication preconditions changed during the checkpoint.",
+      exitCodes.INTEGRATION_CONFLICT,
+    );
+  }
+}
+
+async function publishCompletion(
+  root: string,
+  request: PublishRequest,
+  values: readonly unknown[],
+  checkpoint?: PublicationCheckpoint,
+): Promise<Record<string, unknown>> {
   for (const value of values) validateCompletionBundleShape(value);
   const bundles = values as readonly CompletionProofBundle[];
   if (bundles.length === 0) refuse("WORK_COMPLETION_BUNDLE_COUNT_INVALID", "Publication requires a bounded native cohort.");
@@ -2302,7 +2470,7 @@ async function publishCompletion(root: string, request: PublishRequest, values: 
       if (canonicalJson(expected) !== canonicalJson(retained.metadata.members.map(member => member.proofBundleDigest).sort())) {
         refuse("WORK_COMPLETION_SNAPSHOT_MEMBER_INVALID", "Requested cohort does not match retained publication lineage.", exitCodes.CURRENTNESS_FAILURE);
       }
-      return applyPublicationSnapshot(root, request, binding, directory, retained);
+      return applyPublicationSnapshot(root, request, binding, directory, retained, checkpoint);
     };
     if (existsSync(resolve(root, directory))) {
       if (request.mode === "verify") return runRetained();
@@ -2322,7 +2490,7 @@ async function publishCompletion(root: string, request: PublishRequest, values: 
       }
       const snapshot = buildPublicationSnapshot(root, prepared, bundles, binding);
       persistPublicationSnapshot(root, binding, snapshot);
-      return await applyPublicationSnapshot(root, request, binding, directory, readPublicationSnapshot(root, binding, directory));
+      return await applyPublicationSnapshot(root, request, binding, directory, readPublicationSnapshot(root, binding, directory), checkpoint);
     } finally { await lock.handle.close(); }
   }
   const prepared = await preparePublication(root, request, values, true);
@@ -2342,6 +2510,17 @@ async function publishCompletion(root: string, request: PublishRequest, values: 
     }
     const sourceMode = statSync(sourceAbsolute).mode & 0o777;
     let receiptCreated = false;
+    if (checkpoint !== undefined) {
+      await checkpoint(completionPublicationEffect(locked));
+      const authenticated = await authenticateCompletionPublicationAfterCheckpoint(root, request, values);
+      assertCompletionPublicationCurrentAfterCheckpoint(
+        root,
+        request,
+        authenticated,
+        locked,
+        sourceMode,
+      );
+    }
     try {
       atomicWrite(sourceAbsolute, locked.sourceAfter, sourceMode);
       atomicCreate(receiptAbsolute, locked.receiptBytes, 0o644);
@@ -2362,6 +2541,23 @@ async function publishCompletion(root: string, request: PublishRequest, values: 
   } finally {
     await lock.handle.close();
   }
+}
+
+async function executeCompletionPublication(
+  command: CommandRequest,
+  checkpoint?: PublicationCheckpoint,
+): Promise<CommandResult> {
+  const request = parsePublishRequest(command.args);
+  const stdinState: { value?: Buffer } = {};
+  const values = request.bundlePaths.map((path) => parseJsonInput(command.repositoryRoot, path, stdinState));
+  return { output: await publishCompletion(command.repositoryRoot, request, values, checkpoint) };
+}
+
+export function publishCompletionWithCheckpoint(
+  command: CommandRequest,
+  checkpoint: PublicationCheckpoint,
+): Promise<CommandResult> {
+  return executeCompletionPublication(command, checkpoint);
 }
 
 export const realiseCommandHandler: CommandHandler = async ({ args, repositoryRoot }) => {
@@ -2402,9 +2598,6 @@ export const completionAwareProveCommandHandler: CommandHandler = async (command
 export const completionAwarePublishCommandHandler: CommandHandler = async (command: CommandRequest): Promise<CommandResult> => {
   if (command.args[0] !== "work-completion") return constructionAwarePublishCommandHandler(command);
   try {
-    const request = parsePublishRequest(command.args);
-    const stdinState: { value?: Buffer } = {};
-    const values = request.bundlePaths.map((path) => parseJsonInput(command.repositoryRoot, path, stdinState));
-    return { output: await publishCompletion(command.repositoryRoot, request, values) };
+    return await executeCompletionPublication(command);
   } catch (error) { return asUsfError(error, "WORK_COMPLETION_PUBLICATION_REFUSED"); }
 };

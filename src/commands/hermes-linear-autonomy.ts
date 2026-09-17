@@ -1,14 +1,16 @@
-import { lstat, readFile, realpath } from "node:fs/promises";
-import { resolve, relative, sep } from "node:path";
+import { lstat } from "node:fs/promises";
+import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph, objectValues } from "../graph/index.ts";
 import type { Quad } from "../graph/nquads.ts";
+import { deriveLinearBindingDeclaration } from "../graph/linear-binding.ts";
 import { deriveWork } from "../graph/work.ts";
 import type { PreparedLinearBinding, LinearBindingSelector } from "./linear-binding.ts";
 import { observeLinearBinding } from "./linear-binding.ts";
 import { loadCredentialEnvFile, type CredentialEnvironment } from "../providers/config.ts";
-import { LinearClient, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "./linear-client.ts";
+import { LinearClient, readLinearPolicySource, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "./linear-client.ts";
+export { readLinearPolicySource } from "./linear-client.ts";
 import { LinearStateStore, type LinearRecordValue } from "./linear-state.ts";
 import { executeLinearDelivery } from "./linear-delivery.ts";
 const predicate = (name: string): string => `urn:usf:predicate:${name}`;
@@ -82,25 +84,6 @@ export async function loadLinearCredentials(root: string, path: string, names: r
   }
 }
 
-export async function readLinearPolicySource(root: string, manifest: string, policyIri: string, runtime = false): Promise<unknown> {
-  const graph = loadSemanticGraph(root, manifest);
-  const paths = objectValues(graph, policyIri, predicate("repositoryPath"));
-  const contracts = objectValues(graph, policyIri, predicate("forContract"));
-  if (paths.length !== 1 || contracts.length !== 1) refuse("LINEAR_POLICY_AUTHORITY_MISSING");
-  const result = deriveWork(graph, { profile: "urn:usf:profile:hermes-linear-autonomy:1", selector: "urn:usf:work:hermes-linear-autonomy" });
-  const packet = result.items?.[0];
-  if (result.status !== "ok" || packet?.contract !== contracts[0]
-    || (packet.eligibility?.construction.eligible !== true && packet.realisationStage?.completion.verified !== true)) refuse("LINEAR_POLICY_AUTHORITY_INACTIVE");
-  if (runtime && packet.realisationStage?.completion.verified !== true) refuse("LINEAR_POLICY_RUNTIME_UNPROVEN");
-  const path = paths[0]!;
-  if (!/^config\/[A-Za-z0-9._/-]+\.json$/u.test(path)) refuse("LINEAR_POLICY_PATH_INVALID");
-  const absolute = resolve(root, path);
-  const relation = relative(await realpath(root), await realpath(absolute));
-  if (relation.startsWith(`..${sep}`) || relation === ".." || relation !== path) refuse("LINEAR_POLICY_PATH_INVALID");
-  const metadata = await lstat(absolute);
-  if (!metadata.isFile() || metadata.isSymbolicLink() || metadata.size > 65536) refuse("LINEAR_POLICY_PATH_INVALID");
-  return JSON.parse(await readFile(absolute, "utf8")) as unknown;
-}
 
 export interface LinearLane {
   readonly selector: LinearBindingSelector;
@@ -171,6 +154,161 @@ export interface LinearCycleOutcome {
   readonly detail?: string;
   readonly evidence: readonly string[];
 }
+
+export interface LinearCommentReconciliation {
+  readonly observed: number;
+  readonly confirmed: readonly string[];
+  readonly unresolved: readonly { intentId: string; reasonCode: string }[];
+  readonly deferred: number;
+}
+
+const historicalCommentCursors = new Map<string, string>();
+
+/** Observe retained effects independently of current runnable binding selection.
+ * Only the supervisor-owned store may apply these positive observations.
+ * One comment never discharges multiple distinct historical intents.
+ */
+export async function reconcileHistoricalLinearComments(
+  root: string, policy: LinearPolicy, credentials: CredentialEnvironment,
+  store: LinearStateStore, stopped: () => boolean = () => false,
+): Promise<LinearCommentReconciliation> {
+  const all = store.intents();
+  const pending = all.filter(intent => intent.state === "sent" || intent.state === "unknown")
+    .sort((a, b) => a.id.localeCompare(b.id));
+  if (pending.length === 0 || stopped()) return { observed: 0, confirmed: [], unresolved: [], deferred: pending.length };
+  const bound = Math.min(64, policy.pageSize * policy.maxPages);
+  if (!Number.isSafeInteger(bound) || bound < 1) return {
+    observed: 0, confirmed: [], unresolved: pending.map(intent => ({
+      intentId: intent.id, reasonCode: "LINEAR_RECONCILIATION_POLICY_INVALID",
+    })), deferred: 0,
+  };
+  const after = historicalCommentCursors.get(root);
+  const next = after === undefined ? 0 : pending.findIndex(intent => intent.id > after);
+  const start = next < 0 ? 0 : next;
+  const selected = [...pending.slice(start), ...pending.slice(0, start)].slice(0, bound);
+  if (!historicalCommentCursors.has(root) && historicalCommentCursors.size >= 64) {
+    historicalCommentCursors.delete(historicalCommentCursors.keys().next().value!);
+  }
+  historicalCommentCursors.set(root, selected[selected.length - 1]!.id);
+  const confirmed: string[] = [];
+  const unresolved: { intentId: string; reasonCode: string }[] = [];
+  const outcome = (intentId: string, reasonCode: string) => { unresolved.push({ intentId, reasonCode }); };
+  const policyDigest = canonicalDigest(policy);
+  const readSources = () => policy.bindingManifests.map(manifest => loadSemanticGraph(root, manifest));
+  const snapshotDigest = (graphs: readonly ReturnType<typeof loadSemanticGraph>[]) => canonicalDigest(
+    graphs.map((graph, index) => ({ manifest: policy.bindingManifests[index], quads: graph.quads })),
+  );
+  let sources: ReturnType<typeof loadSemanticGraph>[];
+  try { sources = readSources(); }
+  catch {
+    return { observed: 0, confirmed, unresolved: selected.map(intent => ({
+      intentId: intent.id, reasonCode: "LINEAR_RECONCILIATION_AUTHORITY_UNAVAILABLE",
+    })), deferred: pending.length - selected.length };
+  }
+  const authoritySnapshotDigest = snapshotDigest(sources);
+  type Retained = typeof selected[number];
+  const groups = new Map<string, {
+    workspace: LinearWorkspacePolicy; team: LinearTeamPolicy; issueId: string;
+    members: { intent: Retained; bodyDigest: string; authorityDigest: string }[];
+  }>();
+  for (const intent of selected) {
+    const operation = /^comment(?:-v[234])?-(sha256:[0-9a-f]{64})$/u.exec(intent.identity.operation);
+    if (operation === null) { outcome(intent.id, "LINEAR_RECONCILIATION_OPERATION_UNSUPPORTED"); continue; }
+    // Include settled intents in the cardinality check: an old unresolved send
+    // cannot inherit another distinct intent's already-confirmed observation.
+    const equivalent = all.filter(other => other.identity.remoteOperationId === intent.identity.remoteOperationId
+      && other.requestDigest === intent.requestDigest);
+    if (equivalent.length !== 1) { outcome(intent.id, "LINEAR_COMMENT_INTENT_IDENTITY_AMBIGUOUS"); continue; }
+    try {
+      const declarations = sources.filter(graph => graph.quads.some(quad => quad.subject === intent.identity.bindingIri
+        && quad.predicate === predicate("type") && quad.objectKind === "iri" && quad.object === bindingType))
+        .map(graph => deriveLinearBindingDeclaration(graph, intent.identity.bindingIri));
+      if (declarations.length === 0
+        || new Set(declarations.map(declaration => canonicalDigest(declaration))).size !== 1) {
+        refuse("LINEAR_RECONCILIATION_BINDING_AUTHORITY_INVALID");
+      }
+      const authority = declarations[0]!;
+      if (authority.issueUuid !== intent.identity.remoteOperationId) refuse("LINEAR_RECONCILIATION_REMOTE_IDENTITY_MISMATCH");
+      const workspace = policy.workspaces.find(item => item.organizationUrlKey === authority.workspace);
+      const teams = workspace?.teams.filter(item => item.owner === authority.owner) ?? [];
+      if (!workspace || teams.length !== 1) refuse("LINEAR_RECONCILIATION_OWNER_AMBIGUOUS");
+      const team = teams[0]!;
+      const key = canonicalDigest({ workspace: workspace.key, teamId: team.id, issueId: authority.issueUuid });
+      const group = groups.get(key) ?? { workspace, team, issueId: authority.issueUuid, members: [] };
+      group.members.push({ intent, bodyDigest: operation[1]!, authorityDigest: canonicalDigest(authority) });
+      groups.set(key, group);
+    } catch (error) { outcome(intent.id, linearReason(error)); }
+  }
+  let observed = 0;
+  const clients = new Map<string, LinearClient>();
+  for (const group of groups.values()) {
+    if (stopped()) {
+      for (const { intent } of group.members) outcome(intent.id, "LINEAR_RECONCILIATION_STOPPED");
+      continue;
+    }
+    try {
+      const client = clients.get(group.workspace.key) ?? new LinearClient({
+        policy, workspaceKey: group.workspace.key, credentials,
+      });
+      clients.set(group.workspace.key, client);
+      const comments = await client.findCommentRequestMatches(group.issueId, group.team.id,
+        group.members.map(({ intent, bodyDigest }) => ({ requestDigest: intent.requestDigest, bodyDigest })));
+      observed += group.members.length;
+      for (const { intent, bodyDigest, authorityDigest } of group.members) {
+        const matches = comments.filter(comment => comment.issueId === group.issueId
+          && canonicalDigest(comment.body) === bodyDigest
+          && canonicalDigest({ issueId: comment.issueId, body: comment.body }) === intent.requestDigest);
+        if (matches.length !== 1) {
+          outcome(intent.id, matches.length === 0 ? "LINEAR_COMMENT_POSTCONDITION_UNOBSERVED" : "LINEAR_COMMENT_READBACK_AMBIGUOUS");
+          continue;
+        }
+        if (stopped()) { outcome(intent.id, "LINEAR_RECONCILIATION_STOPPED"); continue; }
+        const evidence = canonicalDigest({
+          schema: "urn:usf:linear-comment-positive-readback:1",
+          intentId: intent.id, requestDigest: intent.requestDigest,
+          bindingAuthorityDigest: authorityDigest, authoritySnapshotDigest, policyDigest,
+          workspace: group.workspace.organizationUrlKey,
+          teamId: group.team.id, comment: matches[0]!,
+        });
+        const result = await store.reconcile({
+          intentId: intent.id, remoteOperationId: intent.identity.remoteOperationId,
+          requestDigest: intent.requestDigest, outcome: "confirmed", evidenceRefs: [evidence],
+        }, undefined, (currentIntent, currentIntents) => {
+          // This guard runs inside the store's serialized mutation, not before
+          // joining its queue. The caller retains supervisor activity ownership.
+          if (stopped()) refuse("LINEAR_RECONCILIATION_STOPPED");
+          let fresh: ReturnType<typeof loadSemanticGraph>[];
+          try { fresh = readSources(); }
+          catch { refuse("LINEAR_RECONCILIATION_AUTHORITY_STALE"); }
+          if (canonicalDigest(policy) !== policyDigest || snapshotDigest(fresh!) !== authoritySnapshotDigest) {
+            refuse("LINEAR_RECONCILIATION_AUTHORITY_STALE");
+          }
+          const currentDeclarations = fresh!.filter(graph => graph.quads.some(quad =>
+            quad.subject === intent.identity.bindingIri && quad.predicate === predicate("type")
+            && quad.objectKind === "iri" && quad.object === bindingType))
+            .map(graph => deriveLinearBindingDeclaration(graph, intent.identity.bindingIri));
+          if (currentDeclarations.length === 0
+            || currentDeclarations.some(declaration => canonicalDigest(declaration) !== authorityDigest)) {
+            refuse("LINEAR_RECONCILIATION_AUTHORITY_STALE");
+          }
+          if (canonicalDigest(currentIntent) !== canonicalDigest(intent)) refuse("LINEAR_RECONCILIATION_INTENT_STALE");
+          if (currentIntents.filter(other => other.identity.remoteOperationId === intent.identity.remoteOperationId
+            && other.requestDigest === intent.requestDigest).length !== 1) {
+            refuse("LINEAR_COMMENT_INTENT_IDENTITY_AMBIGUOUS");
+          }
+        });
+        if (result.status === "reconciled" && result.intent.state === "confirmed") confirmed.push(intent.id);
+        else outcome(intent.id, "LINEAR_RECONCILIATION_IDENTITY_CHANGED");
+      }
+    } catch (error) {
+      for (const { intent } of group.members) if (!confirmed.includes(intent.id)
+        && !unresolved.some(item => item.intentId === intent.id)) outcome(intent.id, linearReason(error));
+    }
+  }
+  return { observed, confirmed: confirmed.sort(), unresolved: unresolved.sort((a, b) => a.intentId.localeCompare(b.intentId)),
+    deferred: pending.length - selected.length };
+}
+
 
 /** Scope compatibility limits concurrency; provider calls retain their own graph-derived caps. */
 export async function runLinearLaneCycle(
@@ -312,6 +450,7 @@ export async function createDeclaredLinearIssues(root: string, policy: LinearPol
 export async function runHermesLinearCycle(root: string, policy: LinearPolicy, credentials: CredentialEnvironment,
   store: LinearStateStore, providerEnvFile: string, concurrency: number, stopped: () => boolean): Promise<unknown> {
   const mutations = new LinearMutations(store);
+  const reconciliation = await reconcileHistoricalLinearComments(root, policy, credentials, store, stopped);
   const proposals = await createDeclaredLinearIssues(root, policy, credentials, mutations);
   const discovered = await discoverLinearLanes(root, policy.bindingManifests);
   const remote = new Map<string, RemoteLane>();
@@ -395,7 +534,7 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
   const unbound = [...remote.entries()].filter(([locator]) => !boundLocators.has(locator)).map(([locator]) => locator).sort();
   return { schema: "urn:usf:hermes-linear-cycle:1", observedAt: new Date().toISOString(), policyDigest: canonicalDigest(policy),
     remoteIssueCount: remote.size, boundLaneCount: discovered.lanes.length, outcomes, discoveryErrors, updateErrors,
-    authorityBlockers: discovered.blocked, proposals, unboundIssueLocators: unbound, state: store.summary(),
+    authorityBlockers: discovered.blocked, proposals, reconciliation, unboundIssueLocators: unbound, state: store.summary(),
     terminal: discoveryErrors.length === 0 && updateErrors.length === 0 && discovered.blocked.length === 0 && unbound.length === 0
       && linearMutationLedgerSettled(store.summary())
       && proposals.every((proposal) => proposal.reasonCode === undefined)

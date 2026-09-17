@@ -1,3 +1,4 @@
+import type { LinearPublicationSelection, ContinuationOperationOptions } from "./linear-continuation.ts";
 import { resolve, sep } from "node:path";
 import { apply } from "./apply.ts";
 import { runGraphDerivedCheck } from "./check.ts";
@@ -162,12 +163,39 @@ function completionRefusal(output: unknown, fallback: string): Error {
   return Object.assign(new Error(code), { reasonCode: code });
 }
 
+function publicationSelection(binding: LinearBindingResult): LinearPublicationSelection {
+  const { profile, manifestPath, workIri, packet } = binding.binding.unit;
+  return {
+    profile, manifestPath, workIri,
+    constructionProofObligation: packet.realisationAuthority?.constructionProofObligation ?? "",
+    completionProofObligation: packet.realisationAuthority?.completionProofObligation ?? null,
+    completionValidationObligations: packet.realisationAuthority?.completionValidationObligations ?? [],
+  };
+}
+
+export async function resumeLinearDeliveryContinuation(root: string) {
+  const { resumeLinearMetadataContinuation } = await import("./linear-continuation.ts");
+  return resumeLinearMetadataContinuation(root, {
+    construct: (selection, identity, options) => refreshConstructionAuthority(root, selection, identity, options),
+    complete: (selection, identity, options) => completeCurrentWork(root, selection, identity, options),
+  });
+}
+
 async function completeCurrentWork(
   root: string,
-  binding: LinearBindingResult,
+  selected: LinearPublicationSelection,
   candidateDigest: string,
+  options?: ContinuationOperationOptions,
 ) {
-  const { profile, manifestPath, workIri } = binding.binding.unit;
+  const { profile, manifestPath, workIri } = selected;
+  if (options?.resume) {
+    const { publishCompletionWithCheckpoint } = await import("./work-completion.ts");
+    const result = await publishCompletionWithCheckpoint({ command: "publish", repositoryRoot: root,
+      args: ["work-completion", "--bundle", ".usf/candidates/work-completion/" + candidateDigest.slice(7) + ".proof.json",
+        "--profile", profile, "--manifest", manifestPath, "--apply"] }, options.checkpoint);
+    if ((result.exitCode ?? 0) !== 0 || resultObject(result.output)?.status !== "verified") throw completionRefusal(result.output, "LINEAR_DELIVERY_COMPLETION_PUBLICATION_REFUSED");
+    return { checkReceiptPaths: [] as string[], publication: result.output };
+  }
   const selection = ["--work", workIri, "--profile", profile, "--manifest", manifestPath];
   const realised = await realiseCommandHandler({
     command: "realise", repositoryRoot: root,
@@ -181,7 +209,7 @@ async function completeCurrentWork(
     || !/^sha256:[a-f0-9]{64}$/u.test(noChangeDigest)) {
     throw completionRefusal(realised.output, "LINEAR_DELIVERY_NO_CHANGE_REALISATION_REFUSED");
   }
-  const authority = binding.binding.unit.packet.realisationAuthority;
+  const authority = selected;
   const completionValidationIds = [...new Set(authority?.completionValidationObligations ?? [])].sort();
   if (!completionValidationIds.length) {
     throw completionRefusal(null, "LINEAR_DELIVERY_COMPLETION_VALIDATION_MISSING");
@@ -224,9 +252,10 @@ async function completeCurrentWork(
   if ((verification.exitCode ?? 0) !== 0 || verificationOutput?.status !== "verified" || verificationOutput.mode !== "verify") {
     throw completionRefusal(verification.output, "LINEAR_DELIVERY_COMPLETION_VERIFICATION_REFUSED");
   }
-  const publication = await completionAwarePublishCommandHandler({
-    command: "publish", repositoryRoot: root, args: [...publicationArgs, "--apply"],
-  });
+  const publicationRequest = { command: "publish" as const, repositoryRoot: root, args: [...publicationArgs, "--apply"] };
+  const publication = options === undefined
+    ? await completionAwarePublishCommandHandler(publicationRequest)
+    : await (await import("./work-completion.ts")).publishCompletionWithCheckpoint(publicationRequest, options.checkpoint);
   const publicationOutput = resultObject(publication.output);
   if ((publication.exitCode ?? 0) !== 0 || publicationOutput?.status !== "verified" || publicationOutput.mode !== "apply") {
     throw completionRefusal(publication.output, "LINEAR_DELIVERY_COMPLETION_PUBLICATION_REFUSED");
@@ -241,11 +270,20 @@ async function completeCurrentWork(
 
 async function refreshConstructionAuthority(
   root: string,
-  binding: Extract<LinearBindingResult, { readonly binding: unknown }>,
+  selected: LinearPublicationSelection,
   candidateDigest: string,
+  options?: ContinuationOperationOptions,
 ): Promise<unknown> {
-  const { profile, manifestPath, workIri } = binding.binding.unit;
-  const obligation = binding.binding.unit.packet.realisationAuthority?.constructionProofObligation;
+  const { profile, manifestPath, workIri } = selected;
+  if (options?.resume) {
+    const { publishConstructionWithCheckpoint } = await import("./construction-authority.ts");
+    const publication = await publishConstructionWithCheckpoint({ command: "publish", repositoryRoot: root,
+      args: ["construction-authority", "--bundle", ".usf/candidates/construction-authority/" + candidateDigest.slice(7) + ".proof.json",
+        "--profile", profile, "--manifest", manifestPath, "--apply"] }, options.checkpoint);
+    if ((publication.exitCode ?? 0) !== 0 || resultObject(publication.output)?.status !== "ok") throw completionRefusal(publication.output, "LINEAR_DELIVERY_CONSTRUCTION_PUBLICATION_REFUSED");
+    return { publication: publication.output };
+  }
+  const obligation = selected.constructionProofObligation;
   if (typeof obligation !== "string") throw new Error("LINEAR_DELIVERY_CONSTRUCTION_PROOF_OBLIGATION_MISSING");
   const stem = candidateDigest.slice("sha256:".length);
   const evidencePath = `.usf/candidates/construction-authority/${stem}.evidence.json`;
@@ -254,7 +292,13 @@ async function refreshConstructionAuthority(
   const proofPath = `.usf/candidates/construction-authority/${stem}.proof.json`;
   const proof = await proveCommandHandler({ command: "prove", repositoryRoot: root, args: ["construction", "--obligation", obligation, "--evidence", evidencePath, "--profile", profile, "--manifest", manifestPath, "--output", proofPath] });
   if (resultObject(proof.output)?.schema !== "urn:usf:construction-proof-bundle:1") throw new Error("LINEAR_DELIVERY_CONSTRUCTION_PROOF_REFUSED");
-  const publication = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root, args: ["construction-authority", "--bundle", proofPath, "--profile", profile, "--manifest", manifestPath, "--apply"] });
+  const publicationArgs = ["construction-authority", "--bundle", proofPath, "--profile", profile, "--manifest", manifestPath];
+  const verification = await constructionAwarePublishCommandHandler({ command: "publish", repositoryRoot: root, args: [...publicationArgs, "--verify"] });
+  if ((verification.exitCode ?? 0) !== 0 || resultObject(verification.output)?.status !== "ok") throw new Error("LINEAR_DELIVERY_CONSTRUCTION_VERIFICATION_REFUSED");
+  const publicationRequest = { command: "publish" as const, repositoryRoot: root, args: [...publicationArgs, "--apply"] };
+  const publication = options === undefined
+    ? await constructionAwarePublishCommandHandler(publicationRequest)
+    : await (await import("./construction-authority.ts")).publishConstructionWithCheckpoint(publicationRequest, options.checkpoint);
   const output = resultObject(publication.output);
   if (output?.status !== "ok" || output.mode !== "apply") throw new Error("LINEAR_DELIVERY_CONSTRUCTION_PUBLICATION_REFUSED");
   return Object.freeze({ evidence: evidence.output, proof: proof.output, publication: publication.output });
@@ -295,7 +339,7 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
         const native = await withNativeLinearCompletion(
           { ...selector, repositoryRoot },
           prepared.binding.unit.attemptKey,
-          current => completeCurrentWork(repositoryRoot, current, current.binding.unit.attemptKey),
+          current => completeCurrentWork(repositoryRoot, publicationSelection(current), current.binding.unit.attemptKey),
         );
         evidence = {
           ...evidence,
@@ -381,16 +425,25 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
     }
     checkpointRecordKey = await persistCheckpoint(repositoryRoot, settled, "before-integration", { candidateDigest, validations: validationIds });
     evidence = { ...evidence, checkpointRecordKey, candidateDigest, checkReceiptPaths: Object.freeze(receiptPaths) };
+    const continuation = settled.binding.unit.workIri === "urn:usf:work:cli-provider-qualification-help"
+      ? await (await import("./linear-continuation.ts")).prepareLinearMetadataContinuation(repositoryRoot, settled, candidateDigest, receiptPaths)
+      : false;
     const integration = await integrateCommandHandler({ command: "integrate", repositoryRoot, args: ["--candidate", candidateDigest] });
     if (resultObject(integration.output)?.outcome !== "urn:usf:outcome:integration-success") return refusal(String(resultObject(integration.output)?.reasonCode ?? "LINEAR_DELIVERY_INTEGRATION_REFUSED"), { ...evidence, integration: integration.output });
     checkpointRecordKey = await persistCheckpoint(repositoryRoot, settled, "integrated", { candidateDigest });
     evidence = { ...evidence, checkpointRecordKey, integration: integration.output };
+    if (continuation) {
+      const completion = await resumeLinearDeliveryContinuation(repositoryRoot);
+      const completed = await observeLinearBinding({ ...selector, repositoryRoot });
+      if (completion === null || completed.status !== "COMPLETED") return refusal("LINEAR_DELIVERY_COMPLETION_READBACK_REFUSED", { ...evidence, completion });
+      return { status: "completed", evidence: { ...evidence, settledStatus: completed.status, completion } };
+    }
     checkpointRecordKey = await persistCheckpoint(repositoryRoot, settled, "before-construction-refresh", { candidateDigest });
     evidence = { ...evidence, checkpointRecordKey };
-    const construction = await refreshConstructionAuthority(repositoryRoot, settled, candidateDigest);
+    const construction = await refreshConstructionAuthority(repositoryRoot, publicationSelection(settled), candidateDigest);
     checkpointRecordKey = await persistCheckpoint(repositoryRoot, settled, "before-completion-publication", { candidateDigest });
     evidence = { ...evidence, checkpointRecordKey };
-    const completion = await completeCurrentWork(repositoryRoot, settled, candidateDigest);
+    const completion = await completeCurrentWork(repositoryRoot, publicationSelection(settled), candidateDigest);
     const final = await observeLinearBinding(Object.freeze({ ...selector, repositoryRoot }));
     if (final.status !== "COMPLETED") return refusal("LINEAR_DELIVERY_COMPLETION_READBACK_REFUSED", { ...evidence, completion: Object.freeze({ construction, completion }) });
     return Object.freeze({ status: "completed", evidence: { ...evidence, settledStatus: final.status, completion: Object.freeze({ construction, completion }) } });

@@ -14,13 +14,25 @@ import { permitsExecution, readProviderExecutionPolicy } from "../../../src/prov
  * transport, the family's sanctioned home, is now exempt from that prefix
  * reservation while every other route stays blocked.
  */
-const policy = readProviderExecutionPolicy(
-  loadSemanticGraph(resolve(import.meta.dirname, "../../.."), "graph/manifests/v3-execution.json"),
-);
+const graph = loadSemanticGraph(resolve(import.meta.dirname, "../../.."), "graph/manifests/v3-execution.json");
+const reservation = "urn:usf:provider-execution-policy:operator-reserved-claude-oauth:1";
+const activePredicate = "urn:usf:predicate:policyActive";
+assert.equal(graph.quads.filter((quad) => quad.subject === reservation && quad.predicate === activePredicate).length, 1);
+const fixturePolicy = (active: boolean) => readProviderExecutionPolicy({
+  ...graph,
+  quads: graph.quads.map((quad) => quad.subject === reservation && quad.predicate === activePredicate
+    ? { ...quad, object: String(active) }
+    : quad),
+});
+const reservedPolicy = fixturePolicy(true);
+const policy = fixturePolicy(false);
 const permits = (transport: string, provider: string, model: string) =>
   permitsExecution(policy, { transport, provider, model }).permitted;
 
 test("Claude runs on its own CLI session once its reservation is lifted", () => {
+  assert.equal(permitsExecution(reservedPolicy, {
+    transport: "claude-cli", provider: "claude-cli", model: "claude-haiku-4-5-20251001",
+  }).permitted, false, "an active fixture reservation must still deny the CLI transport");
   assert.equal(permits("claude-cli", "claude-cli", "claude-haiku-4-5-20251001"), true);
   assert.equal(permits("claude-cli", "claude-cli", "claude-fable-5"), true);
   assert.equal(permits("claude-cli", "claude-cli", "claude-sonnet-5"), true);

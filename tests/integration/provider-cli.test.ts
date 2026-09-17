@@ -134,6 +134,15 @@ async function withQualificationHandlerFixture(
   try {
     cpSync(resolve(repositoryRoot, "config"), resolve(fixtureRoot, "config"), { recursive: true });
     cpSync(resolve(repositoryRoot, "graph"), resolve(fixtureRoot, "graph"), { recursive: true });
+    const executionPolicyPath = resolve(fixtureRoot, "graph/v3-execution.nq");
+    const executionPolicy = readFileSync(executionPolicyPath, "utf8");
+    const reservedClaudePolicy =
+      '<urn:usf:provider-execution-policy:operator-reserved-claude-oauth:1> <urn:usf:predicate:policyActive> "true" <urn:usf:graph:v3-execution> .';
+    assert.equal(executionPolicy.split(reservedClaudePolicy).length, 2, "one fixture Claude CLI reservation is required");
+    writeFileSync(
+      executionPolicyPath,
+      executionPolicy.replace(reservedClaudePolicy, reservedClaudePolicy.replace('"true"', '"false"')),
+    );
     cpSync(resolve(repositoryRoot, "package.json"), resolve(fixtureRoot, "package.json"));
     cpSync(resolve(repositoryRoot, "pnpm-lock.yaml"), resolve(fixtureRoot, "pnpm-lock.yaml"));
     mkdirSync(resolve(fixtureRoot, ".usf/catalog"), { recursive: true, mode: 0o700 });

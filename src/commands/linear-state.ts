@@ -227,12 +227,19 @@ export class LinearStateStore {
     return this.serialize(() => this.transitionNow(intentId, "unknown", [], at));
   }
 
-  async reconcile(evidence: LinearRemoteEvidence, at = new Date().toISOString()): Promise<{ readonly status: "reconciled" | "ambiguous"; readonly intent: LinearIntent }> {
+  async reconcile(
+    evidence: LinearRemoteEvidence,
+    at = new Date().toISOString(),
+    guard?: (intent: LinearIntent, intents: readonly LinearIntent[]) => void,
+  ): Promise<{ readonly status: "reconciled" | "ambiguous"; readonly intent: LinearIntent }> {
     return this.serialize(async () => {
       if (!isObject(evidence) || !exactKeys(evidence, ["intentId", "remoteOperationId", "requestDigest", "outcome", "evidenceRefs"])
         || !validUuid(evidence.intentId) || !validText(evidence.remoteOperationId) || !validDigest(evidence.requestDigest)
         || !["confirmed", "refused"].includes(evidence.outcome) || !validEvidenceRefs(evidence.evidenceRefs) || !validTimestamp(at)) refuse("LINEAR_STATE_EVIDENCE_INVALID");
       const intent = this.find(evidence.intentId);
+      if (guard !== undefined) {
+        if (typeof guard !== "function" || guard(intent, this.intents()) !== undefined) refuse("LINEAR_STATE_EVIDENCE_GUARD_INVALID");
+      }
       if (intent.identity.remoteOperationId !== evidence.remoteOperationId || intent.requestDigest !== evidence.requestDigest) return Object.freeze({ status: "ambiguous" as const, intent });
       if (intent.state === "confirmed" || intent.state === "refused") return Object.freeze({ status: intent.state === evidence.outcome ? "reconciled" as const : "ambiguous" as const, intent });
       if (intent.state !== "sent" && intent.state !== "unknown") return Object.freeze({ status: "ambiguous" as const, intent });
