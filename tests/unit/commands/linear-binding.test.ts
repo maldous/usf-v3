@@ -178,6 +178,14 @@ test("binding extraction is graph-only and preserves modelCapabilities", async (
   assert.equal(result.binding.unit.manifestPath, manifestPath);
   assert.deepEqual(result.binding.unit.modelCapabilities, result.binding.unit.packet.modelCapabilities);
   assert.equal("requiredCapability" in result.binding.unit, false);
+  assert.equal(Object.hasOwn(result.binding.authority, "maximumOutputTokens"), false);
+  assert.equal(Object.hasOwn(result.binding.unit, "maximumOutputTokens"), false);
+  const legacy = result.binding.authority;
+  assert.equal(result.binding.unit.intentKey, canonicalDigest({
+    locator: legacy.locator, owner: legacy.owner, profile: legacy.profile,
+    manifestPath: legacy.targetManifest, workIri: legacy.workIri, fixedPrompt: legacy.fixedPrompt,
+    maximumPromptTokens: legacy.maximumPromptTokens, supersedes: legacy.supersedes,
+  }), "absent output policy must retain the exact legacy intent domain");
   const prompt = JSON.parse(result.binding.unit.prompt) as { objective: unknown; fixedPrompt: unknown };
   assert.equal(prompt.objective, result.binding.unit.packet.objective);
   assert.equal(prompt.fixedPrompt, "Use only graph-derived semantic work.");
@@ -185,6 +193,7 @@ test("binding extraction is graph-only and preserves modelCapabilities", async (
   const source = await readFile(resolve(selector.repositoryRoot, result.binding.unitPath), "utf8");
   const graph = `urn:usf:graph:hermes-input:${result.binding.unit.attemptKey}`;
   const quads = parseStrictNQuads(source, graph);
+  assert.equal(quads.some(q => q.predicate === "urn:usf:predicate:maximumOutputTokens"), false);
   const work = {
     file: result.binding.unitPath,
     graph,
@@ -722,4 +731,73 @@ test("native successor rejects unresolved mismatched and unauthenticated predece
   }
   for (const [path, bytes] of original) await writeFile(path, bytes, { mode: 0o600 });
   assert.equal((await prepareLinearBinding(selector)).status, "PREPARED", "the fully restored authenticated control must be admitted");
+});
+
+test("output token policy reaches the bound unit and immutable execution assertion", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const declarationPath = resolve(selector.repositoryRoot, bindingGraphPath);
+  const original = await readFile(declarationPath, "utf8");
+  const legacy = await observeLinearBinding(selector);
+  await writeFile(declarationPath, original + nq(selector.bindingIri, "maximumOutputTokens", "8192") + "\n");
+  const explicit = await prepareLinearBinding(selector);
+  assert.equal(explicit.binding.authority.maximumOutputTokens, 8192);
+  assert.equal(explicit.binding.unit.maximumOutputTokens, 8192);
+  assert.notEqual(explicit.binding.unit.intentKey, legacy.binding.unit.intentKey);
+  assert.notEqual(explicit.binding.unit.attemptKey, legacy.binding.unit.attemptKey);
+  assert.equal(explicit.binding.unit.prompt, legacy.binding.unit.prompt, "output allowance cannot expand source context");
+  assert.deepEqual(explicit.binding.unit.packet.writeSet, legacy.binding.unit.packet.writeSet);
+  const text = await readFile(resolve(selector.repositoryRoot, explicit.binding.unitPath), "utf8");
+  const quads = parseStrictNQuads(text, "urn:usf:graph:hermes-input:" + explicit.binding.unit.attemptKey);
+  const output = quads.filter(q => q.predicate === "urn:usf:predicate:maximumOutputTokens");
+  assert.equal(output.length, 1);
+  assert.equal(output[0]!.objectKind, "literal");
+  assert.equal(output[0]!.object, "8192");
+  assert.equal(output[0]!.subject, explicit.binding.unit.unitIri);
+  assert.equal((await prepareLinearBinding(selector)).binding.unit.attemptKey, explicit.binding.unit.attemptKey);
+  for (const value of [undefined, "4096"]) {
+    await writeFile(declarationPath, original + (value === undefined ? "" : nq(selector.bindingIri, "maximumOutputTokens", value) + "\n"));
+    await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_SUPERSESSION_REQUIRED"));
+  }
+});
+
+test("output token policy cannot bypass an unresolved attempt by changing its bound", async () => {
+  const selector = await addBinding(await fixtureRoot());
+  const declarationPath = resolve(selector.repositoryRoot, bindingGraphPath);
+  const original = await readFile(declarationPath, "utf8");
+  await writeFile(declarationPath, original + nq(selector.bindingIri, "maximumOutputTokens", "8192") + "\n");
+  const started = await beforeHermesDispatch(selector);
+  assert.equal(started.status, "STARTED");
+  assert.equal(started.binding.unit.maximumOutputTokens, 8192);
+  await writeFile(declarationPath, original + nq(selector.bindingIri, "maximumOutputTokens", "4096") + "\n");
+  await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_OUTCOME_UNKNOWN"));
+  assert.equal(JSON.parse(await readFile(resolve(selector.repositoryRoot, started.binding.attemptPath), "utf8")).state, "STARTED");
+});
+
+test("output token policy is authenticated in retained provider history before native succession", async () => {
+  for (const state of ["SETTLED", "REFUSED"] as const) {
+    const previous = await addBinding(await fixtureRoot());
+    const declarationPath = resolve(previous.repositoryRoot, bindingGraphPath);
+    const original = await readFile(declarationPath, "utf8");
+    await writeFile(declarationPath, original + nq(previous.bindingIri, "maximumOutputTokens", "8192") + "\n");
+    const retained = await settledProviderPredecessor(previous, state);
+    assert.equal(retained.terminal.binding.unit.maximumOutputTokens, 8192);
+    const historyPaths = [retained.issuePath, retained.attemptPath, retained.evidencePath, retained.graphPath];
+    const history = new Map<string, Buffer>();
+    for (const path of historyPaths) history.set(path, await readFile(path));
+    const selector = await addNativeSuccessor(previous);
+    const successorSource = await readFile(declarationPath, "utf8");
+    const nativeOutput = nq(selector.bindingIri, "maximumOutputTokens", "8192") + "\n";
+    assert.equal(successorSource.split(nativeOutput).length, 2);
+    await writeFile(declarationPath, successorSource.replace(nativeOutput, ""));
+    assert.equal((await prepareLinearBinding(selector)).status, "PREPARED");
+    for (const path of historyPaths) assert.deepEqual(await readFile(path), history.get(path), state);
+    const graphText = history.get(retained.graphPath)!.toString("utf8");
+    const limit = "<urn:usf:predicate:maximumOutputTokens> \"8192\"";
+    assert.equal(graphText.split(limit).length, 2);
+    await writeFile(retained.graphPath, graphText.replace(limit, "<urn:usf:predicate:maximumOutputTokens> \"4096\""));
+    await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH"));
+    await writeFile(retained.graphPath, history.get(retained.graphPath)!);
+    assert.equal((await prepareLinearBinding(selector)).status, "PREPARED");
+    for (const path of historyPaths) assert.deepEqual(await readFile(path), history.get(path), state + " history remains immutable");
+  }
 });

@@ -41,6 +41,7 @@ export interface BoundSemanticWorkUnit {
   readonly scopedDependencyDigest: string;
   readonly prompt: string;
   readonly maximumPromptTokens: number;
+  readonly maximumOutputTokens?: number;
   readonly modelCapabilities: readonly string[];
   readonly packet: WorkPacket;
   readonly realisationDisposition?: "no-change";
@@ -304,6 +305,7 @@ function bindingIntentKey(authority: LinearBindingAuthority): `sha256:${string}`
     supersedes: authority.supersedes,
     ...(authority.realisationDisposition === undefined ? {} : { realisationDisposition: authority.realisationDisposition }),
     ...(authority.sourceContext === undefined ? {} : { sourceContext: authority.sourceContext }),
+    ...(authority.maximumOutputTokens === undefined ? {} : { maximumOutputTokens: authority.maximumOutputTokens }),
   });
 }
 
@@ -329,6 +331,7 @@ async function records(repositoryRoot: string, authority: LinearBindingAuthority
     scopedDependencyDigest: packet.scopedDependencyDigest,
     prompt,
     maximumPromptTokens: authority.maximumPromptTokens,
+    ...(authority.maximumOutputTokens === undefined ? {} : { maximumOutputTokens: authority.maximumOutputTokens }),
     modelCapabilities: Object.freeze([...packet.modelCapabilities]),
     packet,
     ...(authority.realisationDisposition === undefined ? {} : { realisationDisposition: authority.realisationDisposition }),
@@ -367,6 +370,7 @@ function semanticWorkUnitGraph(unit: Omit<BoundSemanticWorkUnit, "packet">): str
     ["targetManifest", unit.manifestPath, "literal"],
     ["prompt", unit.prompt, "literal"],
     ["maximumPromptTokens", String(unit.maximumPromptTokens), "literal"],
+    ...(unit.maximumOutputTokens === undefined ? [] : [["maximumOutputTokens", String(unit.maximumOutputTokens), "literal"] as const]),
     ...(unit.realisationDisposition === undefined ? [] : [["realisationDisposition", unit.realisationDisposition, "literal"] as const]),
     ...unit.modelCapabilities.map((capability) => ["modelCapability", capability, capability.startsWith("urn:") ? "iri" : "literal"] as const),
   ];
@@ -558,7 +562,7 @@ async function freshlyDerived(selector: LinearBindingSelector): Promise<Prepared
   const attemptPath = `.usf/work/linear/${unit.intentKey.slice(7)}/${unit.attemptKey.slice(7)}.json`;
   const binding = Object.freeze({ selector: Object.freeze({ ...selector, repositoryRoot }), authority, basis: packet.realisationBasis!, unit, attempt, unitPath, attemptPath });
   await inspectBindingIntent(binding);
-  if (authority.sourceContext !== undefined) {
+  if (authority.sourceContext !== undefined || authority.maximumOutputTokens !== undefined) {
     // Context capture and retained-intent reads awaited I/O. Reauthenticate the
     // complete selection synchronously before returning a dispatchable packet.
     const currentAuthority = deriveLinearBindingDeclaration(loadSemanticGraph(repositoryRoot, selector.manifestPath), selector.bindingIri);
@@ -1037,6 +1041,7 @@ async function authenticateProviderPredecessor(binding: PreparedLinearBinding, i
       bindingManifestPath: binding.selector.manifestPath, manifestPath: authority.targetManifest,
       workIri: authority.workIri, basisDigest: prior.basisDigest, scopedDependencyDigest: prior.scopedDependencyDigest,
       prompt: prompts[0]!.object, maximumPromptTokens: authority.maximumPromptTokens,
+      ...(authority.maximumOutputTokens === undefined ? {} : { maximumOutputTokens: authority.maximumOutputTokens }),
       modelCapabilities: quads.filter(q => q.subject === prior.unitIri && q.predicate === P + "modelCapability").map(q => q.object),
     },
   };

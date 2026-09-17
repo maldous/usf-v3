@@ -22,7 +22,11 @@ test.afterEach(async () => {
   roots.clear();
 });
 
-function declaration(context?: unknown, disposition?: string): LinearBindingAuthority {
+function declaration(
+  context?: unknown,
+  disposition?: string,
+  outputFields: ReadonlyArray<readonly [string, "literal" | "iri"]> = [],
+): LinearBindingAuthority {
   const id = "urn:usf:linear-binding:source-context-fixture:1";
   const fields: Array<[string, string, "literal" | "iri"]> = [
     ["type", "urn:usf:type:LinearIssueWorkBinding", "iri"],
@@ -36,6 +40,7 @@ function declaration(context?: unknown, disposition?: string): LinearBindingAuth
   ];
   if (context !== undefined) fields.push(["sourceContext", JSON.stringify(context), "literal"]);
   if (disposition !== undefined) fields.push(["realisationDisposition", disposition, "literal"]);
+  for (const [value, kind] of outputFields) fields.push(["maximumOutputTokens", value, kind]);
   const quads: Quad[] = fields.map(([predicate, object, objectKind]) => ({
     subject: id, predicate: "urn:usf:predicate:" + predicate, object, objectKind,
     graph: "urn:usf:graph:source-context-fixture", canonical: "",
@@ -157,6 +162,23 @@ test("missing and nonunique anchors are refused rather than guessed", async t =>
         reason("LINEAR_BINDING_SOURCE_CONTEXT_ANCHOR_INVALID"));
     });
   }
+});
+
+test("output token policy is explicit, validated and provider-only", () => {
+  assert.equal(declaration(undefined, undefined, [["8192", "literal"]]).maximumOutputTokens, 8192);
+  assert.equal(declaration([selection], undefined, [["1", "literal"]]).maximumOutputTokens, 1);
+  assert.equal(Object.hasOwn(declaration(), "maximumOutputTokens"), false);
+  assert.equal(Object.hasOwn(declaration(undefined, "no-change"), "maximumOutputTokens"), false);
+  for (const value of ["0", "-1", "1.5", "1e3", " 8192", "8192 ", "08192", "Infinity", "NaN", "10000000000"]) {
+    assert.throws(() => declaration(undefined, undefined, [[value, "literal"]]),
+      reason("LINEAR_BINDING_OUTPUT_POLICY_INVALID"), value);
+  }
+  assert.throws(() => declaration(undefined, undefined, [["8192", "literal"], ["4096", "literal"]]),
+    reason("LINEAR_BINDING_OUTPUT_POLICY_INVALID"));
+  assert.throws(() => declaration(undefined, undefined, [["urn:test:8192", "iri"]]),
+    reason("LINEAR_BINDING_FIELD_KIND_INVALID"));
+  assert.throws(() => declaration(undefined, "no-change", [["8192", "literal"]]),
+    reason("LINEAR_BINDING_OUTPUT_POLICY_INVALID"));
 });
 
 test("excerpt and complete canonical prompt have independent hard bounds", async () => {

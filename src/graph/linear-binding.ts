@@ -22,6 +22,7 @@ export interface LinearBindingAuthority {
   readonly workIri: string;
   readonly fixedPrompt: string;
   readonly maximumPromptTokens: number;
+  readonly maximumOutputTokens?: number;
   readonly supersedes: string | null;
   readonly realisationDisposition?: "no-change";
   readonly sourceContext?: readonly LinearSourceContextSelection[];
@@ -96,6 +97,10 @@ export function deriveLinearBindingDeclaration(graph: SemanticGraph, bindingIri:
   const tokenText = one("maximumPromptTokens", "literal", "LINEAR_BINDING_PROMPT_POLICY_INVALID");
   const maximumPromptTokens = Number(tokenText);
   if (!/^[1-9][0-9]*$/u.test(tokenText) || !Number.isSafeInteger(maximumPromptTokens)) refuse("LINEAR_BINDING_PROMPT_POLICY_INVALID");
+  const outputText = field("maximumOutputTokens", "literal", "LINEAR_BINDING_OUTPUT_POLICY_INVALID", true);
+  const maximumOutputTokens = outputText === null ? undefined : Number(outputText);
+  if (outputText !== null && (!/^[1-9][0-9]{0,9}$/u.test(outputText)
+    || !Number.isSafeInteger(maximumOutputTokens))) refuse("LINEAR_BINDING_OUTPUT_POLICY_INVALID");
   const profile = one("selectedProfile", "iri", "LINEAR_BINDING_PROFILE_MISSING");
   const targetManifest = one("targetManifest", "literal", "LINEAR_BINDING_MANIFEST_MISSING");
   if (!isRepositoryRelativePath(targetManifest)) refuse("LINEAR_BINDING_MANIFEST_MISSING");
@@ -107,8 +112,10 @@ export function deriveLinearBindingDeclaration(graph: SemanticGraph, bindingIri:
   if (realisationDisposition !== null && realisationDisposition !== "no-change") refuse("LINEAR_BINDING_REALISATION_DISPOSITION_INVALID");
   const sourceContext = sourceContextSelections(field("sourceContext", "literal", "LINEAR_BINDING_SOURCE_CONTEXT_INVALID", true, 65536));
   if (sourceContext !== undefined && realisationDisposition !== null) refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID");
+  if (maximumOutputTokens !== undefined && realisationDisposition !== null) refuse("LINEAR_BINDING_OUTPUT_POLICY_INVALID");
   return Object.freeze({ bindingIri, locator, workspace, issueUuid, owner, profile, targetManifest, workIri, fixedPrompt, maximumPromptTokens, supersedes,
     ...(realisationDisposition === null ? {} : { realisationDisposition }),
     ...(sourceContext === undefined ? {} : { sourceContext }),
+    ...(maximumOutputTokens === undefined ? {} : { maximumOutputTokens }),
   });
 }

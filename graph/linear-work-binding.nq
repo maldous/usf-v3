@@ -339,6 +339,12 @@
 <urn:usf:requirement:linear-binding-source-context> <urn:usf:predicate:canonicalName> "linear-binding-source-context" <urn:usf:graph:linear-work-binding> .
 <urn:usf:requirement:linear-binding-source-context> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
 <urn:usf:requirement:linear-binding-source-context> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-output-budget> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:canonicalName> "linear-binding-output-budget" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:text> "An explicit provider output-token limit is a positive integer bound authenticated by binding intent, prepared semantic work-unit assertion, execution evidence and retained predecessor reconstruction. Changing or removing it requires governed supersession and must not bypass unknown effects. Absent limits retain exact legacy identities and the executor default. Native no-change work cannot declare provider output policy; model, context, qualification, cost and execution-authority guards remain unchanged." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation:linear-work-binding> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation:linear-work-binding> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation:linear-work-binding> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:linear-work-binding> .
