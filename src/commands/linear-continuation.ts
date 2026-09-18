@@ -643,7 +643,7 @@ function authenticateCurrentPublicationSource(publication: ReturnType<typeof cur
 }
 
 /** Authenticate every additive publication between a retained source and the current grant. */
-function authenticatePublicationChain(root: string, publication: ReturnType<typeof currentRepairPublication>, expectedBase: string): FileFact[] {
+function authenticatePublicationChain(root: string, publication: ReturnType<typeof currentRepairPublication>, expectedBase: string | null): FileFact[] {
   const { authority } = publication;
   let bytes = publication.source.bytes, receipt = publication.receipt;
   if (bytes === null || publication.source.fact.digest !== sha256(bytes)) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
@@ -678,6 +678,7 @@ function authenticatePublicationChain(root: string, publication: ReturnType<type
         && value.operations.every((operation: any) => operation.kind === "add" && operation.sourcePath === publication.source.fact.path)
         ? [{ value, fact: file.fact }] : [];
     });
+    if (matches.length === 0 && expectedBase === null) return receiptFiles;
     if (matches.length !== 1) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
     receipt = matches[0].value;
     receiptFiles.push(matches[0].fact);
@@ -822,7 +823,10 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
       if (admission.currentAuthorityOnlyPublicationSource !== publication.source.fact.path) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
       currentAuthorityInputs.push(currentAuthorityInput(root, intent, admission, integration, publication));
       replacements.set(publication.source.fact.path, publication.source.fact);
-      replacements.set(publication.file.path, publication.file);
+      for (const receiptFile of authenticatePublicationChain(root, publication, null)) {
+        replacements.set(receiptFile.path, receiptFile);
+        publicationReceipts.push(receiptFile);
+      }
       continue;
     }
     if (admission.currentAuthorityOnlyPublicationSource === publication.source.fact.path) refuse("LINEAR_CONTINUATION_HANDOFF_CURRENT_AUTHORITY_SCOPE_INVALID");

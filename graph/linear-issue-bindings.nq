@@ -15,7 +15,7 @@
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:preimageMode> "384" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:repositoryPath> "graph/linear-issue-bindings.nq" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionContinuationRepairInput> <urn:usf:graph:linear-issue-bindings> .
-<urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageDigest> "sha256:2bb10e76051bb48bc1bbfb82d0c2f0f57e3206f5c8abf21548d66b740c9a7332" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageDigest> "sha256:fc498ee14739d059c95374ecd7edd9a4f8459aa53c68d4104be164ccfa570ef7" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:preimageDigest> "sha256:fdb8f8964d9f5f42eed31c196e19d2a03d4929189fa65e0f3a6aa2a33fd72b38" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:preimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
