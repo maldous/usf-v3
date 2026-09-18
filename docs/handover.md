@@ -1,3 +1,57 @@
+## 2026-09-18: Bounded current-authority recovery; certification boundary
+
+The ordinary disposable native qualification path has passed settlement, check,
+integration, all three continuation publications, completion, controller
+currentness and no-replay assertions. This is not a live BAU claim. The legacy
+repair case exposed a real producer/consumer closure mismatch: the original
+106-file intent did not capture graph/linear-work-binding-grants.nq, which the
+new recovery consumer required. The original live intent has the same omission.
+
+The user explicitly approved complete publication-source capture for future
+intents and a one-file, predecessor-bound current-authority policy for the legacy
+intent. The optional currentAuthorityOnlyPublicationSource field belongs to
+urn:usf:policy:linear-continuation-repair-handoff:1 and accepts only the literal
+graph/linear-work-binding-grants.nq. It cannot override captured historical or
+dirty-baseline facts. Original continuation-policy rows remain unchanged.
+
+This exception makes no historical-equivalence claim for that source. It must
+authenticate the entire current source and applicable native publication
+evidence, prove independence from the original selected candidate/check/
+integration dependencies, bind the admitted identity into handoff evidence, and
+reauthenticate after waits and before effects. Missing proof still refuses.
+It authorizes no historical restoration, deletion, new permission, provider
+replay or integration replay. The original intent and evidence stay immutable;
+executionAuthority and parallelSafety remain unchanged.
+
+The regression uses an exact digest-pinned historical native producer to create
+a genuine legacy predecessor. It must not remove beforeFiles entries or rehash
+a manufactured intent. The current lane proves complete future capture. Native
+acceptance must pass both lanes with one delivery/dispatch/integration per lane
+and no additional executions during continuation or terminal replay.
+
+Certification remains source -> focused acceptance -> freeze -> one final gate
+-> evidence -> proof -> publication verification -> apply. The seven-path
+impact check found the existing checked receipt unaffected with fresh recorded
+dependencies, but aggregate impact is unknown and does not waive the full gate.
+Do not regenerate unrelated evidence or gate while focused acceptance is
+unresolved. Native operational receipts and status, not this pre-certification
+source note, establish later activation and live BAU. Terminal proof requires
+remote USF-1204 Done plus later natural idempotent supervisor cycles.
+
+## 2026-09-18: Qualification integrated; exact continuation repair cohort pending
+
+The user requires genuine unattended Hermes Linear creation and completion before further performance implementation, with autonomous continuation and no routine permission prompts. Keep the same healthy supervisor; do not hand-dispatch bindings, delete projections, replay providers/integration, or clear authority and parallel-safety guards. The shared server is busy and MySQL remains running.
+
+The preceding runtime cohort `ebb78e457b0794b33be1f89657b3719efcd6774e` passed its terminal gate in 44m23.394s with all phases complete and drain confirmed. Report `.usf/logs/full-gate/20260918T050248451Z-2251798.json`, digest `sha256:1a1f7bbe46ce1c46d4cf94a8c9e316636ff945e43128ee50972b7e64fdc6e673`. It is historical certification, not certification of this repair cohort. Three construction authorities were published and the normal supervisor was reloaded with that certified code.
+
+Subsequent native graph transactions admitted qualification successors with complete immutable acceptance context. Qualified bindings `:7` and `:10` retained rejected provider candidates; the latter was a genuine Groq openai/gpt-oss-120b response that omitted the required positive-integer wording. Successor `:13` supplied the exact option text within the unchanged 12,000-byte ceiling. Hermes independently selected it, checked the candidate and genuinely integrated it as `f9054d40e903fdea27ee2643f3cfaae08c6e136b`. No manual binding dispatch or canonical help edit was used. Native creation intent `2f9e0f0a-53e2-5fe1-aba7-4673d86d7f74` is confirmed for USF-1204, UUID `8f4b0f2e-6c41-4fb5-9eb6-60b2b99f6c73`; remote readback corroborated the issue identity. Completion remains unproven.
+
+The exact live blocker is `LINEAR_CONTINUATION_INTEGRATION_UNAUTHENTICATED`. The native integration inspector authenticates primary-advanced success, original basis, carrier, exact help pre/postimages, checks and receipt bytes. The continuation consumer incorrectly compares an individual workspace digest with the producer's cohort digest. The native cohort value is exactly `canonicalDigest([intent.workspaceIdentityDigest])`; do not change the producer or accept a scalar fallback.
+
+Preserve pending intent `sha256:b3ef6b4d6adf61802ea7fea1d695a1c07fd842232afdf84db05d306b33d00119`, state `sha256:34c17e4fa36d7ed5009fa4e919476556ff69cd710a0869b0dc5650d17e95ccbc`, candidate `sha256:5d6c3e2627b32666bcc821f4bd4f4fe921451f428f604e984650920f0274457b`, and integration observation `sha256:f1fb22af478d0967f4f938f219cdb1f3bd5ac333686da050cd235173f3d27e23`. The state is at step zero, without captured integration or publication effects. Fixing code alone would correctly trip its original protected-file guards. The repair must include an explicit graph-authorised, exact predecessor handoff under separately current controller authority, retaining original blobs and native evidence. It may resume only the original three publication steps, never provider/integration replay or general drift tolerance.
+
+Batch the consumer correction, bounded handoff, focused adversarial coverage, genuine ordinary qualification integration/completion fixture, graph scope and this handover before freezing. The previous check-only helper and no-change binding fixture do not establish the ordinary qualification path. Demonstrate the intended regression red, then genuine confined green acceptance and affected/type/architecture checks. Run one terminal full gate only after the complete cohort is frozen; publish current authority afterward and let normal supervisor cycles establish completion, confirmed Linear state and subsequent idempotency. Defer performance implementation until that proof. Preserve unrelated `apps/platform/authority/index.json`, `src/realisation/__pycache__/`, all unknown intents and the separate USF-1202 reservation `:13`.
+
 ## 2026-09-18: Bounded recovery and native qualification cohort, final certification pending
 
 The user requires autonomous continuation through current certification and genuine unattended Hermes Linear issue creation/completion. Do not stop at focused-test success or substitute manual binding dispatch for BAU. The accepted baseline is `0a4d379`; its full gate took 40m17.097s, passed, and drained. Report: `.usf/logs/full-gate/20260918T003624016Z-1200190.json`, digest `sha256:a7a6bc0b88ebb58172c8dc1d852171799318c54c450112e6c9c2721b1e58a0fc`. It is historical evidence, not current certification for this newer cohort.

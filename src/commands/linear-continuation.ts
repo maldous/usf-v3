@@ -4,10 +4,13 @@ import { dirname, relative, resolve } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { parseRepositoryPath } from "../core/scope.ts";
 import { loadSemanticGraph, objectValues, resourceDigest } from "../graph/index.ts";
+import { canonicalQuadLine } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration } from "../graph/linear-binding.ts";
 import { deriveWork, type WorkPacket } from "../graph/work.ts";
-import { authenticateCandidateWorkspace, inspectCandidateIntegrationRecovery } from "../realisation/index.ts";
-import { readLinearRecord, writeLinearRecord, type LinearRecordValue } from "./linear-state.ts";
+import { authenticateCandidateWorkspace, inspectCandidateIntegrationRecovery, withCandidateLock } from "../realisation/index.ts";
+import { constructionGrantIri, constructionReceiptPath, deriveConstructionAuthority, validateConstructionReceiptShape } from "../realisation/construction-authority.ts";
+import { acquirePrimaryMutationLock } from "../realisation/transition.ts";
+import { LinearStateStore, readLinearRecord, writeLinearRecord, type LinearRecordValue } from "./linear-state.ts";
 import type { LinearBindingResult } from "./linear-binding.ts";
 import type { PublicationCheckpoint, PublicationEffect } from "./construction-authority.ts";
 
@@ -25,6 +28,15 @@ const digestPattern = /^sha256:[a-f0-9]{64}$/u;
 const pointerKey = "metadata-continuation-" + canonicalDigest({ policyIri }).slice(7);
 const predicate = (name: string): string => "urn:usf:predicate:" + name;
 const maximumFiles = 1024;
+const repairPolicyIri = "urn:usf:policy:linear-continuation-repair-handoff:1";
+const repairPolicySource = "graph/linear-issue-bindings.nq";
+const controllerContract = "urn:usf:contract:hermes-linear-autonomy:1";
+const currentAuthorityPublicationSource = "graph/linear-work-binding-grants.nq";
+const bindingPublicationSelection = Object.freeze({
+  workIri: "urn:usf:work:linear-work-binding",
+  profile: "urn:usf:profile:linear-work-binding:1",
+  manifestPath: "graph/manifests/linear-work-binding.json",
+});
 
 function refuse(code: string): never {
   throw Object.assign(new Error(code), { reasonCode: code });
@@ -178,7 +190,7 @@ function readFileFact(root: string, path: string): { fact: FileFact; bytes: Buff
     fd = openSync(absolute, constants.O_RDONLY | constants.O_NOFOLLOW);
     const opened = fstatSync(fd);
     if (opened.dev !== named.dev || opened.ino !== named.ino || opened.mode !== named.mode || opened.uid !== named.uid
-      || opened.nlink !== 1 || (path.startsWith(".usf/") && opened.uid !== process.getuid?.())) refuse("LINEAR_CONTINUATION_PATH_UNSAFE");
+      || opened.nlink !== 1 || ((path.startsWith(".usf/") || path === currentAuthorityPublicationSource) && opened.uid !== process.getuid?.())) refuse("LINEAR_CONTINUATION_PATH_UNSAFE");
     const bytes = readFileSync(fd), after = fstatSync(fd);
     if (opened.size !== bytes.length || after.size !== opened.size || after.mtimeMs !== opened.mtimeMs
       || after.ctimeMs !== opened.ctimeMs || after.nlink !== 1) refuse("LINEAR_CONTINUATION_PATH_UNSAFE");
@@ -255,40 +267,142 @@ function policy(root: string) {
   return { graph, acceptanceDigest, digest: resourceDigest(graph, policyIri) };
 }
 
+function continuationBlobKey(hash: string, version: 1 | 2, index: number): string {
+  return (version === 1 ? "continuation-blob-" : "continuation-blob-v2-") + hash.slice(7) + "-" + String(index);
+}
+
+async function readContinuationBlobRecords(root: string, hash: string, version: 1 | 2): Promise<(LinearRecordValue | null)[]> {
+  const records: (LinearRecordValue | null)[] = [];
+  // Inspect every bounded slot so a missing head cannot conceal orphaned records.
+  for (let index = 0; index < Math.ceil(1311 / 128); index++) {
+    records.push(await readLinearRecord(root, continuationBlobKey(hash, version, index)));
+  }
+  return records;
+}
+
+function decodeContinuationBlob<T>(hash: string, version: 1 | 2,
+  records: readonly (LinearRecordValue | null)[]): { source: string; value: T } | null {
+  const invalid = (): never => refuse("LINEAR_CONTINUATION_RECORD_INVALID");
+  if (records.length !== Math.ceil(1311 / 128)) return invalid();
+  if (records.every(record => record === null)) return null;
+  const first = records[0];
+  if (!first || typeof first !== "object" || Array.isArray(first)) return invalid();
+  const count = (first as Record<string, LinearRecordValue>).count;
+  if (typeof count !== "number" || !Number.isInteger(count) || count < 1 || count > 1311) return invalid();
+  const chunks: string[] = [];
+  const fields = version === 1 ? ["digest", "offset", "chunks", "count"] : ["schema", "digest", "offset", "chunks", "count"];
+  for (let index = 0; index < records.length; index++) {
+    const value = records[index];
+    if (index >= Math.ceil(count / 128)) {
+      if (value !== null) return invalid();
+      continue;
+    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) return invalid();
+    const record = value as Record<string, LinearRecordValue>;
+    if (Object.keys(record).length !== fields.length || Object.keys(record).some(key => !fields.includes(key))
+      || record.digest !== hash || record.offset !== index * 128 || record.count !== count
+      || (version === 2 && record.schema !== "urn:usf:linear-continuation-blob:2")
+      || !Array.isArray(record.chunks) || record.chunks.length !== Math.min(128, count - index * 128)) return invalid();
+    for (const chunk of record.chunks) {
+      if (typeof chunk !== "string" || chunk.length < 1 || chunk.length > (version === 1 ? 400 : 409)) return invalid();
+      let decoded = chunk;
+      if (version === 2) {
+        const frame = /^usf2:([1-9][0-9]{0,2}):([\s\S]*)$/u.exec(chunk);
+        if (!frame) return invalid();
+        const length = Number(frame[1]);
+        decoded = frame[2]!;
+        if (length > 400 || decoded.length !== length || (chunks.length < count - 1 && length !== 400)) return invalid();
+      }
+      chunks.push(decoded);
+    }
+  }
+  // Rejoin UTF-16 code units before JSON parsing or UTF-8 hashing. A pair may
+  // intentionally straddle two frames without either half being transcoded.
+  const source = chunks.join("");
+  if (source.length > 512 * 1024) return invalid();
+  let value: T;
+  try {
+    value = JSON.parse(source) as T;
+    if (canonicalJson(value) !== source || canonicalDigest(value) !== hash) return invalid();
+  } catch { return invalid(); }
+  if (version === 2) canonicalJson(value, { rejectAbsolutePaths: true });
+  return { source, value };
+}
+
+function continuationBlobRecords(source: string, hash: string): LinearRecordValue[] {
+  if (source.length < 1 || source.length > 512 * 1024) refuse("LINEAR_CONTINUATION_RECORD_BOUNDS");
+  const chunks: string[] = [];
+  for (let offset = 0; offset < source.length; offset += 400) {
+    const fragment = source.slice(offset, offset + 400);
+    chunks.push("usf2:" + String(fragment.length) + ":" + fragment);
+  }
+  const records: LinearRecordValue[] = [];
+  for (let offset = 0; offset < chunks.length; offset += 128) {
+    records.push({ schema: "urn:usf:linear-continuation-blob:2", digest: hash,
+      offset, chunks: chunks.slice(offset, offset + 128), count: chunks.length });
+  }
+  return records;
+}
+
 async function writeBlob(root: string, value: unknown): Promise<string> {
   const source = canonicalJson(value), hash = canonicalDigest(value);
   if (source.length > 512 * 1024) refuse("LINEAR_CONTINUATION_RECORD_BOUNDS");
-  const chunks: string[] = [];
-  for (let offset = 0; offset < source.length; offset += 400) chunks.push(source.slice(offset, offset + 400));
-  for (let offset = 0; offset < chunks.length; offset += 128) {
-    const key = "continuation-blob-" + hash.slice(7) + "-" + String(offset / 128);
-    const record = { digest: hash, offset, chunks: chunks.slice(offset, offset + 128), count: chunks.length };
-    const previous = await readLinearRecord(root, key);
-    if (previous !== null && !same(previous, record)) refuse("LINEAR_CONTINUATION_RECORD_CONFLICT");
-    if (previous === null) await writeLinearRecord(root, key, record);
-  }
-  return hash;
+  const key = canonicalDigest({ purpose: "linear-continuation-blob", digest: hash });
+  return withCandidateLock(root, key, async () => {
+    const legacyRecords = await readContinuationBlobRecords(root, hash, 1);
+    const legacy = decodeContinuationBlob<unknown>(hash, 1, legacyRecords);
+    const framedRecords = await readContinuationBlobRecords(root, hash, 2);
+    if (legacy !== null) {
+      const framed = decodeContinuationBlob<unknown>(hash, 2, framedRecords);
+      if (legacy.source !== source || (framed !== null && framed.source !== source)) refuse("LINEAR_CONTINUATION_RECORD_CONFLICT");
+      // An existing raw representation is immutable, including its wire version.
+      if (canonicalJson(await readBlob(root, hash)) !== source) refuse("LINEAR_CONTINUATION_RECORD_CONFLICT");
+      return hash;
+    }
+    // Apply containment to logical values, never to accidental fragment starts.
+    // The generic record validator still handles each small framed envelope.
+    canonicalJson(value, { rejectAbsolutePaths: true });
+    const expected = continuationBlobRecords(source, hash);
+    const assertMatching = (previous: LinearRecordValue, record: LinearRecordValue | undefined): void => {
+      let matches = false;
+      try { matches = record !== undefined && same(previous, record); } catch { /* Malformed existing data is not replaceable. */ }
+      if (!matches) refuse("LINEAR_CONTINUATION_RECORD_CONFLICT");
+    };
+    // Authenticate every existing v2 slot against the exact intended payload
+    // before completing an interrupted write. Never overwrite a conflicting slot.
+    for (const [index, previous] of framedRecords.entries()) {
+      if (previous !== null) assertMatching(previous, expected[index]);
+    }
+    for (const [index, record] of expected.entries()) {
+      const recordKey = continuationBlobKey(hash, 2, index);
+      const previous = await readLinearRecord(root, recordKey);
+      if (previous !== null) assertMatching(previous, record);
+      else await writeLinearRecord(root, recordKey, record);
+    }
+    // Both namespaces must authenticate before the caller may reference the blob.
+    if (canonicalJson(await readBlob(root, hash)) !== source) refuse("LINEAR_CONTINUATION_RECORD_CONFLICT");
+    return hash;
+  });
 }
 async function readBlob<T>(root: string, hash: string): Promise<T> {
   digest(hash);
-  const chunks: string[] = [];
-  let count = 1;
-  for (let index = 0; index < Math.ceil(count / 128); index++) {
-    const value = await readLinearRecord(root, "continuation-blob-" + hash.slice(7) + "-" + String(index));
-    if (!value || typeof value !== "object" || Array.isArray(value)) refuse("LINEAR_CONTINUATION_RECORD_INVALID");
-    const record = value as Record<string, LinearRecordValue>;
-    if (record.digest !== hash || record.offset !== index * 128 || !Number.isInteger(record.count)
-      || typeof record.count !== "number" || record.count < 1 || record.count > 1311
-      || !Array.isArray(record.chunks) || record.chunks.length !== Math.min(128, record.count - index * 128)
-      || record.chunks.some(chunk => typeof chunk !== "string" || chunk.length > 400)) refuse("LINEAR_CONTINUATION_RECORD_INVALID");
-    if (index > 0 && record.count !== count) refuse("LINEAR_CONTINUATION_RECORD_INVALID");
-    count = record.count; chunks.push(...record.chunks as string[]);
-  }
-  const source = chunks.join("");
-  let result: T;
-  try { result = JSON.parse(source) as T; } catch { return refuse("LINEAR_CONTINUATION_RECORD_INVALID"); }
-  if (canonicalJson(result) !== source || canonicalDigest(result) !== hash) refuse("LINEAR_CONTINUATION_RECORD_INVALID");
-  return result;
+  const legacy = decodeContinuationBlob<T>(hash, 1, await readContinuationBlobRecords(root, hash, 1));
+  const framed = decodeContinuationBlob<T>(hash, 2, await readContinuationBlobRecords(root, hash, 2));
+  if (legacy !== null && framed !== null && legacy.source !== framed.source) refuse("LINEAR_CONTINUATION_RECORD_CONFLICT");
+  if (legacy !== null) return legacy.value;
+  if (framed !== null) return framed.value;
+  return refuse("LINEAR_CONTINUATION_RECORD_INVALID");
+}
+
+interface CurrentAuthorityInput {
+  readonly disposition: "current-authority-only";
+  readonly historicalEquivalence: "not-claimed";
+  readonly source: FileFact;
+  readonly publicationReceipt: FileFact;
+  readonly publicationIntentDigest: string;
+  readonly publicationReceiptDigest: string;
+  readonly authorityBasisDigest: string;
+  readonly selectedDependencyIndependenceDigest: string;
 }
 
 interface ContinuationIntent {
@@ -304,6 +418,12 @@ interface ContinuationIntent {
   readonly classification: ReturnType<typeof classifyProbeQualifyMetadataDeltaForTest>;
   readonly beforeFiles: readonly FileFact[];
   readonly checkReceiptPaths: readonly string[];
+  readonly repairHandoff?: {
+    readonly predecessorIntentDigest: string;
+    readonly predecessorStateDigest: string;
+    readonly admissionDigest: string;
+    readonly currentAuthorityInputs?: readonly CurrentAuthorityInput[];
+  };
 }
 interface PendingEffect {
   readonly effect: PublicationEffect;
@@ -317,8 +437,18 @@ interface ContinuationState {
   readonly pending: PendingEffect | null;
   readonly terminal: boolean;
 }
-async function saveState(root: string, state: ContinuationState): Promise<void> {
+async function saveState(root: string, state: ContinuationState, beforePointerWrite?: () => void): Promise<void> {
   const stateDigest = await writeBlob(root, state);
+  const previous = await readLinearRecord(root, pointerKey);
+  beforePointerWrite?.();
+  if (previous !== null && typeof previous === "object" && !Array.isArray(previous)) {
+    const pointer = previous as Record<string, LinearRecordValue>;
+    if (pointer.intentDigest !== state.intentDigest) refuse("LINEAR_CONTINUATION_POINTER_CONFLICT");
+    if (pointer.schema === "urn:usf:linear-continuation-pointer:2") {
+      await writeLinearRecord(root, pointerKey, { ...pointer, stateDigest });
+      return;
+    }
+  }
   await writeLinearRecord(root, pointerKey, { schema: "urn:usf:linear-continuation-pointer:1", intentDigest: state.intentDigest, stateDigest });
 }
 async function retained(root: string): Promise<{ intent: ContinuationIntent; state: ContinuationState } | null> {
@@ -326,7 +456,7 @@ async function retained(root: string): Promise<{ intent: ContinuationIntent; sta
   if (pointer === null) return null;
   if (!pointer || typeof pointer !== "object" || Array.isArray(pointer)) refuse("LINEAR_CONTINUATION_RECORD_INVALID");
   const record = pointer as Record<string, LinearRecordValue>;
-  if (record.schema !== "urn:usf:linear-continuation-pointer:1") refuse("LINEAR_CONTINUATION_RECORD_INVALID");
+  if (record.schema !== "urn:usf:linear-continuation-pointer:1" && record.schema !== "urn:usf:linear-continuation-pointer:2") refuse("LINEAR_CONTINUATION_RECORD_INVALID");
   const intentDigest = digest(record.intentDigest), stateDigest = digest(record.stateDigest);
   const intent = await readBlob<ContinuationIntent>(root, intentDigest);
   const state = await readBlob<ContinuationState>(root, stateDigest);
@@ -335,7 +465,393 @@ async function retained(root: string): Promise<{ intent: ContinuationIntent; sta
     || !Array.isArray(state.completedEffects) || state.completedEffects.length !== state.nextStep
     || state.terminal !== (state.nextStep === 3) || (state.terminal && state.pending !== null)
     || intent.beforeFiles.length > maximumFiles) refuse("LINEAR_CONTINUATION_RECORD_INVALID");
+  if (record.schema === "urn:usf:linear-continuation-pointer:2") {
+    const receipt = await readBlob<RepairHandoffReceipt>(root, digest(record.handoffReceiptDigest));
+    const original = await readBlob<ContinuationIntent>(root, receipt.predecessorIntentDigest);
+    const originalState = await readBlob<ContinuationState>(root, receipt.predecessorStateDigest);
+    const admittedState = await readBlob<ContinuationState>(root, receipt.successorStateDigest);
+    assertRepairBoundary(original, originalState, receipt.predecessorIntentDigest, receipt.predecessorStateDigest);
+    assertCurrentAuthorityInputLineage(receipt.currentAuthorityInputs, intent);
+    if (receipt.schema !== "urn:usf:linear-continuation-repair-handoff-receipt:1"
+      || receipt.successorIntentDigest !== intentDigest || admittedState.intentDigest !== intentDigest
+      || admittedState.nextStep !== 0 || admittedState.pending !== null || admittedState.terminal
+      || admittedState.completedEffects.length !== 0 || admittedState.integration === null
+      || !same(admittedState.integration, state.integration)
+      || !same(intent.repairHandoff, { predecessorIntentDigest: receipt.predecessorIntentDigest,
+        predecessorStateDigest: receipt.predecessorStateDigest, admissionDigest: receipt.admissionDigest,
+        ...(receipt.currentAuthorityInputs === undefined ? {} : { currentAuthorityInputs: receipt.currentAuthorityInputs }) })
+      || receipt.controllerBasisDigest !== intent.controllerBasisDigest
+      || !same({ ...intent, beforeFiles: original.beforeFiles, repositoryDirtyFiles: original.repositoryDirtyFiles,
+        controllerBasisDigest: original.controllerBasisDigest, repairHandoff: undefined }, { ...original, repairHandoff: undefined })) {
+      refuse("LINEAR_CONTINUATION_HANDOFF_LINEAGE_INVALID");
+    }
+  } else if (intent.repairHandoff !== undefined) refuse("LINEAR_CONTINUATION_HANDOFF_LINEAGE_INVALID");
   return { intent, state };
+}
+
+interface RepairInput { readonly before: FileFact; readonly after: FileFact; }
+interface RepairAdmission {
+  readonly predecessorIntentDigest: string; readonly predecessorStateDigest: string;
+  readonly observationDigest: string; readonly inputs: readonly RepairInput[];
+  readonly rows: readonly string[]; readonly digest: string;
+  readonly currentAuthorityOnlyPublicationSource?: string;
+}
+interface RepairHandoffReceipt {
+  readonly schema: "urn:usf:linear-continuation-repair-handoff-receipt:1";
+  readonly predecessorIntentDigest: string; readonly predecessorStateDigest: string;
+  readonly successorIntentDigest: string; readonly successorStateDigest: string;
+  readonly admissionDigest: string; readonly controllerBasisDigest: string;
+  readonly publicationReceipts: readonly FileFact[];
+  readonly currentAuthorityInputs?: readonly CurrentAuthorityInput[];
+}
+
+function repairAdmission(root: string, intent: ContinuationIntent): RepairAdmission | null {
+  const graph = loadSemanticGraph(root, intent.bindingManifest);
+  const rootRows = graph.quads.filter(row => row.subject === repairPolicyIri);
+  if (rootRows.length === 0) return null;
+  const invalid = (): never => refuse("LINEAR_CONTINUATION_HANDOFF_POLICY_INVALID");
+  const field = (subject: string, name: string, kind: "iri" | "literal"): string => {
+    const rows = graph.quads.filter(row => row.subject === subject && row.predicate === predicate(name));
+    if (rows.length !== 1 || rows[0]!.objectKind !== kind) return invalid();
+    return rows[0]!.object;
+  };
+  const closed = (subject: string, names: readonly string[]) => {
+    if (graph.quads.some(row => row.subject === subject && !names.includes(row.predicate.slice("urn:usf:predicate:".length)))) invalid();
+  };
+  closed(repairPolicyIri, ["type", "version", "forContract", "forPolicy", "failureClass", "predecessorIntentDigest",
+    "predecessorStateDigest", "integrationObservationDigest", "approvedRepairInput", "currentAuthorityOnlyPublicationSource"]);
+  if (field(repairPolicyIri, "type", "iri") !== "urn:usf:type:ConstructionContinuationRepairAdmission"
+    || field(repairPolicyIri, "version", "literal") !== "1"
+    || field(repairPolicyIri, "forContract", "iri") !== controllerContract
+    || field(repairPolicyIri, "forPolicy", "iri") !== policyIri
+    || field(repairPolicyIri, "failureClass", "literal") !== "WORKSPACE_IDENTITY_MEMBER_COHORT_MISMATCH") invalid();
+  const currentAuthorityRows = rootRows.filter(row => row.predicate === predicate("currentAuthorityOnlyPublicationSource"));
+  if (currentAuthorityRows.length > 1 || (currentAuthorityRows.length === 1
+    && (currentAuthorityRows[0]!.objectKind !== "literal"
+      || currentAuthorityRows[0]!.object !== currentAuthorityPublicationSource))) invalid();
+  const references = graph.quads.filter(row => row.subject === repairPolicyIri && row.predicate === predicate("approvedRepairInput"));
+  const subjects = references.map(row => row.object);
+  if (subjects.length < 1 || subjects.length > 64 || new Set(subjects).size !== subjects.length
+    || subjects.includes(repairPolicyIri) || references.some(row => row.objectKind !== "iri")) invalid();
+  const mode = (subject: string, name: string): number => {
+    const value = field(subject, name, "literal"), parsed = Number(value);
+    if (!/^[1-9][0-9]{2}$/u.test(value) || parsed > 0o777 || (parsed & 0o600) !== 0o600 || (parsed & 0o002) !== 0) return invalid();
+    return parsed;
+  };
+  const inputs = subjects.map(subject => {
+    closed(subject, ["type", "repositoryPath", "preimageDigest", "preimageMode", "postimageDigest", "postimageMode"]);
+    if (field(subject, "type", "iri") !== "urn:usf:type:ConstructionContinuationRepairInput") invalid();
+    const path = field(subject, "repositoryPath", "literal");
+    if (parseRepositoryPath(path, "file") === null || path.startsWith("evidence/") || path === changedPath || path === acceptancePath) invalid();
+    const before = { path, digest: digest(field(subject, "preimageDigest", "literal")), mode: mode(subject, "preimageMode") };
+    const after = { path, digest: path === repairPolicySource ? null : digest(field(subject, "postimageDigest", "literal")), mode: mode(subject, "postimageMode") };
+    if (before.mode !== after.mode || (path === repairPolicySource && objectValues(graph, subject, predicate("postimageDigest")).length !== 0)) invalid();
+    return { before, after };
+  }).sort((a, b) => a.before.path.localeCompare(b.before.path));
+  if (new Set(inputs.map(input => input.before.path)).size !== inputs.length || !inputs.some(input => input.before.path === repairPolicySource)) invalid();
+  const source = graph.sources.find(entry => entry.path === repairPolicySource);
+  const selectedSubjects = new Set([repairPolicyIri, ...subjects]);
+  const rows = graph.quads.filter(row => selectedSubjects.has(row.subject));
+  if (!source || rows.some(row => row.graph !== source.graph)) invalid();
+  return {
+    predecessorIntentDigest: digest(field(repairPolicyIri, "predecessorIntentDigest", "literal")),
+    predecessorStateDigest: digest(field(repairPolicyIri, "predecessorStateDigest", "literal")),
+    observationDigest: digest(field(repairPolicyIri, "integrationObservationDigest", "literal")), inputs,
+    rows: rows.map(canonicalQuadLine).sort(), digest: canonicalDigest(rows.map(canonicalQuadLine).sort()),
+    ...(currentAuthorityRows.length === 0 ? {} : { currentAuthorityOnlyPublicationSource: currentAuthorityPublicationSource }),
+  };
+}
+
+function assertRepairBoundary(intent: ContinuationIntent, state: ContinuationState, intentDigest: string, stateDigest: string): void {
+  if (intent.repairHandoff !== undefined || canonicalDigest(intent) !== intentDigest || canonicalDigest(state) !== stateDigest
+    || state.intentDigest !== intentDigest || state.nextStep !== 0 || state.integration !== null
+    || state.pending !== null || state.terminal || state.completedEffects.length !== 0) refuse("LINEAR_CONTINUATION_HANDOFF_BOUNDARY_INVALID");
+}
+
+/** An append is reversible only if the complete, exact tail is the authorized typed record set. */
+function reverseRepairAppend(bytes: Buffer, lines: readonly string[], expectedDigest: string): void {
+  const source = bytes.toString("utf8");
+  if (!source.endsWith("\n") || source.includes("\r") || new Set(lines).size !== lines.length) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
+  const all = source.slice(0, -1).split("\n");
+  if (all.length <= lines.length) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
+  const remaining = [...all];
+  for (const line of lines) {
+    const index = remaining.indexOf(line);
+    if (index < 0) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
+    remaining.splice(index, 1);
+  }
+  if (sha256(Buffer.from(remaining.join("\n") + "\n")) !== expectedDigest) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
+}
+
+function authenticateRepairPreimage(root: string, intent: ContinuationIntent, expected: FileFact): void {
+  const retainedFacts = [...intent.beforeFiles, ...intent.repositoryDirtyFiles].filter(file => file.path === expected.path);
+  if (retainedFacts.length > 0) {
+    if (retainedFacts.some(file => !same(file, expected))) refuse("LINEAR_CONTINUATION_HANDOFF_PREIMAGE_INVALID");
+    return;
+  }
+  // Git authenticates bytes and the executable class, not historical group-write bits.
+  const entry = gitText(root, ["ls-tree", "-z", intent.repositoryCommit, "--", expected.path]);
+  const match = /^(100644|100755) blob [a-f0-9]{40,64}\t([^\0]+)\0$/u.exec(entry);
+  if (!match || match[2] !== expected.path || expected.mode === null
+    || (match[1] === "100755") !== ((expected.mode & 0o111) !== 0)) refuse("LINEAR_CONTINUATION_HANDOFF_PREIMAGE_INVALID");
+  const bytes = execFileSync("git", ["show", intent.repositoryCommit + ":" + expected.path],
+    { cwd: root, timeout: 10000, maxBuffer: 16 * 1024 * 1024 });
+  if (sha256(bytes) !== expected.digest) refuse("LINEAR_CONTINUATION_HANDOFF_PREIMAGE_INVALID");
+}
+
+function currentRepairPublication(root: string, selected: { workIri: string; profile: string; manifestPath: string }) {
+  const graph = loadSemanticGraph(root, selected.manifestPath), current = packet(root, selected);
+  const permission = current.realisationAuthority?.permission;
+  if (current.eligibility?.construction.eligible !== true || current.eligibility.construction.authority !== "active-permission"
+    || current.eligibility.activation.eligible !== true || permission?.activationState !== "urn:usf:contract-state:active"
+    || (selected.workIri === controllerWork && current.contract !== controllerContract)) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_INACTIVE");
+  const authority = deriveConstructionAuthority(graph, selected.workIri, selected.manifestPath);
+  const grant = constructionGrantIri(selected.workIri, permission.id, current.eligibility.authorityBasisDigest);
+  const values = objectValues(graph, grant, predicate("publicationIntentDigest"));
+  if (values.length !== 1) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_INACTIVE");
+  const path = constructionReceiptPath(digest(values[0]), authority), file = readFileFact(root, path);
+  if (file.bytes === null) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  const value: unknown = JSON.parse(file.bytes.toString("utf8"));
+  if (!validateConstructionReceiptShape(root, value, authority)) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  const { receiptDigest, ...body } = value;
+  if (value.status !== "verified" || value.members.length !== 1 || value.members[0]?.grantIri !== grant
+    || value.members[0]?.workIri !== selected.workIri || value.members[0]?.authorityBasisDigest !== current.eligibility.authorityBasisDigest
+    || value.semanticSourcePath !== authority.sourcePath || value.publicationReceiptPath !== path
+    || value.publicationIntentDigest !== values[0] || value.profileIri !== selected.profile || value.manifestPath !== selected.manifestPath
+    || canonicalDigest(body, { rejectAbsolutePaths: true }) !== receiptDigest
+    || canonicalJson(value, { rejectAbsolutePaths: true }) + "\n" !== file.bytes.toString("utf8")
+    || value.operations.some(operation => operation.kind !== "add" || operation.sourcePath !== authority.sourcePath)
+    || value.operations.length === 0) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  return { graph, current, receipt: value, file: file.fact, source: readFileFact(root, authority.sourcePath) };
+}
+
+/** Authenticate the entire current source, not merely the existence of an active grant. */
+function authenticateCurrentPublicationSource(publication: ReturnType<typeof currentRepairPublication>): void {
+  const { source, receipt } = publication;
+  const mode = source.fact.mode;
+  if (source.bytes === null || mode === null || (mode & 0o600) !== 0o600 || (mode & 0o113) !== 0
+    || source.fact.digest !== sha256(source.bytes) || source.fact.digest !== receipt.resultingSourceDigest
+    || source.fact.path !== receipt.semanticSourcePath || !digestPattern.test(receipt.baseSourceDigest)
+    || receipt.baseSourceDigest === receipt.resultingSourceDigest) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  reverseRepairAppend(source.bytes, receipt.operations.map(operation => operation.line), receipt.baseSourceDigest);
+}
+
+/** A missing historical fact is never converted to an absent historical file. */
+function currentAuthorityInput(root: string, intent: ContinuationIntent, admission: RepairAdmission,
+  integration: NonNullable<ContinuationState["integration"]>, publication: ReturnType<typeof currentRepairPublication>): CurrentAuthorityInput {
+  const eligibility = publication.current.eligibility;
+  if (!eligibility) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_INACTIVE");
+  if (admission.currentAuthorityOnlyPublicationSource !== currentAuthorityPublicationSource
+    || publication.source.fact.path !== currentAuthorityPublicationSource
+    || publication.current.id !== bindingPublicationSelection.workIri
+    || [...intent.beforeFiles, ...intent.repositoryDirtyFiles].some(file => file.path === currentAuthorityPublicationSource)) {
+    refuse("LINEAR_CONTINUATION_HANDOFF_CURRENT_AUTHORITY_SCOPE_INVALID");
+  }
+  authenticateCurrentPublicationSource(publication);
+  const source = publication.graph.sources.find(entry => entry.path === currentAuthorityPublicationSource);
+  if (!source) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  const subjects = [...new Set(publication.graph.quads.filter(row => row.graph === source.graph).map(row => row.subject))].sort();
+  if (subjects.length === 0 || subjects.length > 16384) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  const forbidden = new Set([currentAuthorityPublicationSource, publication.file.path, source.graph, ...subjects]);
+  let nodes = 0;
+  const inspect = (value: unknown): void => {
+    if (++nodes > 100000) refuse("LINEAR_CONTINUATION_HANDOFF_INDEPENDENCE_UNPROVEN");
+    if (typeof value === "string") {
+      if (forbidden.has(value)) refuse("LINEAR_CONTINUATION_HANDOFF_SELECTED_DEPENDENCY_INTERSECTION");
+    } else if (Array.isArray(value)) {
+      for (const child of value) inspect(child);
+    } else if (value !== null && typeof value === "object") {
+      for (const [key, child] of Object.entries(value)) { inspect(key); inspect(child); }
+    }
+  };
+  const observationPath = ".usf/receipts/integration/" + integration.observationDigest.slice(7) + ".json";
+  const observation = readFileFact(root, observationPath);
+  if (observation.bytes === null || !same(observation.fact, integration.files.find(file => file.path === observationPath))) {
+    refuse("LINEAR_CONTINUATION_HANDOFF_INDEPENDENCE_UNPROVEN");
+  }
+  const observed = JSON.parse(observation.bytes.toString("utf8")) as { observationDigest?: unknown };
+  if (observed.observationDigest !== integration.observationDigest) refuse("LINEAR_CONTINUATION_HANDOFF_INDEPENDENCE_UNPROVEN");
+  // The caller authenticated this exact native observation, including original/postimage
+  // selected bases, checks, cohort and integration evidence, before reaching this snapshot.
+  inspect(observed);
+  const checks = intent.checkReceiptPaths.map(path => {
+    const checked = readFileFact(root, path);
+    if (checked.bytes === null || !same(checked.fact, intent.beforeFiles.find(file => file.path === path))) {
+      refuse("LINEAR_CONTINUATION_HANDOFF_INDEPENDENCE_UNPROVEN");
+    }
+    inspect(JSON.parse(checked.bytes.toString("utf8")) as unknown);
+    return checked.fact;
+  });
+  return {
+    disposition: "current-authority-only", historicalEquivalence: "not-claimed",
+    source: publication.source.fact, publicationReceipt: publication.file,
+    publicationIntentDigest: digest(publication.receipt.publicationIntentDigest),
+    publicationReceiptDigest: digest(publication.receipt.receiptDigest),
+    authorityBasisDigest: digest(eligibility.authorityBasisDigest),
+    selectedDependencyIndependenceDigest: canonicalDigest({
+      candidateDigest: intent.candidateDigest, basisDigest: intent.basisDigest,
+      workspaceIdentityDigest: intent.workspaceIdentityDigest, sourcePath: currentAuthorityPublicationSource,
+      sourceGraph: source.graph, subjects, observation: observation.fact, checks,
+    }),
+  };
+}
+
+function assertCurrentAuthorityInputLineage(value: unknown, intent: ContinuationIntent): void {
+  if (value === undefined) return;
+  const invalid = (): never => refuse("LINEAR_CONTINUATION_HANDOFF_LINEAGE_INVALID");
+  if (!Array.isArray(value) || value.length !== 1) return invalid();
+  const fileFact = (value: unknown): value is { path: string; digest: string; mode: number } => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const fact = value as Record<string, unknown>;
+    return Object.keys(fact).length === 3 && typeof fact.path === "string"
+      && typeof fact.digest === "string" && digestPattern.test(fact.digest)
+      && typeof fact.mode === "number" && Number.isInteger(fact.mode) && fact.mode >= 0 && fact.mode <= 0o777;
+  };
+  const input = value[0] as CurrentAuthorityInput | undefined;
+  if (!input || typeof input !== "object" || Array.isArray(input)
+    || input.disposition !== "current-authority-only" || input.historicalEquivalence !== "not-claimed"
+    || !fileFact(input.source) || !fileFact(input.publicationReceipt)
+    || input.source.path !== currentAuthorityPublicationSource
+    || !isContinuationInputPath(input.publicationReceipt.path)) return invalid();
+  for (const field of [input.publicationIntentDigest, input.publicationReceiptDigest,
+    input.authorityBasisDigest, input.selectedDependencyIndependenceDigest]) {
+    if (typeof field !== "string" || !digestPattern.test(field)) return invalid();
+  }
+  if ((input.source.mode & 0o600) !== 0o600 || (input.source.mode & 0o113) !== 0
+    || !Array.isArray(intent.beforeFiles)) return invalid();
+  const capturedSource = intent.beforeFiles.find(file => file?.path === input.source.path);
+  const capturedReceipt = intent.beforeFiles.find(file => file?.path === input.publicationReceipt.path);
+  if (!fileFact(capturedSource) || !fileFact(capturedReceipt)) return invalid();
+  if (!same(capturedSource, input.source) || !same(capturedReceipt, input.publicationReceipt)) return invalid();
+}
+
+function bindingPublicationCapture(root: string,
+  bindings: readonly { manifestPath: string; packet?: WorkPacket }[], extras: readonly string[]) {
+  const publication = currentRepairPublication(root, bindingPublicationSelection);
+  const eligibility = publication.current.eligibility;
+  if (!eligibility) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_INACTIVE");
+  authenticateCurrentPublicationSource(publication);
+  const files = protectedFiles(root, [...bindings,
+    { manifestPath: bindingPublicationSelection.manifestPath, packet: publication.current }],
+  [...extras, publication.source.fact.path, publication.file.path]);
+  if (!same(files.find(file => file.path === publication.source.fact.path), publication.source.fact)
+    || !same(files.find(file => file.path === publication.file.path), publication.file)) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
+  return { files, basisDigest: publication.current.realisationBasis!.basisDigest,
+    authorityBasisDigest: eligibility.authorityBasisDigest,
+    source: publication.source.fact, receipt: publication.file, receiptDigest: publication.receipt.receiptDigest };
+}
+
+function repairSnapshot(root: string, intent: ContinuationIntent, state: ContinuationState,
+  admission: RepairAdmission, integration: NonNullable<ContinuationState["integration"]>) {
+  assertRepairBoundary(intent, state, admission.predecessorIntentDigest, admission.predecessorStateDigest);
+  if (!same(repairAdmission(root, intent), admission) || policy(root).digest !== intent.policyDigest
+    || integration.observationDigest !== admission.observationDigest
+    || canonicalDigest(deriveLinearBindingDeclaration(loadSemanticGraph(root, intent.bindingManifest), intent.bindingIri)) !== intent.bindingDigest
+    || !same(intent.selected, selection(packet(root, intent.selected), selectedProfile, selectedManifest))) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
+  const publications = [currentRepairPublication(root, intent.controller), currentRepairPublication(root, bindingPublicationSelection)];
+  const controller = publications[0]!.current;
+  if (!same(intent.controller, selection(controller, controllerProfile, controllerManifest))) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
+  const replacements = new Map<string, FileFact>();
+  for (const input of admission.inputs) {
+    authenticateRepairPreimage(root, intent, input.before);
+    if (publications.some(publication => publication.source.fact.path === input.before.path)) refuse("LINEAR_CONTINUATION_HANDOFF_POLICY_INVALID");
+    const actual = readFileFact(root, input.before.path);
+    if (input.before.path === repairPolicySource) {
+      if (actual.bytes === null || actual.fact.mode !== input.after.mode
+        || !controller.realisationBasis!.work.dependencies.some(dependency => dependency.kind === "file"
+          && dependency.key === repairPolicySource && dependency.digest === actual.fact.digest)) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_INACTIVE");
+      reverseRepairAppend(actual.bytes, admission.rows, input.before.digest!);
+    } else if (!same(actual.fact, input.after)) refuse("LINEAR_CONTINUATION_HANDOFF_POSTIMAGE_INVALID");
+    replacements.set(actual.fact.path, actual.fact);
+  }
+  const currentAuthorityInputs: CurrentAuthorityInput[] = [];
+  for (const publication of publications) {
+    const before = intent.beforeFiles.find(file => file.path === publication.source.fact.path);
+    if (!before) {
+      if (admission.currentAuthorityOnlyPublicationSource !== publication.source.fact.path) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+      currentAuthorityInputs.push(currentAuthorityInput(root, intent, admission, integration, publication));
+      replacements.set(publication.source.fact.path, publication.source.fact);
+      replacements.set(publication.file.path, publication.file);
+      continue;
+    }
+    if (admission.currentAuthorityOnlyPublicationSource === publication.source.fact.path) refuse("LINEAR_CONTINUATION_HANDOFF_CURRENT_AUTHORITY_SCOPE_INVALID");
+    if (publication.source.bytes === null || publication.source.fact.mode !== before.mode) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+    if (same(before, publication.source.fact)) continue;
+    if (before.digest !== publication.receipt.baseSourceDigest || publication.source.fact.digest !== publication.receipt.resultingSourceDigest) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+    reverseRepairAppend(publication.source.bytes, publication.receipt.operations.map(operation => operation.line), before.digest!);
+    replacements.set(publication.source.fact.path, publication.source.fact);
+    replacements.set(publication.file.path, publication.file);
+  }
+  if (currentAuthorityInputs.length !== (admission.currentAuthorityOnlyPublicationSource === undefined ? 0 : 1)) {
+    refuse("LINEAR_CONTINUATION_HANDOFF_POLICY_INVALID");
+  }
+  const allowed = new Set([changedPath, ...replacements.keys()]);
+  const changes = repositoryChanges(root, intent.repositoryCommit);
+  if (!same(intent.repositoryDirtyFiles.filter(file => !allowed.has(file.path)), changes.filter(file => !allowed.has(file.path)))) refuse("LINEAR_CONTINUATION_UNRELATED_CHANGE");
+  const expected = expectedPostimages(intent, { ...state, integration }).filter(file => !replacements.has(file.path));
+  assertFiles(root, expected);
+  const beforeFiles = new Map(intent.beforeFiles.map(file => [file.path, file]));
+  for (const [path, fact] of replacements) beforeFiles.set(path, fact);
+  return {
+    beforeFiles: [...beforeFiles.values()].sort((a, b) => a.path.localeCompare(b.path)),
+    repositoryDirtyFiles: changes.filter(file => file.path !== changedPath),
+    controllerBasisDigest: controller.realisationBasis!.basisDigest,
+    publicationReceipts: publications.map(publication => publication.file), currentAuthorityInputs,
+  };
+}
+
+async function admitRepairHandoff(root: string, intent: ContinuationIntent, state: ContinuationState,
+  admission: RepairAdmission): Promise<{ intent: ContinuationIntent; state: ContinuationState }> {
+  const binding = deriveLinearBindingDeclaration(loadSemanticGraph(root, intent.bindingManifest), intent.bindingIri);
+  const issueKey = canonicalDigest({ purpose: "linear-binding-issue-execution", locator: binding.locator });
+  return withCandidateLock(root, issueKey, async () => {
+    const lock = await acquirePrimaryMutationLock(root);
+    try {
+      const expectedPointer = { schema: "urn:usf:linear-continuation-pointer:1", intentDigest: canonicalDigest(intent), stateDigest: canonicalDigest(state) };
+      const assertPointer = async () => {
+        if (!same(await readLinearRecord(root, pointerKey), expectedPointer)) refuse("LINEAR_CONTINUATION_POINTER_CONFLICT");
+        const store = await LinearStateStore.open(root);
+        const graph = loadSemanticGraph(root, intent.bindingManifest);
+        const selected = deriveLinearBindingDeclaration(graph, intent.bindingIri);
+        if (canonicalDigest(selected) !== intent.bindingDigest) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
+        for (const entry of store.intents()) {
+          if (entry.state !== "prepared" && entry.state !== "sent" && entry.state !== "unknown") continue;
+          if (entry.identity.bindingIri === intent.bindingIri) refuse("LINEAR_CONTINUATION_HANDOFF_REMOTE_INTENT_PENDING");
+          let target: ReturnType<typeof deriveLinearBindingDeclaration>;
+          try { target = deriveLinearBindingDeclaration(graph, entry.identity.bindingIri); }
+          catch { refuse("LINEAR_CONTINUATION_HANDOFF_REMOTE_INTENT_TARGET_UNRESOLVED"); }
+          // The existing issue-ownership key uses this canonical, workspace-qualified locator.
+          // Neither a successor binding nor a comment's remote operation ID changes its target.
+          if (target.locator === selected.locator) refuse("LINEAR_CONTINUATION_HANDOFF_REMOTE_INTENT_PENDING");
+        }
+      };
+      await assertPointer();
+      assertRepairBoundary(intent, state, admission.predecessorIntentDigest, admission.predecessorStateDigest);
+      const integration = await authenticatedIntegration(root, intent, true);
+      const snapshot = repairSnapshot(root, intent, state, admission, integration);
+      const currentAuthorityInputs = snapshot.currentAuthorityInputs ?? [];
+      const successor: ContinuationIntent = { ...intent, beforeFiles: snapshot.beforeFiles,
+        repositoryDirtyFiles: snapshot.repositoryDirtyFiles, controllerBasisDigest: snapshot.controllerBasisDigest,
+        repairHandoff: { predecessorIntentDigest: admission.predecessorIntentDigest,
+          predecessorStateDigest: admission.predecessorStateDigest, admissionDigest: admission.digest,
+          ...(currentAuthorityInputs.length === 0 ? {} : { currentAuthorityInputs }) } };
+      const successorIntentDigest = await writeBlob(root, successor);
+      const next: ContinuationState = { ...state, intentDigest: successorIntentDigest, integration };
+      const successorStateDigest = await writeBlob(root, next);
+      const receipt: RepairHandoffReceipt = { schema: "urn:usf:linear-continuation-repair-handoff-receipt:1",
+        predecessorIntentDigest: admission.predecessorIntentDigest, predecessorStateDigest: admission.predecessorStateDigest,
+        successorIntentDigest, successorStateDigest, admissionDigest: admission.digest,
+        controllerBasisDigest: snapshot.controllerBasisDigest, publicationReceipts: snapshot.publicationReceipts,
+        ...(currentAuthorityInputs.length === 0 ? {} : { currentAuthorityInputs }) };
+      const handoffReceiptDigest = await writeBlob(root, receipt);
+      await assertPointer();
+      if (!same(snapshot, repairSnapshot(root, intent, state, admission, integration))) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
+      authenticateRetained(root, successor, next);
+      await writeLinearRecord(root, pointerKey, { schema: "urn:usf:linear-continuation-pointer:2",
+        intentDigest: successorIntentDigest, stateDigest: successorStateDigest, handoffReceiptDigest });
+      return { intent: successor, state: next };
+    } finally { await lock.handle.close(); }
+  });
 }
 
 function protectedFiles(root: string, bindings: readonly { manifestPath: string; packet?: WorkPacket }[], extras: readonly string[]): FileFact[] {
@@ -394,6 +910,13 @@ export async function prepareLinearMetadataContinuation(rootPath: string, bindin
       || !Array.isArray(checked.validationAuthorityDependencies)) refuse("LINEAR_CONTINUATION_CHECK_MISMATCH");
     checkDependencies.push(...checked.validationAuthorityDependencies.map(dependency => dependency.path));
   }
+  const captureBindings = [
+    { manifestPath: controllerManifest, packet: currentController },
+    { manifestPath: selectedManifest, packet: binding.binding.unit.packet },
+    { manifestPath: binding.binding.selector.manifestPath },
+  ];
+  const captureExtras = [acceptancePath, binding.binding.attemptPath, binding.binding.unitPath, ...checkReceiptPaths, ...checkDependencies];
+  const captured = bindingPublicationCapture(root, captureBindings, captureExtras);
   const repositoryCommit = gitText(root, ["rev-parse", "--verify", "HEAD"]).trim();
   const intent: ContinuationIntent = {
     schema: "urn:usf:linear-construction-continuation-intent:1", policyDigest: p.digest,
@@ -405,20 +928,25 @@ export async function prepareLinearMetadataContinuation(rootPath: string, bindin
     controller: selection(currentController, controllerProfile, controllerManifest),
     controllerBasisDigest: currentController.realisationBasis!.basisDigest,
     classification, checkReceiptPaths: [...new Set(checkReceiptPaths)].sort(),
-    beforeFiles: protectedFiles(root, [
-      { manifestPath: controllerManifest, packet: currentController },
-      { manifestPath: selectedManifest, packet: binding.binding.unit.packet },
-      { manifestPath: binding.binding.selector.manifestPath },
-    ], [acceptancePath, binding.binding.attemptPath, binding.binding.unitPath, ...checkReceiptPaths, ...checkDependencies]),
+    beforeFiles: captured.files,
+  };
+  const assertPreparedCurrent = () => {
+    if (policy(root).digest !== intent.policyDigest
+      || canonicalDigest(deriveLinearBindingDeclaration(loadSemanticGraph(root, intent.bindingManifest), intent.bindingIri)) !== intent.bindingDigest
+      || packet(root, intent.controller).realisationBasis!.basisDigest !== intent.controllerBasisDigest
+      || !same(bindingPublicationCapture(root, captureBindings, captureExtras), captured)) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
+    assertFiles(root, intent.beforeFiles);
   };
   const prior = await retained(root);
+  assertPreparedCurrent();
   if (prior !== null) {
     if (!same(prior.intent, intent) || prior.state.integration !== null || prior.state.terminal) refuse("LINEAR_CONTINUATION_ALREADY_RETAINED");
     return true;
   }
   const intentDigest = await writeBlob(root, intent);
-  await saveState(root, { intentDigest, integration: null, nextStep: 0, completedEffects: [], pending: null, terminal: false });
-  assertFiles(root, intent.beforeFiles);
+  assertPreparedCurrent();
+  await saveState(root, { intentDigest, integration: null, nextStep: 0, completedEffects: [], pending: null, terminal: false }, assertPreparedCurrent);
+  assertPreparedCurrent();
   return true;
 }
 function assertFiles(root: string, files: readonly FileFact[]): void {
@@ -443,6 +971,7 @@ function expectedPostimages(intent: ContinuationIntent, state: ContinuationState
 }
 function authenticateRetained(root: string, intent: ContinuationIntent, state: ContinuationState): void {
   if (policy(root).digest !== intent.policyDigest
+    || (intent.repairHandoff !== undefined && repairAdmission(root, intent)?.digest !== intent.repairHandoff.admissionDigest)
     || !same(intent.selected, selection(packet(root, intent.selected), selectedProfile, selectedManifest))
     || !same(intent.controller, selection(packet(root, intent.controller), controllerProfile, controllerManifest))
     || canonicalDigest(deriveLinearBindingDeclaration(loadSemanticGraph(root, intent.bindingManifest), intent.bindingIri)) !== intent.bindingDigest) {
@@ -472,13 +1001,14 @@ function authenticateRetained(root: string, intent: ContinuationIntent, state: C
     catch { refuse("LINEAR_CONTINUATION_CARRIER_MOVED"); }
   }
 }
-async function captureIntegration(root: string, intent: ContinuationIntent, state: ContinuationState): Promise<ContinuationState> {
+async function authenticatedIntegration(root: string, intent: ContinuationIntent, allowStalePostimage = false): Promise<NonNullable<ContinuationState["integration"]>> {
   const observed = await inspectCandidateIntegrationRecovery(root, { candidateDigests: [intent.candidateDigest] });
   const success = observed.observation, prepared = observed.prepared;
-  if (observed.state !== "primary-advanced" || !success || !prepared
+  const staleRepair = allowStalePostimage && observed.state === "stale" && success !== null && prepared !== null;
+  if ((!staleRepair && observed.state !== "primary-advanced") || !success || !prepared
     || success.schema !== "urn:usf:integration-observation:2" || success.outcome !== "urn:usf:outcome:integration-success"
     || success.startingCarrierCommit !== intent.repositoryCommit
-    || success.workspaceIdentityDigest !== intent.workspaceIdentityDigest || success.originalConstructionBases.length !== 1
+    || success.workspaceIdentityDigest !== canonicalDigest([intent.workspaceIdentityDigest]) || success.originalConstructionBases.length !== 1
     || success.originalConstructionBases[0]?.basisDigest !== intent.basisDigest
     || success.originalConstructionBases[0]?.work.id !== selectedWork
     || success.authoritativeGitDiff?.length !== 1 || success.authoritativeGitDiff[0]?.path !== changedPath
@@ -497,10 +1027,13 @@ async function captureIntegration(root: string, intent: ContinuationIntent, stat
   if (typeof parsed.observationPath !== "string" || !/^\.usf\/receipts\/integration\/[a-f0-9]{64}\.json$/u.test(parsed.observationPath)) refuse("LINEAR_CONTINUATION_INTEGRATION_UNAUTHENTICATED");
   const receipt = readFileFact(root, parsed.observationPath);
   if (receipt.bytes === null || receipt.bytes.toString("utf8") !== canonicalJson(success) + "\n") refuse("LINEAR_CONTINUATION_INTEGRATION_UNAUTHENTICATED");
-  const next: ContinuationState = { ...state, integration: {
+  return {
     observationDigest: success.observationDigest, commit: success.observedCarrierCommit,
     files: [retainedIntent.fact, receipt.fact],
-  } };
+  };
+}
+async function captureIntegration(root: string, intent: ContinuationIntent, state: ContinuationState): Promise<ContinuationState> {
+  const next: ContinuationState = { ...state, integration: await authenticatedIntegration(root, intent) };
   authenticateRetained(root, intent, next);
   await saveState(root, next);
   return next;
@@ -519,12 +1052,16 @@ export interface ContinuationOperations {
 export async function resumeLinearMetadataContinuation(rootPath: string, operations: ContinuationOperations):
   Promise<null | { status: "completed"; bindingIri: string; attemptKey: string; candidateDigest: string }> {
   const root = realpathSync(rootPath);
-  const found = await retained(root);
+  let found = await retained(root);
   if (found === null) return null;
-  const { intent } = found;
   // A closed attempt is history, not a permanent global lock on future work.
   // Ordinary current policy and selected-work completion govern later cycles.
   if (found.state.terminal) return null;
+  if (found.state.integration === null && found.intent.repairHandoff === undefined) {
+    const admission = repairAdmission(root, found.intent);
+    if (admission !== null) found = await admitRepairHandoff(root, found.intent, found.state, admission);
+  }
+  const { intent } = found;
   let state = found.state;
   if (state.integration === null) state = await captureIntegration(root, intent, state);
   authenticateRetained(root, intent, state);

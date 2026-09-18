@@ -373,6 +373,8 @@ const intercepted = new Set([
   "../graph/linear-binding.ts",
   "../graph/work.ts",
   "../realisation/index.ts",
+  "../realisation/transition.ts",
+  "../realisation/construction-authority.ts",
   "./linear-client.ts",
 ]);
 export async function resolve(specifier, context, nextResolve) {
@@ -390,11 +392,21 @@ function harness() {
   return value;
 }
 export function loadSemanticGraph(_root, manifestPath) {
-  return { fixtureManifestPath: manifestPath, sources: [], manifests: [] };
+  const publication = harness().bindingPublication;
+  return { fixtureManifestPath: manifestPath,
+    sources: manifestPath === publication.manifestPath ? [{ path: publication.sourcePath, graph: "urn:fixture:binding-grants" }] : [],
+    manifests: manifestPath === publication.manifestPath ? [{ path: publication.manifestPath }] : [], quads: [] };
 }
 export function objectValues(_graph, _subject, predicate) {
   const name = predicate.slice("urn:usf:predicate:".length);
+  if (_subject === harness().bindingPublication.grantIri && name === "publicationIntentDigest") return [harness().bindingPublication.intentDigest];
   return [...(harness().policyValues[name] ?? [])];
+}
+export function deriveConstructionAuthority() { return { sourcePath: harness().bindingPublication.sourcePath }; }
+export function constructionGrantIri() { return harness().bindingPublication.grantIri; }
+export function constructionReceiptPath() { return harness().bindingPublication.receiptPath; }
+export function validateConstructionReceiptShape(_root, value) {
+  return value.schema === "urn:usf:construction-authority-publication-receipt:1";
 }
 export function resourceDigest() {
   return harness().policyDigest;
@@ -415,6 +427,12 @@ export async function inspectCandidateIntegrationRecovery() {
   const fixture = harness();
   fixture.recoveryInspectionCalls++;
   return fixture.integration;
+}
+export async function withCandidateLock(_root, _key, operation) {
+  return operation(_root);
+}
+export async function acquirePrimaryMutationLock() {
+  return { handle: { close: async () => undefined } };
 }
 export async function readLinearPolicySource() {
   harness().policyReadCalls++;
@@ -448,6 +466,15 @@ const checkPath = ".usf/receipts/check/" + checkReceiptKey.slice(7) + ".json";
 const selectedBasisDigest = canonical.canonicalDigest({ basis: "selected" });
 const freshSelectedBasisDigest = canonical.canonicalDigest({ basis: "selected-after-publication" });
 const controllerBasisDigest = canonical.canonicalDigest({ basis: "controller" });
+const bindingWork = "urn:usf:work:linear-work-binding";
+const bindingAuthorityBasisDigest = canonical.canonicalDigest({ basis: "binding-authority" });
+const bindingPublication = {
+  manifestPath: "graph/manifests/linear-work-binding.json",
+  sourcePath: "graph/linear-work-binding-grants.nq",
+  grantIri: "urn:fixture:binding-construction-grant",
+  intentDigest: canonical.canonicalDigest({ publication: bindingWork }),
+  receiptPath: "evidence/construction-authority/" + canonical.canonicalDigest({ publication: bindingWork }).slice(7) + ".json",
+};
 
 const beforeHelp = [
   'const probeQualifyTopic = topic(["probe", "qualify"], {',
@@ -534,6 +561,16 @@ function policyValues(acceptanceDigest) {
   };
 }
 function makePacket(fixture, workIri) {
+  if (workIri === bindingWork) return {
+    id: workIri, readSet: [bindingPublication.sourcePath], writeSet: [],
+    realisationBasis: { basisDigest: bindingAuthorityBasisDigest, work: { dependencies: [] } },
+    realisationAuthority: {
+      permission: { id: "urn:usf:permission:linear-work-binding", activationState: "urn:usf:contract-state:active" },
+      constructionProofObligation: "urn:usf:proof:linear-work-binding:construction-authority",
+    },
+    eligibility: { authorityBasisDigest: bindingAuthorityBasisDigest, activation: { eligible: true },
+      construction: { eligible: true, authority: "active-permission" } },
+  };
   const publication = fs.readFileSync(path.join(fixture.root, publicationPath), "utf8");
   const constructed = publication.includes("construction:" + workIri + "\n");
   const completed = publication.includes("completion:" + workIri + "\n");
@@ -578,6 +615,23 @@ function setup(name) {
   put(root, attemptPath, JSON.stringify(attempt) + "\n");
   put(root, unitPath, "<urn:fixture:unit> <urn:fixture:work> <" + selectedWork + "> <urn:fixture:graph> .\n");
   put(root, checkPath, canonical.canonicalJson(checkReceipt) + "\n");
+  const bindingBase = "<urn:fixture:binding-base> <urn:fixture:value> \"base\" <urn:fixture:binding-grants> .\n";
+  const bindingLine = "<" + bindingPublication.grantIri + "> <urn:fixture:value> \"grant\" <urn:fixture:binding-grants> .";
+  const bindingSource = bindingBase + bindingLine + "\n";
+  const bindingReceiptBody = {
+    schema: "urn:usf:construction-authority-publication-receipt:1", status: "verified",
+    members: [{ grantIri: bindingPublication.grantIri, workIri: bindingWork, authorityBasisDigest: bindingAuthorityBasisDigest }],
+    semanticSourcePath: bindingPublication.sourcePath, publicationReceiptPath: bindingPublication.receiptPath,
+    publicationIntentDigest: bindingPublication.intentDigest, profileIri: "urn:usf:profile:linear-work-binding:1",
+    manifestPath: bindingPublication.manifestPath, baseSourceDigest: canonical.sha256(bindingBase),
+    resultingSourceDigest: canonical.sha256(bindingSource),
+    operations: [{ kind: "add", sourcePath: bindingPublication.sourcePath, line: bindingLine }],
+  };
+  put(root, bindingPublication.manifestPath, "{}\n");
+  put(root, bindingPublication.sourcePath, bindingSource);
+  put(root, bindingPublication.receiptPath, canonical.canonicalJson({
+    ...bindingReceiptBody, receiptDigest: canonical.canonicalDigest(bindingReceiptBody),
+  }) + "\n");
   put(root, "src/unrelated.ts", 'export const unrelated = "baseline";\n');
   git(root, ["init", "-q"]);
   git(root, ["config", "user.email", "continuation@example.invalid"]);
@@ -597,6 +651,7 @@ function setup(name) {
     attempt,
     repositoryCommit,
     bindingAuthority,
+    bindingPublication,
     policyValues: policyValues(acceptanceDigest),
     policyDigest: canonical.canonicalDigest({ policy: "v1" }),
     integrationCommitted: false,
@@ -656,7 +711,7 @@ function installIntegration(fixture) {
     observationDigest,
     startingCarrierCommit: fixture.repositoryCommit,
     observedCarrierCommit,
-    workspaceIdentityDigest: fixture.candidate.workspaceIdentityDigest,
+    workspaceIdentityDigest: canonical.canonicalDigest([fixture.candidate.workspaceIdentityDigest]),
     originalConstructionBases: [{
       basisDigest: selectedBasisDigest,
       work: { id: selectedWork },
@@ -726,6 +781,63 @@ const forbiddenOperations = {
     fixture.candidateDigest,
     [checkPath],
   ), true);
+  const { readLinearRecord } = await import(new URL("./linear-state.ts", process.env.USF_CONTINUATION_MODULE).href);
+  const pointerKey = "metadata-continuation-" + canonical.canonicalDigest({ policyIri: "urn:usf:policy:linear-construction-continuation:1" }).slice(7);
+  const pointer = await readLinearRecord(fixture.root, pointerKey);
+  assert.ok(pointer && typeof pointer === "object" && !Array.isArray(pointer));
+  assert.match(pointer.intentDigest, /^sha256:[a-f0-9]{64}$/u);
+  async function readFixtureContinuationBlob(hash) {
+    const representations = [];
+    for (const version of [1, 2]) {
+      const prefix = version === 1 ? "continuation-blob-" : "continuation-blob-v2-";
+      const records = [];
+      for (let index = 0; index < Math.ceil(1311 / 128); index++) {
+        records.push(await readLinearRecord(fixture.root, prefix + hash.slice(7) + "-" + index));
+      }
+      if (records.every(record => record === null)) continue;
+      const blob = records[0];
+      assert.ok(blob && typeof blob === "object" && !Array.isArray(blob), "a present representation must have its head");
+      const fields = version === 1 ? ["digest", "offset", "chunks", "count"] : ["schema", "digest", "offset", "chunks", "count"];
+      assert.deepEqual(Object.keys(blob).sort(), fields.sort(), "blob envelope is closed");
+      assert.equal(blob.digest, hash);
+      assert.equal(blob.offset, 0);
+      assert.ok(Number.isInteger(blob.count) && blob.count >= 1 && blob.count <= 128);
+      assert.ok(Array.isArray(blob.chunks));
+      assert.equal(blob.count, blob.chunks.length, "this bounded fixture intent fits one native blob record");
+      for (const extra of records.slice(1)) assert.equal(extra, null, "no undeclared or orphaned blob records");
+      if (version === 2) assert.equal(blob.schema, "urn:usf:linear-continuation-blob:2");
+      const fragments = blob.chunks.map((chunk, index) => {
+        assert.equal(typeof chunk, "string");
+        assert.ok(chunk.length >= 1 && chunk.length <= (version === 1 ? 400 : 409));
+        if (version === 1) return chunk;
+        const frame = /^usf2:([1-9][0-9]{0,2}):([\s\S]*)$/u.exec(chunk);
+        assert.ok(frame, "every v2 chunk must have the explicit frame");
+        const length = Number(frame[1]), fragment = frame[2];
+        assert.ok(length >= 1 && length <= 400);
+        assert.equal(fragment.length, length, "frame length counts UTF-16 code units");
+        if (index < blob.count - 1) assert.equal(length, 400);
+        return fragment;
+      });
+      const payload = fragments.join("");
+      assert.ok(payload.length <= 512 * 1024);
+      const value = JSON.parse(payload);
+      assert.equal(canonical.canonicalJson(value, { rejectAbsolutePaths: version === 2 }), payload);
+      assert.equal(canonical.canonicalDigest(value), hash);
+      representations.push({ payload, value });
+    }
+    assert.ok(representations.length >= 1, "referenced blob must have an authenticated representation");
+    if (representations.length === 2) {
+      assert.equal(representations[0].payload, representations[1].payload, "all present representations must agree exactly");
+    }
+    return representations[0].value;
+  }
+  const retainedIntent = await readFixtureContinuationBlob(pointer.intentDigest);
+  for (const capturedPath of [bindingPublication.manifestPath, bindingPublication.sourcePath, bindingPublication.receiptPath]) {
+    const actual = fs.readFileSync(path.join(fixture.root, capturedPath));
+    assert.deepEqual(retainedIntent.beforeFiles.find(file => file.path === capturedPath),
+      { path: capturedPath, digest: canonical.sha256(actual), mode: 0o644 },
+      "future producer captures the separate binding authority closure: " + capturedPath);
+  }
   assert.equal(fixture.packet(controllerWork).eligibility.construction.eligible, true);
   installIntegration(fixture);
   assert.equal(fixture.packet(controllerWork).eligibility.construction.eligible, false);

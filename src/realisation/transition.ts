@@ -2974,23 +2974,23 @@ export async function inspectCandidateIntegrationRecovery(
     return deepFreeze({ state: "prepared-commit", request, prepared, observation: null, observedCarrier: null,
       factDigests: Object.freeze([...new Set(factDigests)].sort()), nonClaims: integrationNonClaims });
   }
-  let observedCarrier: { commit: string; tree: string };
-  try { observedCarrier = await assertPrimaryPostimageCurrent(canonicalRoot, prepared); }
-  catch (error) {
-    const reasonCode = error instanceof IntegrationError ? error.reasonCode : "INTEGRATION_POSTIMAGE_MOVED";
-    return deepFreeze({ state: "stale", request, prepared, observation: null, observedCarrier: null,
-      factDigests: Object.freeze([...new Set(factDigests)].sort()), reasonCode, nonClaims: integrationNonClaims });
-  }
   let observation: IntegrationObservation | null = null;
   if (intent.observationPath !== null) {
     try { observation = await readIntegrationObservation(canonicalRoot, intent.observationPath, authority, prepared); }
     catch (error) {
       const reasonCode = error instanceof IntegrationError ? error.reasonCode : "INTEGRATION_RECOVERY_QUARANTINED";
-      return deepFreeze({ state: "unknown", request, prepared, observation: null, observedCarrier,
+      return deepFreeze({ state: "unknown", request, prepared, observation: null, observedCarrier: null,
         factDigests: Object.freeze([...new Set(factDigests)].sort()), reasonCode, nonClaims: integrationNonClaims });
     }
   }
   const observedFacts = observation === null ? factDigests : [...factDigests, observation.observationDigest];
+  let observedCarrier: { commit: string; tree: string };
+  try { observedCarrier = await assertPrimaryPostimageCurrent(canonicalRoot, prepared); }
+  catch (error) {
+    const reasonCode = error instanceof IntegrationError ? error.reasonCode : "INTEGRATION_POSTIMAGE_MOVED";
+    return deepFreeze({ state: "stale", request, prepared, observation, observedCarrier: null,
+      factDigests: Object.freeze([...new Set(observedFacts)].sort()), reasonCode, nonClaims: integrationNonClaims });
+  }
   return deepFreeze({ state: "primary-advanced", request, prepared, observation, observedCarrier,
     factDigests: Object.freeze([...new Set(observedFacts)].sort()), nonClaims: integrationNonClaims });
 }
