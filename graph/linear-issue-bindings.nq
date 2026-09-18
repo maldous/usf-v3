@@ -15,7 +15,7 @@
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:preimageMode> "384" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:repositoryPath> "graph/linear-issue-bindings.nq" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionContinuationRepairInput> <urn:usf:graph:linear-issue-bindings> .
-<urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageDigest> "sha256:1dbe2d47268b9ae48ec3c7e5e705b951fd44b4640e43c5fefcb7df123d49c23d" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageDigest> "sha256:35da2e78f8f6838729d6a4e86233c5d1815f89786680cfe72ac3fa8f3a493976" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:preimageDigest> "sha256:fdb8f8964d9f5f42eed31c196e19d2a03d4929189fa65e0f3a6aa2a33fd72b38" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:preimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
@@ -39,6 +39,12 @@
 <urn:usf:continuation-repair-input:workspace-identity-7:1> <urn:usf:predicate:preimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-7:1> <urn:usf:predicate:repositoryPath> "tests/unit/linear/native-completion.test.ts" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-7:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionContinuationRepairInput> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-8:1> <urn:usf:predicate:postimageDigest> "sha256:30e65f02076502ac0facfcbf8cbf16f1a241ab1af2f3acff791d9dcadf3e601e" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-8:1> <urn:usf:predicate:postimageMode> "384" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-8:1> <urn:usf:predicate:preimageDigest> "sha256:066f175749756d13a00652213254296a558fa783d43400122a9b42a1e1aefa7a" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-8:1> <urn:usf:predicate:preimageMode> "384" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-8:1> <urn:usf:predicate:repositoryPath> "src/realisation/transition.ts" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-8:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionContinuationRepairInput> <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:linear-binding:cli-provider-qualification-help:10> <urn:usf:predicate:candidateRepair> "{\"rootBinding\":\"urn:usf:linear-binding:cli-provider-qualification-help:10\",\"round\":0,\"maximumRounds\":2}" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:linear-binding:cli-provider-qualification-help:10> <urn:usf:predicate:canonicalIssueLocator> "maldous:8f4b0f2e-6c41-4fb5-9eb6-60b2b99f6c73" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:linear-binding:cli-provider-qualification-help:10> <urn:usf:predicate:fixedPrompt> "Satisfy every assertion in the authenticated immutable acceptance excerpt. Edit only probeQualifyTopic purpose, synopsis and options. Exact synopsis: usf probe qualify --provider ID --model ID --task-class NAME --env-file PATH [--max-output-tokens N]. Document those five flags, envFileOption once, and token limit as positive integer, default 512, maximum 8192. Preserve all other bytes and controls. Return only {\"operations\":[{\"kind\":\"replace\",\"path\":\"src/commands/help.ts\",\"oldText\":\"exact excerpt bytes\",\"newText\":\"corrected metadata\"}]}. Serialize once; decoded oldText must match source exactly. No fixture/parser/policy edits or completion claims." <urn:usf:graph:linear-issue-bindings> .
@@ -511,6 +517,7 @@
 <urn:usf:policy:linear-continuation-repair-handoff:1> <urn:usf:predicate:approvedRepairInput> <urn:usf:continuation-repair-input:workspace-identity-5:1> <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:policy:linear-continuation-repair-handoff:1> <urn:usf:predicate:approvedRepairInput> <urn:usf:continuation-repair-input:workspace-identity-6:1> <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:policy:linear-continuation-repair-handoff:1> <urn:usf:predicate:approvedRepairInput> <urn:usf:continuation-repair-input:workspace-identity-7:1> <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:policy:linear-continuation-repair-handoff:1> <urn:usf:predicate:approvedRepairInput> <urn:usf:continuation-repair-input:workspace-identity-8:1> <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:policy:linear-continuation-repair-handoff:1> <urn:usf:predicate:failureClass> "WORKSPACE_IDENTITY_MEMBER_COHORT_MISMATCH" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:policy:linear-continuation-repair-handoff:1> <urn:usf:predicate:forContract> <urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:policy:linear-continuation-repair-handoff:1> <urn:usf:predicate:forPolicy> <urn:usf:policy:linear-construction-continuation:1> <urn:usf:graph:linear-issue-bindings> .

@@ -797,7 +797,8 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
     || integration.observationDigest !== admission.observationDigest
     || canonicalDigest(deriveLinearBindingDeclaration(loadSemanticGraph(root, intent.bindingManifest), intent.bindingIri)) !== intent.bindingDigest
     || !same(intent.selected, selection(packet(root, intent.selected), selectedProfile, selectedManifest))) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
-  const publications = [currentRepairPublication(root, intent.controller), currentRepairPublication(root, bindingPublicationSelection)];
+  const publications = [currentRepairPublication(root, intent.selected), currentRepairPublication(root, intent.controller),
+    currentRepairPublication(root, bindingPublicationSelection)];
   const controller = publications[0]!.current;
   if (!same(intent.controller, selection(controller, controllerProfile, controllerManifest))) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
   const replacements = new Map<string, FileFact>();
