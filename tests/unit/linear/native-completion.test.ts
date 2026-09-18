@@ -15,11 +15,17 @@ function scenario(options: Record<string, unknown> = {}): { outcome: any; calls:
     const digest = "sha256:" + "a".repeat(64);
     const forbidden = name => async () => { calls.push(name); throw Object.assign(new Error(name), { reasonCode: "TEST_FORBIDDEN_" + name.toUpperCase() }); };
     const binding = {
-      authority: { bindingIri: "urn:test:binding", ...(options.legacy ? {} : { realisationDisposition: "no-change" }) },
+      authority: { bindingIri: "urn:test:binding", workIri: "urn:test:work",
+        profile: "urn:test:profile:1", targetManifest: "graph/manifests/test.json",
+        ...(options.legacy ? {} : { realisationDisposition: "no-change" }) },
+      basis: { basisDigest: digest },
       unit: {
         attemptKey: digest, basisDigest: digest,
         profile: "urn:test:profile:1", manifestPath: "graph/manifests/test.json", workIri: "urn:test:work",
-        packet: { realisationAuthority: {
+        packet: { validationPlan: ["a", "b"].map(name => ({
+          id: "urn:test:validation:" + name,
+          command: "node --test --test-isolation=none tests/fixture-" + name + ".test.ts"
+        })), realisationAuthority: {
           completionValidationObligations: options.noValidations ? [] : ["urn:test:validation:b", "urn:test:validation:a", "urn:test:validation:b"],
           completionProofObligation: options.noProof ? null : "urn:test:proof"
         }}
@@ -27,6 +33,14 @@ function scenario(options: Record<string, unknown> = {}): { outcome: any; calls:
     };
     const prepared = { status: options.preparedStatus ?? "PREPARED", binding };
     const register = (path, namedExports) => mock.module(pathToFileURL(resolve(path)).href, { namedExports });
+    register("src/graph/index.ts", { loadSemanticGraph: () => ({ quads: binding.unit.packet.validationPlan.map(validation => ({
+      subject: validation.id, predicate: "urn:usf:predicate:command",
+      object: validation.command, objectKind: "literal"
+    })) }) });
+    register("src/graph/work.ts", { deriveWork: () => ({ status: "ok", items: [{
+      ...binding.unit.packet, realisationBasis: binding.basis,
+      eligibility: { construction: { eligible: true } }, realisationStage: { completion: { verified: false } }
+    }] }) });
     register("src/commands/apply.ts", { apply: forbidden("apply-candidate"), integrateCommandHandler: forbidden("integrate") });
     register("src/commands/check.ts", { runGraphDerivedCheck: async (_root, candidate, validation) => {
       calls.push("check:" + validation);

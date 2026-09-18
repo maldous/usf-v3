@@ -1,5 +1,10 @@
 import type { LinearPublicationSelection, ContinuationOperationOptions } from "./linear-continuation.ts";
 import { resolve, sep } from "node:path";
+import type { LinearDeliveryEvidence, LinearDeliveryFailure, LinearDeliveryOutcome } from "./linear-remediation.ts";
+export type { LinearDeliveryEvidence, LinearDeliveryOutcome } from "./linear-remediation.ts";
+import { inspectCheckCommand } from "../core/check-command.ts";
+import { loadSemanticGraph } from "../graph/index.ts";
+import { deriveWork } from "../graph/work.ts";
 import { apply } from "./apply.ts";
 import { runGraphDerivedCheck } from "./check.ts";
 import { integrateCommandHandler } from "./apply.ts";
@@ -23,23 +28,6 @@ import { contributionFromSettledLinearResult } from "./linear-contribution.ts";
 import { readLinearRecord, writeLinearRecord, type LinearRecordObject } from "./linear-state.ts";
 import { candidateScope, deriveCandidatePreimages, type CandidateSpec } from "../realisation/index.ts";
 
-export interface LinearDeliveryEvidence {
-  readonly bindingIri: string;
-  /** Compatibility alias retained for the foreground controller. */
-  readonly checkpointPath: string;
-  readonly checkpointRecordKey: string;
-  readonly preparedStatus: LinearBindingResult["status"];
-  readonly settledStatus: LinearBindingResult["status"] | null;
-  readonly candidateDigest: string | null;
-  readonly checkReceiptPaths: readonly string[];
-  readonly integration: unknown | null;
-  readonly completion: unknown | null;
-}
-
-export type LinearDeliveryOutcome =
-  | { readonly status: "completed"; readonly evidence: LinearDeliveryEvidence }
-  | { readonly status: "refused"; readonly reasonCode: string; readonly evidence: LinearDeliveryEvidence };
-
 type SettledLinearBinding = { readonly status: "SETTLED"; readonly binding: LinearBindingResult["binding"] };
 
 interface DeliveryCheckpoint {
@@ -55,8 +43,49 @@ interface DeliveryCheckpoint {
 function refusal(
   reasonCode: string,
   evidence: LinearDeliveryEvidence,
+  failure?: LinearDeliveryFailure,
 ): LinearDeliveryOutcome {
-  return Object.freeze({ status: "refused", reasonCode, evidence: Object.freeze(evidence) });
+  return Object.freeze({ status: "refused", reasonCode, evidence: Object.freeze(evidence), ...(failure === undefined ? {} : { failure }) });
+}
+
+function checkedFailure(checked: unknown, validationIri: string, candidateDigest: string | null,
+  phase: LinearDeliveryFailure["phase"]): LinearDeliveryFailure {
+  const value = resultObject(checked);
+  return Object.freeze({ phase, validationIri, candidateDigest,
+    reasonCode: reasonCode(checked, "LINEAR_DELIVERY_CHECK_REFUSED"),
+    resultDigest: canonicalDigest(checked),
+    confinementFailure: typeof value?.confinementFailure === "string" ? value.confinementFailure : null,
+    commandContract: (value?.commandContract ?? null) as LinearDeliveryFailure["commandContract"] });
+}
+
+/** Authenticate current graph-selected commands before spending provider work. */
+function preflightLinearValidation(root: string, prepared: LinearBindingResult): LinearDeliveryFailure | null {
+  const { authority, unit, basis } = prepared.binding;
+  const graph = loadSemanticGraph(root, unit.manifestPath);
+  const current = deriveWork(graph, { selector: authority.workIri, profile: authority.profile });
+  const packet = current.items?.[0];
+  if (current.status !== "ok" || current.items?.length !== 1
+    || packet?.realisationBasis?.basisDigest !== basis.basisDigest || unit.basisDigest !== basis.basisDigest
+    || (packet.eligibility?.construction.eligible !== true && packet.realisationStage?.completion.verified !== true)) {
+    throw Object.assign(new Error("LINEAR_BINDING_BASIS_NONCURRENT"), { reasonCode: "LINEAR_BINDING_BASIS_NONCURRENT" });
+  }
+  for (const validation of packet.validationPlan) {
+    const commands = graph.quads.filter(quad => quad.subject === validation.id && quad.predicate === "urn:usf:predicate:command");
+    if (commands.length !== 1 || commands[0]!.objectKind !== "literal" || commands[0]!.object !== validation.command) {
+      throw Object.assign(new Error("LINEAR_BINDING_BASIS_NONCURRENT"), { reasonCode: "LINEAR_BINDING_BASIS_NONCURRENT" });
+    }
+    const commandContract = inspectCheckCommand(commands[0]!.object.split(" "));
+    if (commandContract.status === "invalid") {
+      return checkedFailure({ status: "refused", id: validation.id, reasonCode: commandContract.reasonCode, commandContract },
+        validation.id, null, "admission-validation");
+    }
+  }
+  return null;
+}
+
+function carriedFailure(error: unknown): LinearDeliveryFailure | undefined {
+  return error !== null && typeof error === "object" && "deliveryFailure" in error
+    ? error.deliveryFailure as LinearDeliveryFailure : undefined;
 }
 
 function reasonCode(error: unknown, fallback: string): string {
@@ -222,7 +251,9 @@ async function completeCurrentWork(
   for (const validationId of completionValidationIds) {
     const checked = await runGraphDerivedCheck(root, noChangeDigest, validationId);
     if (checked.status !== "pass" || typeof checked.receiptPath !== "string" || checked.receiptPath.length === 0) {
-      throw completionRefusal(checked, "LINEAR_DELIVERY_COMPLETION_CHECK_REFUSED");
+      throw Object.assign(completionRefusal(checked, "LINEAR_DELIVERY_COMPLETION_CHECK_REFUSED"), {
+        deliveryFailure: checkedFailure(checked, validationId, noChangeDigest, "completion-validation"),
+      });
     }
     completionReceiptPaths.push(checked.receiptPath);
   }
@@ -331,6 +362,12 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
   let evidence = evidenceFor(selector, checkpointRecordKey, prepared.status);
   if (prepared.status === "COMPLETED") return Object.freeze({ status: "completed", evidence });
   if (prepared.status === "UNKNOWN") return refusal("LINEAR_BINDING_OUTCOME_UNKNOWN", evidence);
+  try {
+    const invalid = preflightLinearValidation(repositoryRoot, prepared);
+    if (invalid !== null) return refusal(invalid.reasonCode, evidence, invalid);
+  } catch (error) {
+    return refusal(reasonCode(error, "LINEAR_DELIVERY_VALIDATION_PREFLIGHT_REFUSED"), evidence);
+  }
     if (prepared.binding.authority.realisationDisposition === "no-change") {
       if (prepared.status !== "PREPARED") {
         return refusal("LINEAR_BINDING_NATIVE_COMPLETION_REQUIRES_PREPARED", evidence);
@@ -356,7 +393,7 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
         }
         return Object.freeze({ status: "completed", evidence: Object.freeze(evidence) });
       } catch (error) {
-        return refusal(reasonCode(error, "LINEAR_DELIVERY_NATIVE_COMPLETION_REFUSED"), evidence);
+        return refusal(reasonCode(error, "LINEAR_DELIVERY_NATIVE_COMPLETION_REFUSED"), evidence, carriedFailure(error));
       }
     }
 
@@ -425,7 +462,9 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
     const receiptPaths: string[] = [];
     for (const validationId of validationIds) {
       const checked = await runGraphDerivedCheck(repositoryRoot, candidateDigest, validationId);
-      if (checked.status !== "pass" || typeof checked.receiptPath !== "string") return refusal(checked.status === "refused" ? checked.reasonCode : "LINEAR_DELIVERY_CHECK_REFUSED", { ...evidence, candidateDigest, checkReceiptPaths: Object.freeze(receiptPaths) });
+      if (checked.status !== "pass" || typeof checked.receiptPath !== "string") return refusal(checked.status === "refused" ? checked.reasonCode : "LINEAR_DELIVERY_CHECK_REFUSED",
+        { ...evidence, candidateDigest, checkReceiptPaths: Object.freeze(receiptPaths) },
+        checkedFailure(checked, validationId, candidateDigest, "validation"));
       receiptPaths.push(checked.receiptPath);
     }
     checkpointRecordKey = await persistCheckpoint(repositoryRoot, settled, "before-integration", { candidateDigest, validations: validationIds });
@@ -453,6 +492,6 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
     if (final.status !== "COMPLETED") return refusal("LINEAR_DELIVERY_COMPLETION_READBACK_REFUSED", { ...evidence, completion: Object.freeze({ construction, completion }) });
     return Object.freeze({ status: "completed", evidence: { ...evidence, settledStatus: final.status, completion: Object.freeze({ construction, completion }) } });
   } catch (error) {
-    return refusal(reasonCode(error, "LINEAR_DELIVERY_GOVERNED_PATH_REFUSED"), evidence);
+    return refusal(reasonCode(error, "LINEAR_DELIVERY_GOVERNED_PATH_REFUSED"), evidence, carriedFailure(error));
   }
 }

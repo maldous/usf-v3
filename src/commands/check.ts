@@ -7,6 +7,7 @@ import { assertSameBasis, type RealisationBasis } from "../realisation/basis.ts"
 import type { CommandHandler } from "./dispatcher.ts";
 import { exitCodes } from "../core/errors.ts";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
+import { inspectCheckCommand, type CheckCommandContractInvalid } from "../core/check-command.ts";
 import { loadSemanticGraph, objectsFor, resourceDigest, validationRuntimeClosure, type LoadedSemanticGraph } from "../graph/index.ts";
 import { deriveCurrentRealisationBasis } from "../graph/work.ts";
 import { isOperation, type FileOperation } from "../providers/types.ts";
@@ -111,6 +112,7 @@ export type GraphDerivedCheckResult =
     readonly validationTerminationGraceMilliseconds?: number; readonly validationTimedOut?: true;
     readonly validationTimeoutTerminationSignal?: "none" | "SIGTERM" | "SIGKILL"; readonly outputResultDigest?: string;
     readonly failureDiagnostic?: Readonly<Record<string, unknown>>;
+    readonly commandContract?: CheckCommandContractInvalid;
     readonly diagnosticDetails?: Readonly<Record<string, unknown>> };
 
 const bubblewrapExecutable = "/usr/bin/bwrap" as const;
@@ -136,12 +138,14 @@ class CheckRefusal extends Error {
   readonly reasonCode: string;
   readonly confinementFailure?: CheckConfinementFailure;
   readonly details?: Readonly<Record<string, unknown>>;
-  constructor(reasonCode: string, confinementFailure?: CheckConfinementFailure, details?: Readonly<Record<string, unknown>>) {
+  readonly commandContract?: CheckCommandContractInvalid;
+  constructor(reasonCode: string, confinementFailure?: CheckConfinementFailure, details?: Readonly<Record<string, unknown>>, commandContract?: CheckCommandContractInvalid) {
     super(reasonCode);
     this.name = "CheckRefusal";
     this.reasonCode = reasonCode;
     this.confinementFailure = confinementFailure;
     this.details = details;
+    this.commandContract = commandContract;
   }
 }
 
@@ -233,24 +237,9 @@ function checkedReceiptExecutionAuthority(root: string): ValidationExecutionAuth
   });
 }
 
-function permissionAffectingNodeArgument(argument: string): boolean {
-  if (!argument.startsWith("--") || !process.allowedNodeEnvironmentFlags.has(argument)) return false;
-  const normalized = argument.split("=", 1)[0]!.replaceAll("_", "-");
-  return normalized === "--permission" || normalized === "--no-permission"
-    || normalized.startsWith("--allow-") || normalized.startsWith("--no-allow-");
-}
-
 function strictNodeTestPaths(command: readonly string[]): readonly string[] | null {
-  if (command.length < 4 || command.length > 12 || command.some((argument) => argument.length === 0)
-    || command[0] !== "node" || command[1] !== "--test" || command[2] !== "--test-isolation=none"
-    || command.some(permissionAffectingNodeArgument)) return null;
-  const namePatternIndex = 3;
-  const optionalNamePattern = command[namePatternIndex]?.startsWith("--test-name-pattern=") === true ? command[namePatternIndex] : undefined;
-  if (optionalNamePattern !== undefined && !/^--test-name-pattern=[A-Za-z0-9._-]+$/u.test(optionalNamePattern)) return null;
-  const tests = command.slice(optionalNamePattern === undefined ? namePatternIndex : namePatternIndex + 1);
-  if (tests.length < 1 || tests.length > 8 || new Set(tests).size !== tests.length
-    || tests.some((path) => !path.endsWith(".test.ts") || path.split("/").some((segment) => segment.length === 0 || segment === "." || segment === ".." || !/^[A-Za-z0-9._-]+$/u.test(segment)))) return null;
-  return tests;
+  const inspection = inspectCheckCommand(command);
+  return inspection.status === "valid" ? inspection.testPaths : null;
 }
 
 function trustedBubblewrap(): boolean {
@@ -552,7 +541,13 @@ function graphValidation(root: string, basis: RealisationBasis, validationId: st
   if (validationResourceDigest !== selected[0]?.digest) return invalid("validation obligation digest differs from the realisation basis");
   const command = exactGraphValue(graph, validationId, "urn:usf:predicate:command", "literal", "CHECK_VALIDATION_AUTHORITY_INVALID");
   const commandTokens = command.split(" ");
-  if (commandTokens.join(" ") !== command || commandTokens.some((token) => token.length === 0)) refuse("CHECK_VALIDATION_COMMAND_UNSUPPORTED");
+  const commandContract = inspectCheckCommand(commandTokens);
+  if (commandContract.status === "invalid") {
+    throw new CheckRefusal(commandContract.reasonCode, undefined, {
+      detail: commandContract.detail,
+      ...(commandContract.invalidPaths === undefined ? {} : { invalidPaths: commandContract.invalidPaths }),
+    }, commandContract);
+  }
   const environmentIri = exactGraphValue(graph, validationId, "urn:usf:predicate:environment", "iri", "CHECK_VALIDATION_AUTHORITY_INVALID");
   const executionModeIri = exactGraphValue(graph, validationId, "urn:usf:predicate:executionMode", "iri", "CHECK_VALIDATION_AUTHORITY_INVALID");
   const confinedFixtureProcessMode = executionModeIri === "urn:usf:mode:confined-fixture-process:1"
@@ -2121,6 +2116,7 @@ async function graphDerivedCheck(root: string, candidateDigest: string, validati
   } catch (error) {
     const reasonCode = error instanceof CheckRefusal ? error.reasonCode : stableReason(error) ?? "CHECK_CONFINEMENT_UNAVAILABLE";
     return { status: "refused", ...(basis === undefined ? {} : { basis }), reasonCode, id: validationId,
+      ...(error instanceof CheckRefusal && error.commandContract !== undefined ? { commandContract: error.commandContract } : {}),
       ...(error instanceof CheckRefusal && error.confinementFailure !== undefined ? { confinementFailure: error.confinementFailure } : {}),
       ...(error instanceof CheckRefusal && error.details !== undefined ? { diagnosticDetails: error.details } : {}) };
   }

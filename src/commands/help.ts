@@ -204,7 +204,7 @@ const linearBindingTopics = [
 
 const hermesTopics = [
   topic(["hermes", "start"], {
-    purpose: "Start the single business-as-usual supervisor from current V3 authority, including autonomous Linear discovery, issue creation, delivery and reconciliation, then leave Hermes operating independently.",
+    purpose: "Start the single business-as-usual supervisor from current V3 authority, including autonomous Linear discovery, graph-authorised issue creation, delivery, reconciliation and bounded declared recovery; leave Hermes operating independently within existing authority.",
     synopsis: ["usf hermes start [--manifest PATH] [--env-file PATH] [--pause-seconds N] [--concurrency N] [--limit N]"],
     options: [{ syntax: "--pause-seconds N", description: "Bounded pause between supervisor cycles, at most 3600." }, { syntax: "--concurrency N", description: "Bounded units in flight per cycle." }, { syntax: "--limit N", description: "Bounded work units dispatched per cycle, at most 64." }, envFileOption],
     outputSchema: "urn:usf:hermes-lifecycle:1", exitCodes: standardExitCodes, externalContact: "explicit", historyScan: "none",
@@ -216,7 +216,7 @@ const hermesTopics = [
     outputSchema: "urn:usf:hermes-lifecycle:1", exitCodes: standardExitCodes, externalContact: "none", historyScan: "none",
     authorityEffect: "Requires the current steward claim and writes an ignored stop request. A timeout reports HERMES_DRAIN_PENDING and preserves the live supervisor; it never kills a transaction.", availability: "implemented" }),
   topic(["hermes", "status"], {
-    purpose: "Report supervisor liveness, the latest product and autonomous Linear cycle projections, work counts, provider activity, transactions, blockers and authority identity. Liveness, selected manifest, last cycle and actual work or provider activity are different facts and are reported separately. Retained-comment reconciliation is reported separately from runnable bindings; unresolved native reservations and unbound issue locators keep the overall scope nonterminal.",
+    purpose: "Report supervisor liveness, the latest product and autonomous Linear cycle projections, work counts, provider activity, transactions, typed recovery dispositions, explicit escalation boundaries and authority identity. Liveness, selected manifest, last cycle and actual work or provider activity are different facts and are reported separately. Recovery projections are diagnostic state, not a grant of repair authority. Retained-comment reconciliation is reported separately from runnable bindings; unresolved native reservations and unbound issue locators keep the overall scope nonterminal.",
     synopsis: ["usf hermes status [--work-dir PATH]"],
     options: [{ syntax: "--work-dir PATH", description: "Directory of semantic work graphs Hermes owns; defaults to .usf/work." }],
     outputSchema: "urn:usf:hermes-lifecycle-status:1", exitCodes: standardExitCodes, externalContact: "none", historyScan: "none",

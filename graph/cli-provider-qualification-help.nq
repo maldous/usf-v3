@@ -180,13 +180,16 @@
 <urn:usf:requirement:cli-provider-qualification-help-postimage-completion> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:rule:cli-provider-qualification-help-copy-on-write-work-completion:1> <urn:usf:predicate:type> <urn:usf:type:CompletionDerivationRule> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:rule:cli-provider-qualification-help-copy-on-write-work-completion:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-provider-qualification-help> .
-<urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:authorityRule> "Only the help module's core error dependency is added to the candidate-scoped help, immutable acceptance and parser-data files. No provider, credentials, network or mutable acceptance inputs." <urn:usf:graph:cli-provider-qualification-help> .
+<urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:authorityRule> "Only the compatible test entry point, the help module's core error dependency and the existing execution mode's authenticated profile and launcher assets are added to the candidate-scoped help, immutable acceptance and parser-data files. No provider, credentials, network or mutable acceptance inputs." <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:forValidation> <urn:usf:validation:cli-provider-qualification-help> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:repositoryReadFile> "src/core/errors.ts" <urn:usf:graph:cli-provider-qualification-help> .
+<urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:cli-provider-qualification-help> .
+<urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.apparmor" <urn:usf:graph:cli-provider-qualification-help> .
+<urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:repositoryReadFile> "tests/fixtures/cli-provider-qualification-help.test.ts" <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation-runtime-closure:cli-provider-qualification-help:1> <urn:usf:predicate:version> "1" <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation:cli-provider-qualification-help> <urn:usf:predicate:applicability> "required" <urn:usf:graph:cli-provider-qualification-help> .
-<urn:usf:validation:cli-provider-qualification-help> <urn:usf:predicate:command> "node --test --test-isolation=none tests/fixtures/cli-provider-qualification-help.acceptance.ts" <urn:usf:graph:cli-provider-qualification-help> .
+<urn:usf:validation:cli-provider-qualification-help> <urn:usf:predicate:command> "node --test --test-isolation=none tests/fixtures/cli-provider-qualification-help.test.ts" <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation:cli-provider-qualification-help> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation:cli-provider-qualification-help> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:validation:cli-provider-qualification-help> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:cli-provider-qualification-help> .
@@ -201,6 +204,7 @@
 <urn:usf:work:cli-provider-qualification-help> <urn:usf:predicate:proof> <urn:usf:proof:cli-provider-qualification-help> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:work:cli-provider-qualification-help> <urn:usf:predicate:readPath> "src/commands/probe.ts" <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:work:cli-provider-qualification-help> <urn:usf:predicate:readPath> "tests/fixtures/cli-provider-qualification-help.acceptance.ts" <urn:usf:graph:cli-provider-qualification-help> .
+<urn:usf:work:cli-provider-qualification-help> <urn:usf:predicate:readPath> "tests/fixtures/cli-provider-qualification-help.test.ts" <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:work:cli-provider-qualification-help> <urn:usf:predicate:schemaPath> "schemas/contribution.schema.json" <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:work:cli-provider-qualification-help> <urn:usf:predicate:semanticDependency> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:cli-provider-qualification-help> .
 <urn:usf:work:cli-provider-qualification-help> <urn:usf:predicate:modelCapability> "cli-design" <urn:usf:graph:cli-provider-qualification-help> .

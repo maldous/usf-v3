@@ -2367,6 +2367,7 @@
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/cli-transitions.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/linear-binding.ts" <urn:usf:graph:cli-transition-definition> .
+<urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/core/check-command.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/core/linear-repair.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:cli-transition-definition> .
 <urn:usf:validation-runtime-closure:cli-transition-definition:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:cli-transition-definition> .

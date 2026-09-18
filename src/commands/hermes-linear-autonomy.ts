@@ -6,13 +6,14 @@ import { loadSemanticGraph, objectValues } from "../graph/index.ts";
 import type { Quad } from "../graph/nquads.ts";
 import { deriveLinearBindingDeclaration } from "../graph/linear-binding.ts";
 import { deriveWork } from "../graph/work.ts";
-import type { PreparedLinearBinding, LinearBindingSelector } from "./linear-binding.ts";
 import { observeLinearBinding } from "./linear-binding.ts";
 import { loadCredentialEnvFile, type CredentialEnvironment } from "../providers/config.ts";
 import { LinearClient, readLinearPolicySource, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "./linear-client.ts";
 export { readLinearPolicySource } from "./linear-client.ts";
 import { LinearStateStore, type LinearRecordValue } from "./linear-state.ts";
 import { executeLinearDelivery } from "./linear-delivery.ts";
+import { LinearFailureRecovery, recoveryEscalation, type LinearLane, type LinearRecoveryDisposition, type LinearMutationGuard } from "./linear-remediation.ts";
+export type { LinearLane } from "./linear-remediation.ts";
 const predicate = (name: string): string => `urn:usf:predicate:${name}`;
 const bindingType = "urn:usf:type:LinearIssueWorkBinding";
 
@@ -84,12 +85,6 @@ export async function loadLinearCredentials(root: string, path: string, names: r
   }
 }
 
-
-export interface LinearLane {
-  readonly selector: LinearBindingSelector;
-  readonly binding: PreparedLinearBinding;
-  readonly contextKey: string;
-}
 
 export interface LinearLaneDiscovery {
   readonly lanes: readonly LinearLane[];
@@ -169,7 +164,7 @@ export async function discoverLinearLanes(root: string, manifests: readonly stri
       }
       if (repairRoot !== undefined && canonicalDigest(readSources()) !== snapshot) refuse("LINEAR_BINDING_AUTHORITY_MISMATCH");
       const packet = observed.binding.unit.packet;
-      lanes.push({ selector, binding: observed.binding, contextKey: canonicalDigest({
+      lanes.push({ selector, binding: observed.binding, observedStatus: observed.status, contextKey: canonicalDigest({
         dependencies: packet.semanticDependencies.filter(dependency => packet.readSet.includes(dependency.key)), readSet: packet.readSet,
         capabilities: packet.modelCapabilities, privacy: packet.privacy,
       }) });
@@ -201,6 +196,7 @@ export interface LinearCycleOutcome {
   readonly reasonCode?: string;
   readonly detail?: string;
   readonly evidence: readonly string[];
+  readonly recovery?: LinearRecoveryDisposition;
 }
 
 export interface LinearCommentReconciliation {
@@ -375,7 +371,11 @@ export async function runLinearLaneCycle(
       const lane = pending.splice(index, 1)[0]!;
       const promise = Promise.resolve().then(() => execute(lane)).then(
         (result) => { outcomes.push(result); },
-        (error: unknown) => { outcomes.push({ bindingIri: lane.selector.bindingIri, status: "blocked", reasonCode: linearReason(error), detail: linearDetail(error), evidence: [] }); },
+        (error: unknown) => {
+          const reasonCode = linearReason(error);
+          outcomes.push({ bindingIri: lane.selector.bindingIri, status: "blocked", reasonCode,
+            evidence: [], recovery: recoveryEscalation(reasonCode) });
+        },
       ).finally(() => { active.delete(lane); });
       active.set(lane, promise);
     }
@@ -403,28 +403,42 @@ export class LinearMutations {
   constructor(store: LinearStateStore) { this.store = store; }
 
   run<T>(identity: { bindingIri: string; operation: string; remoteOperationId: string }, request: unknown,
-    readBack: (id: string) => Promise<T | null>, send: (id: string) => Promise<unknown>): Promise<T> {
+    readBack: (id: string) => Promise<T | null>, send: (id: string) => Promise<unknown>, guard?: LinearMutationGuard): Promise<T> {
     const operation = this.tail.then(async () => {
+      await guard?.authenticate();
+      guard?.current();
       const digest = canonicalDigest(request);
       const intent = await this.store.prepare(identity, digest);
+      await guard?.authenticate(intent.id);
+      guard?.current(intent.id);
       if (intent.state === "refused") refuse("LINEAR_MUTATION_REFUSED");
       if (intent.state !== "prepared") {
         const observed = await readBack(intent.id);
+        await guard?.authenticate(intent.id);
+        guard?.current(intent.id);
         if (observed !== null) {
           await this.store.reconcile({ intentId: intent.id, remoteOperationId: identity.remoteOperationId,
-            requestDigest: digest, outcome: "confirmed", evidenceRefs: [canonicalDigest(observed)] });
+            requestDigest: digest, outcome: "confirmed", evidenceRefs: [canonicalDigest(observed)] }, undefined, () => guard?.current(intent.id));
           return observed;
         }
         refuse("LINEAR_MUTATION_OUTCOME_UNKNOWN");
       }
       await this.store.markSent(intent.id);
       // Any throw after sent is intentionally retained for positive reconciliation, never retransmission.
-      try { await send(intent.id); }
+      try {
+        await guard?.authenticate(intent.id);
+        guard?.current(intent.id);
+        await send(intent.id);
+      }
       catch (error) { await this.store.markUnknown(intent.id); throw error; }
+      await guard?.authenticate(intent.id);
+      guard?.current(intent.id);
       const observed = await readBack(intent.id);
+      await guard?.authenticate(intent.id);
+      guard?.current(intent.id);
       if (observed === null) refuse("LINEAR_MUTATION_READBACK_MISMATCH");
       await this.store.reconcile({ intentId: intent.id, remoteOperationId: identity.remoteOperationId,
-        requestDigest: digest, outcome: "confirmed", evidenceRefs: [canonicalDigest(observed)] });
+        requestDigest: digest, outcome: "confirmed", evidenceRefs: [canonicalDigest(observed)] }, undefined, () => guard?.current(intent.id));
       return observed;
     });
     this.tail = operation.catch(() => undefined);
@@ -433,17 +447,17 @@ export class LinearMutations {
 }
 
 async function commentRemoteEvidence(mutations: LinearMutations, lane: LinearLane, remote: RemoteLane,
-  disposition: string, evidence: readonly string[]): Promise<void> {
+  disposition: string, evidence: readonly string[], guard?: LinearMutationGuard): Promise<void> {
   const body = `Hermes CLI governed delivery\nBinding: ${lane.selector.bindingIri}\nWork: ${lane.binding.authority.workIri}\nBasis: ${lane.binding.basis.basisDigest}\nDisposition: ${disposition}\nEvidence:\n${evidence.join("\n")}\nProvider output alone is not completion.`;
   // Legacy v1/v2 comment intents used caller UUIDs as remote identities; keep their unknown outcomes visible and never replay them.
   await mutations.run({ bindingIri: lane.selector.bindingIri, operation: `comment-v4-${canonicalDigest(body)}`,
     remoteOperationId: remote.issue.id }, { issueId: remote.issue.id, body }, async (id) => {
     return remote.client.findComment(remote.issue.id, remote.team.id, body);
-  }, (id) => remote.client.createComment({ id, issueId: remote.issue.id, teamId: remote.team.id, body }));
+  }, (id) => remote.client.createComment({ id, issueId: remote.issue.id, teamId: remote.team.id, body }), guard);
 }
 
 async function updateRemoteState(mutations: LinearMutations, lane: LinearLane, remote: RemoteLane,
-  target: "started" | "completed", evidence: readonly string[]): Promise<void> {
+  target: "started" | "completed", evidence: readonly string[], guard?: LinearMutationGuard): Promise<void> {
   const states = await remote.client.workflowStates(remote.team.id);
   const explicit = target === "started" ? remote.team.startedStateId : remote.team.completedStateId;
   const matches = states.filter((state) => explicit === null ? state.type === target : state.id === explicit && state.type === target);
@@ -456,11 +470,11 @@ async function updateRemoteState(mutations: LinearMutations, lane: LinearLane, r
     remoteOperationId: remote.issue.id }, request, async () => {
     const observed = await remote.client.getIssue(remote.issue.id, remote.team.id);
     return observed.stateId === stateId && (assigneeId === null || observed.assigneeId === assigneeId) ? observed : null;
-  }, () => remote.client.updateIssue(request));
+  }, () => remote.client.updateIssue(request), guard);
 }
 
 export async function createDeclaredLinearIssues(root: string, policy: LinearPolicy, credentials: CredentialEnvironment,
-  mutations: LinearMutations): Promise<readonly { proposalIri: string; issueId?: string; reasonCode?: string; detail?: string }[]> {
+  mutations: LinearMutations, recovery?: LinearFailureRecovery): Promise<readonly { proposalIri: string; issueId?: string; reasonCode?: string; detail?: string }[]> {
   const results: { proposalIri: string; issueId?: string; reasonCode?: string; detail?: string }[] = [];
   const seen = new Set<string>();
   for (const manifest of policy.bindingManifests) {
@@ -469,6 +483,10 @@ export async function createDeclaredLinearIssues(root: string, policy: LinearPol
     for (const proposalIri of [...new Set(proposals)].sort()) {
       if (seen.has(proposalIri)) continue;
       seen.add(proposalIri);
+      if (recovery && !recovery.proposalAllowed(proposalIri)) {
+        results.push({ proposalIri, reasonCode: "LINEAR_RECOVERY_PROPOSAL_DEFERRED" });
+        continue;
+      }
       try {
         const one = (name: string): string => {
           const values = objectValues(graph, proposalIri, predicate(name));
@@ -487,7 +505,7 @@ export async function createDeclaredLinearIssues(root: string, policy: LinearPol
           async () => {
             const issue = await client.getIssue(request.id, request.teamId);
             return issue.title === request.title && issue.description === request.description ? issue : null;
-          }, () => client.createIssue(request));
+          }, () => client.createIssue(request), recovery?.guardFor(proposalIri));
         results.push({ proposalIri, issueId: observed.id });
       } catch (error) { results.push({ proposalIri, reasonCode: linearReason(error), detail: linearDetail(error) }); }
     }
@@ -499,8 +517,10 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
   store: LinearStateStore, providerEnvFile: string, concurrency: number, stopped: () => boolean): Promise<unknown> {
   const mutations = new LinearMutations(store);
   const reconciliation = await reconcileHistoricalLinearComments(root, policy, credentials, store, stopped);
-  const proposals = await createDeclaredLinearIssues(root, policy, credentials, mutations);
   const discovered = await discoverLinearLanes(root, policy.bindingManifests);
+  const recovery = new LinearFailureRecovery(root, policy, store, stopped);
+  await recovery.plan(discovered.lanes);
+  const proposals = await createDeclaredLinearIssues(root, policy, credentials, mutations, recovery);
   const remote = new Map<string, RemoteLane>();
   const discoveryErrors: { workspace: string; teamId: string; reasonCode: string; detail?: string }[] = [];
   for (const workspace of policy.workspaces) {
@@ -513,12 +533,11 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
       } catch (error) { discoveryErrors.push({ workspace: workspace.key, teamId: team.id, reasonCode: linearReason(error), detail: linearDetail(error) }); }
     }
   }
-  // Completed/canceled issues are absent from intake but exact graph bindings
-  // still need direct readback before their semantic disposition is reported.
+  // Completed/canceled issues are absent from intake but retain exact direct readback.
   for (const lane of discovered.lanes) {
     if (remote.has(lane.binding.authority.locator)) continue;
-    const workspace = policy.workspaces.find((item) => item.organizationUrlKey === lane.binding.authority.workspace);
-    const team = workspace?.teams.find((item) => item.owner === lane.binding.authority.owner);
+    const workspace = policy.workspaces.find(item => item.organizationUrlKey === lane.binding.authority.workspace);
+    const team = workspace?.teams.find(item => item.owner === lane.binding.authority.owner);
     if (!workspace || !team) continue;
     const client = new LinearClient({ policy, workspaceKey: workspace.key, credentials });
     try {
@@ -526,66 +545,98 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
       remote.set(lane.binding.authority.locator, { client, workspace, team, issue });
     } catch (error) { discoveryErrors.push({ workspace: workspace.key, teamId: team.id, reasonCode: linearReason(error), detail: linearDetail(error) }); }
   }
-  const previous = new Map(store.progress().map((item) => [item.bindingIri, item]));
-  const runnable = discovered.lanes.filter((lane) => {
+  const previous = new Map(store.progress().map(item => [item.bindingIri, item]));
+  const runnable = discovered.lanes.filter(lane => {
+    const disposition = recovery.dispositions.get(lane.selector.bindingIri);
+    if (disposition && !["repair-ready", "resume-ready", "completed"].includes(disposition.disposition)) return false;
     const prior = previous.get(lane.selector.bindingIri);
-    return prior === undefined || prior.basisDigest !== lane.binding.basis.basisDigest
-      || (prior.stage !== "blocked" && prior.stage !== "completed")
-      || (prior.stage === "blocked" && lane.binding.attempt.state === "PREPARED");
+    if (prior?.stage === "completed" && prior.basisDigest === lane.binding.basis.basisDigest && lane.observedStatus === "COMPLETED") return false;
+    if (disposition?.disposition === "repair-ready" || disposition?.disposition === "resume-ready"
+      || lane.observedStatus === "COMPLETED") return true;
+    return prior?.stage !== "blocked";
   });
-  const runnableIds = new Set(runnable.map((lane) => lane.selector.bindingIri));
+  const runnableIds = new Set(runnable.map(lane => lane.selector.bindingIri));
   const ordered = [...runnable].sort((a, b) => {
     const priority = (lane: LinearLane): number => remote.get(lane.binding.authority.locator)?.issue.priority || 5;
     return priority(a) - priority(b)
       || (previous.get(a.selector.bindingIri)?.updatedAt ?? "").localeCompare(previous.get(b.selector.bindingIri)?.updatedAt ?? "")
       || a.contextKey.localeCompare(b.contextKey) || a.selector.bindingIri.localeCompare(b.selector.bindingIri);
   });
-  const executedOutcomes = await runLinearLaneCycle(ordered, concurrency, async (lane) => {
+  const executedOutcomes = await runLinearLaneCycle(ordered, concurrency, async lane => {
     const match = remote.get(lane.binding.authority.locator);
     if (!match || match.team.owner !== lane.binding.authority.owner) refuse("LINEAR_BOUND_ISSUE_NOT_OBSERVED");
+    const guard = recovery.guardFor(lane.selector.bindingIri);
+    await guard?.authenticate();
     const before = await observeLinearBinding(lane.selector);
-    if (before.status !== "COMPLETED") await updateRemoteState(mutations, lane, match, "started", [lane.binding.basis.basisDigest]);
-    const delivered = await executeLinearDelivery(root, lane.selector, providerEnvFile);
-    const evidence = [delivered.evidence.checkpointPath, canonicalDigest(delivered.evidence)].filter(reference => reference.length > 0);
-    if (delivered.status !== "completed") {
-      return { bindingIri: lane.selector.bindingIri, status: "blocked", reasonCode: delivered.reasonCode, evidence };
+    let evidence: string[] = [];
+    let settled = before;
+    if (before.status !== "COMPLETED") {
+      await updateRemoteState(mutations, lane, match, "started", [lane.binding.basis.basisDigest], guard);
+      await recovery.beforeLane(lane);
+      const delivered = await executeLinearDelivery(root, lane.selector, providerEnvFile);
+      evidence = [delivered.evidence.checkpointPath, canonicalDigest(delivered.evidence)].filter(reference => reference.length > 0);
+      if (delivered.status !== "completed") {
+        const disposition = await recovery.retain(lane, delivered);
+        if (disposition.intakeKey) evidence.push(disposition.intakeKey);
+        return { bindingIri: lane.selector.bindingIri, status: "blocked", reasonCode: delivered.reasonCode, evidence, recovery: disposition };
+      }
+      settled = await observeLinearBinding(lane.selector);
     }
-    const settled = await observeLinearBinding(lane.selector);
     if (settled.status !== "COMPLETED") refuse("LINEAR_COMPLETION_NOT_CURRENT");
+    await guard?.authenticate();
+    guard?.current();
     const acceptedEvidence = [...evidence, settled.integrationReceipt, settled.evidence, settled.proofResult];
-    await commentRemoteEvidence(mutations, lane, match, "semantic completion verified", acceptedEvidence);
-    await updateRemoteState(mutations, lane, match, "completed", acceptedEvidence);
-    await store.recordProgress({ bindingIri: lane.selector.bindingIri, basisDigest: lane.binding.basis.basisDigest, stage: "completed", blocker: null, evidenceRefs: acceptedEvidence });
-    return { bindingIri: lane.selector.bindingIri, status: "completed", evidence: acceptedEvidence };
+    await commentRemoteEvidence(mutations, lane, match, "semantic completion verified", acceptedEvidence, guard);
+    await updateRemoteState(mutations, lane, match, "completed", acceptedEvidence, guard);
+    await guard?.authenticate();
+    guard?.current();
+    await store.recordProgress({ bindingIri: lane.selector.bindingIri, basisDigest: settled.binding.basis.basisDigest, stage: "completed", blocker: null, evidenceRefs: acceptedEvidence });
+    return { bindingIri: lane.selector.bindingIri, status: "completed", evidence: acceptedEvidence,
+      ...(recovery.dispositions.has(lane.selector.bindingIri) ? { recovery: recovery.dispositions.get(lane.selector.bindingIri) } : {}) };
   }, stopped);
-  const deferredOutcomes = discovered.lanes.filter((lane) => !runnableIds.has(lane.selector.bindingIri)).map((lane) => {
-    const prior = previous.get(lane.selector.bindingIri)!;
+  const executedIds = new Set(executedOutcomes.map(outcome => outcome.bindingIri));
+  const deferredOutcomes: LinearCycleOutcome[] = discovered.lanes.filter(lane => !executedIds.has(lane.selector.bindingIri)).map(lane => {
+    const prior = previous.get(lane.selector.bindingIri);
+    const disposition = recovery.dispositions.get(lane.selector.bindingIri);
+    const completed = prior?.stage === "completed" && lane.observedStatus === "COMPLETED"
+      && (!disposition || disposition.disposition === "completed");
     return {
-      bindingIri: lane.selector.bindingIri,
-      status: prior.stage === "completed" ? "completed" as const : "progress" as const,
-      reasonCode: prior.blocker ?? undefined,
-      evidence: prior.evidenceRefs,
+      bindingIri: lane.selector.bindingIri, status: completed ? "completed" : "blocked",
+      ...(!completed ? { reasonCode: disposition?.reasonCode ?? (runnableIds.has(lane.selector.bindingIri) ? "LINEAR_RECOVERY_STOPPED" : prior?.blocker ?? "LINEAR_RECOVERY_FAILURE_UNKNOWN"),
+        recovery: disposition ?? recoveryEscalation(prior?.blocker ?? "LINEAR_RECOVERY_STOPPED") } : {}),
+      evidence: prior?.evidenceRefs ?? [],
     };
   });
   const outcomes = [...executedOutcomes, ...deferredOutcomes].sort((a, b) => a.bindingIri.localeCompare(b.bindingIri));
   const updateErrors: { bindingIri: string; reasonCode: string; detail?: string }[] = [];
+  // Preserve blocked progress even when an uncertain lane cannot execute.
+  // Withheld repair intake is not a failed repair attempt and must not consume its budget.
   for (const outcome of outcomes) {
     if (outcome.status !== "blocked") continue;
-    const lane = discovered.lanes.find((item) => item.selector.bindingIri === outcome.bindingIri)!;
+    if (!executedIds.has(outcome.bindingIri) && recovery.repairBindings.has(outcome.bindingIri)) continue;
+    const lane = discovered.lanes.find(item => item.selector.bindingIri === outcome.bindingIri)!;
     const match = remote.get(lane.binding.authority.locator);
     try {
       await store.recordProgress({ bindingIri: outcome.bindingIri, basisDigest: lane.binding.basis.basisDigest, stage: "blocked", blocker: outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", evidenceRefs: outcome.evidence });
-      if (match) await commentRemoteEvidence(mutations, lane, match, outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", outcome.evidence);
+      const guard = recovery.guardFor(outcome.bindingIri);
+      // Reporting a known refusal is not repair authority. Keep the existing
+      // deduplicated comment, but never add effects for uncertain remote outcomes.
+      if (match && executedIds.has(outcome.bindingIri)
+        && outcome.recovery?.externalBoundary !== "remote-intent-reconciliation"
+        && !/UNKNOWN|STARTED/u.test(outcome.reasonCode ?? "")) {
+        await commentRemoteEvidence(mutations, lane, match, outcome.reasonCode ?? "HERMES_LINEAR_OPERATION_FAILED", outcome.evidence, guard);
+      }
     } catch (error) { updateErrors.push({ bindingIri: outcome.bindingIri, reasonCode: linearReason(error), detail: linearDetail(error) }); }
   }
-  const boundLocators = new Set(discovered.lanes.map((lane) => lane.binding.authority.locator));
+  const boundLocators = new Set(discovered.lanes.map(lane => lane.binding.authority.locator));
   const unbound = [...remote.entries()].filter(([locator]) => !boundLocators.has(locator)).map(([locator]) => locator).sort();
   return { schema: "urn:usf:hermes-linear-cycle:1", observedAt: new Date().toISOString(), policyDigest: canonicalDigest(policy),
     remoteIssueCount: remote.size, boundLaneCount: discovered.lanes.length, outcomes, discoveryErrors, updateErrors,
-    authorityBlockers: discovered.blocked, proposals, reconciliation, unboundIssueLocators: unbound, state: store.summary(),
+    authorityBlockers: discovered.blocked.map(blocker => ({ ...blocker, recovery: recoveryEscalation(blocker.reasonCode) })),
+    proposals, reconciliation, unboundIssueLocators: unbound, state: store.summary(),
     terminal: discoveryErrors.length === 0 && updateErrors.length === 0 && discovered.blocked.length === 0 && unbound.length === 0
       && linearMutationLedgerSettled(store.summary())
-      && proposals.every((proposal) => proposal.reasonCode === undefined)
-      && outcomes.length === discovered.lanes.length && outcomes.every((outcome) => outcome.status === "completed"),
-    nonclaims: ["Unbound Linear prose does not authorize semantic work.", "Context grouping is not evidence of provider cache hits.", "Only current published semantic completion permits a remote completed state."] };
+      && proposals.every(proposal => proposal.reasonCode === undefined)
+      && outcomes.length === discovered.lanes.length && outcomes.every(outcome => outcome.status === "completed"),
+    nonclaims: ["Unbound Linear prose does not authorize semantic work.", "Recovery intake and repair completion confer no authority on the original work.", "Only current published semantic completion permits a remote completed state."] };
 }
