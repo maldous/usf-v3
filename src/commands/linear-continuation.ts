@@ -643,7 +643,7 @@ function authenticateCurrentPublicationSource(publication: ReturnType<typeof cur
 }
 
 /** Authenticate every additive publication between a retained source and the current grant. */
-function authenticatePublicationChain(root: string, publication: ReturnType<typeof currentRepairPublication>, expectedBase: string): void {
+function authenticatePublicationChain(root: string, publication: ReturnType<typeof currentRepairPublication>, expectedBase: string): FileFact[] {
   const { authority } = publication;
   let bytes = publication.source.bytes, receipt = publication.receipt;
   if (bytes === null || publication.source.fact.digest !== sha256(bytes)) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
@@ -651,11 +651,12 @@ function authenticatePublicationChain(root: string, publication: ReturnType<type
     .filter(row => row.predicate === predicate("publicationIntentDigest") && row.objectKind === "literal" && digestPattern.test(row.object))
     .map(row => row.object))];
   const seen = new Set<string>();
+  const receiptFiles = [publication.file];
   for (let hop = 0; hop < 64; hop++) {
     if (seen.has(receipt.publicationIntentDigest) || receipt.resultingSourceDigest !== sha256(bytes)) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
     seen.add(receipt.publicationIntentDigest);
     bytes = reverseRepairAppendBytes(bytes, receipt.operations.map(operation => operation.line), receipt.baseSourceDigest);
-    if (receipt.baseSourceDigest === expectedBase) return;
+    if (receipt.baseSourceDigest === expectedBase) return receiptFiles;
     const matches = intents.flatMap(intent => {
       if (seen.has(intent)) return [];
       const path = constructionReceiptPath(intent, authority), file = readFileFact(root, path);
@@ -675,10 +676,11 @@ function authenticatePublicationChain(root: string, publication: ReturnType<type
         && canonicalJson(value, { rejectAbsolutePaths: true }) + "\n" === file.bytes.toString("utf8")
         && value.operations.length > 0
         && value.operations.every((operation: any) => operation.kind === "add" && operation.sourcePath === publication.source.fact.path)
-        ? [value] : [];
+        ? [{ value, fact: file.fact }] : [];
     });
     if (matches.length !== 1) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
-    receipt = matches[0];
+    receipt = matches[0].value;
+    receiptFiles.push(matches[0].fact);
   }
   refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
 }
@@ -799,6 +801,7 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
   const controller = publications[0]!.current;
   if (!same(intent.controller, selection(controller, controllerProfile, controllerManifest))) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
   const replacements = new Map<string, FileFact>();
+  const publicationReceipts: FileFact[] = [];
   for (const input of admission.inputs) {
     authenticateRepairPreimage(root, intent, input.before);
     if (publications.some(publication => publication.source.fact.path === input.before.path)) refuse("LINEAR_CONTINUATION_HANDOFF_POLICY_INVALID");
@@ -825,7 +828,10 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
     if (publication.source.bytes === null || publication.source.fact.mode !== before.mode) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
     if (same(before, publication.source.fact)) continue;
     if (publication.source.fact.digest !== publication.receipt.resultingSourceDigest) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
-    authenticatePublicationChain(root, publication, before.digest!);
+    for (const receiptFile of authenticatePublicationChain(root, publication, before.digest!)) {
+      replacements.set(receiptFile.path, receiptFile);
+      publicationReceipts.push(receiptFile);
+    }
     replacements.set(publication.source.fact.path, publication.source.fact);
     replacements.set(publication.file.path, publication.file);
   }
@@ -843,7 +849,9 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
     beforeFiles: [...beforeFiles.values()].sort((a, b) => a.path.localeCompare(b.path)),
     repositoryDirtyFiles: changes.filter(file => file.path !== changedPath),
     controllerBasisDigest: controller.realisationBasis!.basisDigest,
-    publicationReceipts: publications.map(publication => publication.file), currentAuthorityInputs,
+    publicationReceipts: [...publicationReceipts,
+      ...publications.filter(publication => !publicationReceipts.some(file => file.path === publication.file.path)).map(publication => publication.file)],
+    currentAuthorityInputs,
   };
 }
 
