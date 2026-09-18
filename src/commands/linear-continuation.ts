@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { constants, closeSync, fstatSync, lstatSync, openSync, readFileSync, realpathSync } from "node:fs";
+import { constants, closeSync, fstatSync, lstatSync, openSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { canonicalDigest, canonicalJson, sha256 } from "../core/canonical.ts";
 import { parseRepositoryPath } from "../core/scope.ts";
@@ -474,7 +474,7 @@ async function retained(root: string): Promise<{ intent: ContinuationIntent; sta
     assertCurrentAuthorityInputLineage(receipt.currentAuthorityInputs, intent);
     if (receipt.schema !== "urn:usf:linear-continuation-repair-handoff-receipt:1"
       || receipt.successorIntentDigest !== intentDigest || admittedState.intentDigest !== intentDigest
-      || admittedState.nextStep !== 0 || admittedState.pending !== null || admittedState.terminal
+      || admittedState.nextStep !== 0 || !same(admittedState.pending, receipt.adoptedPending ?? null) || admittedState.terminal
       || admittedState.completedEffects.length !== 0 || admittedState.integration === null
       || !same(admittedState.integration, state.integration)
       || !same(intent.repairHandoff, { predecessorIntentDigest: receipt.predecessorIntentDigest,
@@ -503,6 +503,7 @@ interface RepairHandoffReceipt {
   readonly admissionDigest: string; readonly controllerBasisDigest: string;
   readonly publicationReceipts: readonly FileFact[];
   readonly currentAuthorityInputs?: readonly CurrentAuthorityInput[];
+  readonly adoptedPending?: PendingEffect;
 }
 
 function repairAdmission(root: string, intent: ContinuationIntent): RepairAdmission | null {
@@ -686,6 +687,33 @@ function authenticatePublicationChain(root: string, publication: ReturnType<type
   refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
 }
 
+/** Adopt only an exact locally retained proof for the already-current selected construction publication. */
+function adoptedPublicationPending(root: string, publication: ReturnType<typeof currentRepairPublication>): PendingEffect {
+  const member = publication.receipt.members[0];
+  const directory = ".usf/candidates/construction-authority";
+  let names: string[];
+  try { names = readdirSync(resolve(root, directory)); } catch { refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID"); }
+  if (names.length > maximumFiles) refuse("LINEAR_CONTINUATION_CLOSURE_BOUNDS");
+  const proofs = names.filter(name => /^[A-Za-z0-9._-]+\.json$/u.test(name)).flatMap(name => {
+    const path = directory + "/" + name, file = readFileFact(root, path);
+    if (file.bytes === null) return [];
+    let value: any;
+    try { value = JSON.parse(file.bytes.toString("utf8")); } catch { return []; }
+    return value?.schema === "urn:usf:construction-proof-bundle:1"
+      && value.evidence?.workIri === publication.selected.workIri
+      && value.evidence?.contentDigest === member.evidenceDigest
+      && value.proof?.contentDigest === member.proofDigest
+      && value.proof?.proofResultIri === member.proofResultIri
+      && canonicalJson(value, { rejectAbsolutePaths: true }) + "\n" === file.bytes.toString("utf8") ? [file.fact] : [];
+  });
+  if (proofs.length !== 1 || proofs[0]!.digest === null || publication.file.digest === null) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  return { effect: {
+    kind: "construction", workIris: [publication.selected.workIri], sourcePath: publication.source.fact.path,
+    beforeDigest: publication.receipt.baseSourceDigest, afterDigest: publication.receipt.resultingSourceDigest,
+    receiptPath: publication.file.path, receiptFileDigest: publication.file.digest, receiptDigest: publication.receipt.receiptDigest,
+  }, proof: proofs[0]! };
+}
+
 /** A missing historical fact is never converted to an absent historical file. */
 function currentAuthorityInput(root: string, intent: ContinuationIntent, admission: RepairAdmission,
   integration: NonNullable<ContinuationState["integration"]>, publication: ReturnType<typeof currentRepairPublication>): CurrentAuthorityInput {
@@ -804,6 +832,7 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
   if (!same(intent.controller, selection(controller, controllerProfile, controllerManifest))) refuse("LINEAR_CONTINUATION_HANDOFF_AUTHORITY_CHANGED");
   const replacements = new Map<string, FileFact>();
   const publicationReceipts: FileFact[] = [];
+  let adoptedPending: PendingEffect | undefined;
   for (const input of admission.inputs) {
     authenticateRepairPreimage(root, intent, input.before);
     if (publications.some(publication => publication.source.fact.path === input.before.path)) refuse("LINEAR_CONTINUATION_HANDOFF_POLICY_INVALID");
@@ -837,6 +866,7 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
       replacements.set(receiptFile.path, receiptFile);
       publicationReceipts.push(receiptFile);
     }
+    if (publication.selected.workIri === selectedWork) adoptedPending = adoptedPublicationPending(root, publication);
     replacements.set(publication.source.fact.path, publication.source.fact);
     replacements.set(publication.file.path, publication.file);
   }
@@ -849,7 +879,10 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
   const expected = expectedPostimages(intent, { ...state, integration }).filter(file => !replacements.has(file.path));
   assertFiles(root, expected);
   const beforeFiles = new Map(intent.beforeFiles.map(file => [file.path, file]));
-  for (const [path, fact] of replacements) beforeFiles.set(path, fact);
+  for (const [path, fact] of replacements) {
+    if (adoptedPending && (path === adoptedPending.effect.sourcePath || path === adoptedPending.effect.receiptPath)) continue;
+    beforeFiles.set(path, fact);
+  }
   return {
     beforeFiles: [...beforeFiles.values()].sort((a, b) => a.path.localeCompare(b.path)),
     repositoryDirtyFiles: changes.filter(file => file.path !== changedPath),
@@ -857,6 +890,7 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
     publicationReceipts: [...publicationReceipts,
       ...publications.filter(publication => !publicationReceipts.some(file => file.path === publication.file.path)).map(publication => publication.file)],
     currentAuthorityInputs,
+    adoptedPending,
   };
 }
 
@@ -896,12 +930,14 @@ async function admitRepairHandoff(root: string, intent: ContinuationIntent, stat
           predecessorStateDigest: admission.predecessorStateDigest, admissionDigest: admission.digest,
           ...(currentAuthorityInputs.length === 0 ? {} : { currentAuthorityInputs }) } };
       const successorIntentDigest = await writeBlob(root, successor);
-      const next: ContinuationState = { ...state, intentDigest: successorIntentDigest, integration };
+      const next: ContinuationState = { ...state, intentDigest: successorIntentDigest, integration,
+        pending: snapshot.adoptedPending ?? null };
       const successorStateDigest = await writeBlob(root, next);
       const receipt: RepairHandoffReceipt = { schema: "urn:usf:linear-continuation-repair-handoff-receipt:1",
         predecessorIntentDigest: admission.predecessorIntentDigest, predecessorStateDigest: admission.predecessorStateDigest,
         successorIntentDigest, successorStateDigest, admissionDigest: admission.digest,
         controllerBasisDigest: snapshot.controllerBasisDigest, publicationReceipts: snapshot.publicationReceipts,
+        ...(snapshot.adoptedPending === undefined ? {} : { adoptedPending: snapshot.adoptedPending }),
         ...(currentAuthorityInputs.length === 0 ? {} : { currentAuthorityInputs }) };
       const handoffReceiptDigest = await writeBlob(root, receipt);
       await assertPointer();
