@@ -6,15 +6,18 @@ import { loadSemanticGraph, validationRuntimeClosure } from "../../../src/graph/
 import { deriveConstructionAuthority } from "../../../src/realisation/construction-authority.ts";
 import { canonicalQuadDigest, parseStrictNQuads } from "../../../src/graph/nquads.ts";
 import { constructionAwarePublishCommandHandler, evidenceCommandHandler, proveCommandHandler } from "../../../src/commands/construction-authority.ts";
-import { access, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
+import { access, chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
+import fsPromises from "node:fs/promises";
+import { syncBuiltinESMExports } from "node:module";
 import { bindingSelector } from "../../../src/commands/hermes.ts";
 import {
   LinearBindingError,
   afterHermesResult,
   afterHermesRefusal,
+  assertLinearCandidateRepairResponse,
   beforeHermesDispatch,
   observeLinearBinding,
   prepareLinearBinding,
@@ -38,7 +41,7 @@ function reason(reasonCode: string): (error: unknown) => boolean {
   return (error) => error instanceof LinearBindingError && error.reasonCode === reasonCode;
 }
 
-async function fixtureRoot(): Promise<string> {
+async function buildPublishedFixtureRoot(): Promise<string> {
   const root = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), "usf-linear-binding-"));
   testRoots.add(root);
 
@@ -129,6 +132,86 @@ async function fixtureRoot(): Promise<string> {
   assert.equal((publicationResult.output as { status: unknown }).status, "ok");
 
   await mkdir(resolve(root, "graph/manifests"), { recursive: true });
+  return root;
+}
+
+type FixtureSnapshotRecord =
+  | Readonly<{ kind: "directory"; path: string; mode: number }>
+  | Readonly<{ kind: "file"; path: string; mode: number; encodedBytes: string }>;
+type FixtureSnapshot = readonly FixtureSnapshotRecord[];
+
+function lazyFixtureValue<T>(build: () => Promise<T>): () => Promise<T> {
+  let pending: Promise<T> | undefined;
+  return () => pending ??= Promise.resolve().then(build);
+}
+
+async function captureFixtureSnapshot(root: string): Promise<FixtureSnapshot> {
+  const records: FixtureSnapshotRecord[] = [];
+  const visit = async (path: string): Promise<void> => {
+    if (path === ".usf/locks" || path === ".usf/work/linear") return;
+    const absolute = resolve(root, path);
+    const metadata = await lstat(absolute);
+    const mode = metadata.mode & 0o7777;
+    if (metadata.isDirectory()) {
+      records.push(Object.freeze({ kind: "directory", path, mode }));
+      for (const name of (await readdir(absolute)).sort()) {
+        await visit(path === "." ? name : path + "/" + name);
+      }
+      return;
+    }
+    assert.ok(metadata.isFile(), "fixture snapshot requires regular files or directories");
+    records.push(Object.freeze({
+      kind: "file", path, mode, encodedBytes: (await readFile(absolute)).toString("base64"),
+    }));
+  };
+  await visit(".");
+  return Object.freeze(records);
+}
+
+async function materializeFixtureSnapshot(root: string, snapshot: FixtureSnapshot): Promise<void> {
+  for (const record of snapshot) {
+    const absolute = resolve(root, record.path);
+    if (record.kind === "directory") {
+      await mkdir(absolute, { recursive: true, mode: 0o700 });
+    } else {
+      await writeFile(absolute, Buffer.from(record.encodedBytes, "base64"), { flag: "wx", mode: 0o600 });
+      await chmod(absolute, record.mode);
+    }
+  }
+  for (const record of [...snapshot].reverse()) {
+    if (record.kind === "directory") await chmod(resolve(root, record.path), record.mode);
+  }
+}
+
+function assertFixtureConstructionAuthority(root: string): void {
+  const result = deriveWork(loadSemanticGraph(root, manifestPath), {
+    selector: "urn:usf:work:linear-work-binding",
+    profile: "urn:usf:profile:linear-work-binding:1",
+    maxItems: 1,
+  });
+  assert.equal(result.status, "ok");
+  assert.equal(result.items?.length, 1);
+  const selected = result.items![0]!;
+  assert.equal(selected.eligibility?.construction.eligible, true, "fixture construction authority must be current");
+}
+
+const publishedFixtureSnapshot = lazyFixtureValue(async (): Promise<FixtureSnapshot> => {
+  // Only the immutable records survive. No consumer receives this builder root.
+  const root = await buildPublishedFixtureRoot();
+  try {
+    return await captureFixtureSnapshot(root);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+    testRoots.delete(root);
+  }
+});
+
+async function fixtureRoot(): Promise<string> {
+  const snapshot = await publishedFixtureSnapshot();
+  const root = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), "usf-linear-binding-"));
+  testRoots.add(root);
+  await materializeFixtureSnapshot(root, snapshot);
+  assertFixtureConstructionAuthority(root);
   return root;
 }
 
@@ -618,14 +701,16 @@ test("legacy prepared binding intent remains immutable without a current intent 
   await assert.rejects(observeLinearBinding(selector), reason("LINEAR_BINDING_SUPERSESSION_REQUIRED"));
 });
 
-async function settledProviderPredecessor(selector: LinearBindingSelector, state: "SETTLED" | "REFUSED" = "SETTLED") {
+async function settledProviderPredecessor(
+  selector: LinearBindingSelector, state: "SETTLED" | "REFUSED" = "SETTLED",
+  resultText = "synthetic predecessor fixture, not provider contact",
+) {
   const started = await beforeHermesDispatch(selector);
   assert.equal(started.status, "STARTED");
   const sourceGraph = "urn:usf:graph:hermes-input:" + started.binding.unit.attemptKey;
   const graphText = await readFile(resolve(selector.repositoryRoot, started.binding.unitPath), "utf8");
   const sourceAssertionDigest = canonicalQuadDigest(parseStrictNQuads(graphText, sourceGraph));
   const successful = state === "SETTLED";
-  const resultText = "synthetic predecessor fixture, not provider contact";
   const evidence = {
     schema: "urn:usf:graph-execution-evidence:1", version: 1, status: successful ? "ok" : "refused",
     observedAt: "2026-09-16T00:00:00.000Z", sourceGraph, sourceGraphDigest: sourceAssertionDigest,
@@ -799,5 +884,340 @@ test("output token policy is authenticated in retained provider history before n
     await writeFile(retained.graphPath, history.get(retained.graphPath)!);
     assert.equal((await prepareLinearBinding(selector)).status, "PREPARED");
     for (const path of historyPaths) assert.deepEqual(await readFile(path), history.get(path), state + " history remains immutable");
+  }
+});
+
+const repairSourcePath = "src/commands/linear-binding.ts";
+const repairOldText = "const privateDirectoryMode = 0o700;";
+
+async function addRepairChain(root: string, maximumRounds = 2): Promise<readonly LinearBindingSelector[]> {
+  const first = await addBinding(root, "USF", "urn:test:binding:repair:0");
+  const original = await readFile(resolve(root, bindingGraphPath), "utf8");
+  const selectors = Array.from({ length: maximumRounds + 1 }, (_, round) => ({
+    ...first, bindingIri: "urn:test:binding:repair:" + round,
+  }));
+  const context = [{ path: repairSourcePath, start: repairOldText, end: "const maximumRecordBytes = ", maximumBytes: 1024 }];
+  const rows = selectors.map((selector, round) =>
+    original.replaceAll("<" + first.bindingIri + ">", "<" + selector.bindingIri + ">")
+    + nq(selector.bindingIri, "sourceContext", JSON.stringify(context)) + "\n"
+    + nq(selector.bindingIri, "candidateRepair", JSON.stringify({
+      rootBinding: first.bindingIri, round, maximumRounds,
+      ...(round === 0 ? {} : { predecessorBinding: selectors[round - 1]!.bindingIri }),
+    })) + "\n"
+    + (round === 0 ? "" : nq(selector.bindingIri, "supersedesBinding", selectors[round - 1]!.bindingIri, true) + "\n"));
+  await writeFile(resolve(root, bindingGraphPath), rows.join(""));
+  return selectors;
+}
+
+function repairResponse(oldText = repairOldText): string {
+  return JSON.stringify({ operations: [{ kind: "replace", path: repairSourcePath, oldText,
+    newText: "const privateDirectoryMode = 0o700; // proposed fixture change" }] });
+}
+
+test("finite repair uses real settlement lineage and the existing immutable dispatch assertion through exhaustion", async () => {
+  const chain = await addRepairChain(await fixtureRoot());
+  const root = chain[0]!;
+  const child = chain[1]!;
+  const final = chain[2]!;
+  await assert.rejects(observeLinearBinding(child), reason("LINEAR_BINDING_REPAIR_PARENT_NOT_SETTLED"));
+  const rejected = await settledProviderPredecessor(root, "SETTLED", "{");
+  await assert.rejects(assertLinearCandidateRepairResponse(root, rejected.terminal.binding.unit.attemptKey),
+    reason("LINEAR_BINDING_REPAIR_RESPONSE_JSON_INVALID"));
+  const rootEvidence = await readFile(rejected.evidencePath);
+  const prepared = await prepareLinearBinding(child);
+  assert.equal(prepared.status, "PREPARED");
+  assert.equal((await observeLinearBinding(child)).binding.unit.attemptKey, prepared.binding.unit.attemptKey);
+  const authority = prepared.binding.authority;
+  assert.deepEqual(prepared.binding.unit.candidateRepair, authority.candidateRepair);
+  assert.equal(prepared.binding.unit.intentKey, canonicalDigest({
+    locator: authority.locator, owner: authority.owner, profile: authority.profile,
+    manifestPath: authority.targetManifest, workIri: authority.workIri, fixedPrompt: authority.fixedPrompt,
+    maximumPromptTokens: authority.maximumPromptTokens, supersedes: authority.supersedes,
+    sourceContext: authority.sourceContext, candidateRepair: authority.candidateRepair,
+  }));
+  assert.equal(prepared.binding.unit.attemptKey, canonicalDigest({
+    intentKey: prepared.binding.unit.intentKey, basisDigest: prepared.binding.unit.basisDigest,
+    scopedDependencyDigest: prepared.binding.unit.scopedDependencyDigest,
+  }), "repair must not invent another attempt identity formula");
+  const prompt = JSON.parse(prepared.binding.unit.prompt);
+  assert.deepEqual(prompt.candidateRepairFeedback, {
+    predecessorBinding: root.bindingIri, predecessorAttempt: rejected.terminal.binding.unit.attemptKey,
+    predecessorEvidenceDigest: rejected.terminal.binding.attempt.executionResultIri!.slice("urn:usf:graph-execution-evidence:".length),
+    predecessorResultDigest: canonicalDigest("{"),
+    diagnostic: { reasonCode: "LINEAR_BINDING_REPAIR_RESPONSE_JSON_INVALID" },
+  });
+  assert.equal(typeof prompt.candidateRepairChainDigest, "string");
+  assert.equal(Object.hasOwn(prompt.candidateRepairFeedback, "resultText"), false);
+  const assertion = parseStrictNQuads(await readFile(resolve(child.repositoryRoot, prepared.binding.unitPath), "utf8"),
+    "urn:usf:graph:hermes-input:" + prepared.binding.unit.attemptKey);
+  assert.equal(assertion.find(q => q.predicate === "urn:usf:predicate:prompt")?.object, prepared.binding.unit.prompt);
+  assert.equal(assertion.find(q => q.predicate === "urn:usf:predicate:candidateRepair")?.object,
+    canonicalJson(authority.candidateRepair));
+  const second = await settledProviderPredecessor(child, "SETTLED", repairResponse("missing exact anchor"));
+  await assert.rejects(assertLinearCandidateRepairResponse(child, second.terminal.binding.unit.attemptKey),
+    reason("LINEAR_BINDING_REPAIR_RESPONSE_ANCHOR_INVALID"));
+  const terminal = await settledProviderPredecessor(final, "SETTLED", "{");
+  await assert.rejects(assertLinearCandidateRepairResponse(final, terminal.terminal.binding.unit.attemptKey),
+    reason("LINEAR_BINDING_REPAIR_EXHAUSTED"));
+  assert.equal((await beforeHermesDispatch(final)).status, "SETTLED", "exhaustion must never reset provider dispatch");
+  assert.equal((await observeLinearBinding(child)).status, "SETTLED", "discovery can walk ancestors behind the final pointer");
+  assert.deepEqual(await readFile(rejected.evidencePath), rootEvidence);
+});
+
+test("a valid or explicitly empty settled response never unlocks a conditional successor", async () => {
+  for (const [text, code] of [
+    [repairResponse(), "LINEAR_BINDING_REPAIR_NOT_ADMITTED"],
+    ['{"operations":[]}', "LINEAR_BINDING_REPAIR_CONTEXT_INSUFFICIENT"],
+  ] as const) {
+    const chain = await addRepairChain(await fixtureRoot(), 1);
+    const retained = await settledProviderPredecessor(chain[0]!, "SETTLED", text);
+    if (text === repairResponse()) {
+      await assertLinearCandidateRepairResponse(chain[0]!, retained.terminal.binding.unit.attemptKey);
+    } else {
+      await assert.rejects(assertLinearCandidateRepairResponse(chain[0]!, retained.terminal.binding.unit.attemptKey), reason(code));
+    }
+    await assert.rejects(observeLinearBinding(chain[1]!), reason(code));
+    await assert.rejects(beforeHermesDispatch(chain[1]!), reason(code));
+  }
+});
+
+test("repair admission rejects unresolved refused tampered missing drifted and changed lineage without rewriting history", async () => {
+  const chain = await addRepairChain(await fixtureRoot());
+  const root = chain[0]!;
+  const retained = await settledProviderPredecessor(root, "SETTLED", "{");
+  const declarationPath = resolve(root.repositoryRoot, bindingGraphPath);
+  const sourcePath = resolve(root.repositoryRoot, repairSourcePath);
+  const paths = [retained.issuePath, retained.attemptPath, retained.evidencePath, retained.graphPath, declarationPath, sourcePath];
+  const original = new Map<string, string>();
+  for (const path of paths) original.set(path, await readFile(path, "utf8"));
+  const issue = JSON.parse(original.get(retained.issuePath)!);
+  const attempt = JSON.parse(original.get(retained.attemptPath)!);
+  const mutations: Array<readonly [string, () => Promise<unknown>]> = [
+    ["unknown issue", () => writeFile(retained.issuePath, canonicalJson({ ...issue, state: "UNKNOWN" }) + "\n")],
+    ["unclosed issue", () => writeFile(retained.issuePath, canonicalJson({ ...issue, state: "STARTED" }) + "\n")],
+    ["unknown attempt", () => writeFile(retained.attemptPath, canonicalJson({
+      ...attempt, state: "UNKNOWN", executionResultIri: null, executionResultDigest: null,
+    }) + "\n")],
+    ["refused attempt", () => writeFile(retained.attemptPath, canonicalJson({ ...attempt, state: "REFUSED" }) + "\n")],
+    ["missing attempt", () => rm(retained.attemptPath)],
+    ["missing issue", () => rm(retained.issuePath)],
+    ["missing evidence", () => rm(retained.evidencePath)],
+    ["changed evidence", () => writeFile(retained.evidencePath, "{}\n")],
+    ["changed result", () => writeFile(retained.attemptPath, canonicalJson({
+      ...attempt, executionResultDigest: canonicalDigest("other"),
+    }) + "\n")],
+    ["changed assertion", () => writeFile(retained.graphPath,
+      original.get(retained.graphPath)!.replace("Use only graph-derived semantic work.", "Changed historical input."))],
+    ["changed source basis", () => writeFile(sourcePath, original.get(sourcePath)! + "\n")],
+    ["changed ancestor declaration", () => writeFile(declarationPath, original.get(declarationPath)!
+      + nq(root.bindingIri, "supersedesBinding", "urn:test:other:predecessor", true) + "\n")],
+    ["changed future slot identity", () => writeFile(declarationPath,
+      original.get(declarationPath)!.replaceAll(chain[2]!.bindingIri, "urn:test:binding:repair:replacement"))],
+    ["missing final slot", () => writeFile(declarationPath, original.get(declarationPath)!.split("\n")
+      .filter(line => !line.startsWith("<" + chain[2]!.bindingIri + ">")).join("\n"))],
+  ];
+  for (const [name, mutate] of mutations) {
+    for (const [path, bytes] of original) await writeFile(path, bytes, { mode: 0o600 });
+    await mutate();
+    const before = new Map<string, Buffer | null>();
+    for (const path of paths) before.set(path, await readFile(path).catch(error => {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw error;
+    }));
+    await assert.rejects(prepareLinearBinding(chain[1]!), error => error instanceof LinearBindingError, name);
+    for (const path of paths) {
+      const after = await readFile(path).catch(error => {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+        throw error;
+      });
+      assert.deepEqual(after, before.get(path), name + " must not rewrite retained bytes");
+    }
+  }
+  for (const [path, bytes] of original) await writeFile(path, bytes, { mode: 0o600 });
+  assert.equal((await prepareLinearBinding(chain[1]!)).status, "PREPARED");
+});
+
+test("repair reauthenticates an ancestor-only declaration change after awaited result readback", async () => {
+  const chain = await addRepairChain(await fixtureRoot(), 1);
+  const retained = await settledProviderPredecessor(chain[0]!, "SETTLED", "{");
+  const declarationPath = resolve(chain[0]!.repositoryRoot, bindingGraphPath);
+  const originalDeclaration = await readFile(declarationPath, "utf8");
+  const originalOpen = fsPromises.open;
+  const originalWrite = fsPromises.writeFile;
+  let changed = false;
+  const mutableFs = fsPromises as { open: typeof fsPromises.open };
+  mutableFs.open = async (...args: Parameters<typeof fsPromises.open>) => {
+    const handle = await originalOpen(...args);
+    if (String(args[0]) === retained.evidencePath && !changed) {
+      const originalRead = handle.readFile.bind(handle);
+      handle.readFile = (async (options?: Parameters<typeof handle.readFile>[0]) => {
+        const value = await originalRead(options);
+        if (!changed) {
+          changed = true;
+          await originalWrite(declarationPath, originalDeclaration
+            + nq(chain[0]!.bindingIri, "supersedesBinding", "urn:test:changed:ancestor", true) + "\n");
+        }
+        return value;
+      }) as typeof handle.readFile;
+    }
+    return handle;
+  };
+  syncBuiltinESMExports();
+  try {
+    await assert.rejects(observeLinearBinding(chain[1]!), reason("LINEAR_BINDING_AUTHORITY_MISMATCH"));
+    assert.equal(changed, true, "the regression must cross the authenticated result-read await");
+  } finally {
+    mutableFs.open = originalOpen;
+    syncBuiltinESMExports();
+  }
+});
+
+test("repair declarations require explicit context a complete chain and provider disposition", async () => {
+  const chain = await addRepairChain(await fixtureRoot(), 1);
+  const path = resolve(chain[0]!.repositoryRoot, bindingGraphPath);
+  const original = await readFile(path, "utf8");
+  for (const text of [
+    original.split("\n").filter(line => !line.includes("<urn:usf:predicate:sourceContext>")).join("\n"),
+    original + nq(chain[0]!.bindingIri, "realisationDisposition", "no-change") + "\n",
+    original.split("\n").filter(line => !line.startsWith("<" + chain[1]!.bindingIri + ">")).join("\n"),
+    original.replace(nq(chain[1]!.bindingIri, "supersedesBinding", chain[0]!.bindingIri, true),
+      nq(chain[1]!.bindingIri, "supersedesBinding", "urn:test:wrong:predecessor", true)),
+  ]) {
+    await writeFile(path, text);
+    await assert.rejects(prepareLinearBinding(chain[0]!), error => error instanceof LinearBindingError);
+  }
+});
+
+test("fixture snapshots initialise once and preserve isolated bytes modes and absence after builder cleanup", async () => {
+  const source = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), "usf-binding-snapshot-source-"));
+  testRoots.add(source);
+  const bytes = Buffer.from([0, 255, 128, 10, 13, 34, 92, 65]);
+  await mkdir(resolve(source, "nested"), { mode: 0o700 });
+  await writeFile(resolve(source, "nested/binary.dat"), bytes);
+  await chmod(resolve(source, "nested"), 0o750);
+  await chmod(resolve(source, "nested/binary.dat"), 0o640);
+  await writeFile(resolve(source, "present-optional.txt"), "present\n");
+  await mkdir(resolve(source, ".usf/locks"), { recursive: true });
+  await mkdir(resolve(source, ".usf/work/linear"), { recursive: true });
+  await mkdir(resolve(source, "evidence/construction-authority"), { recursive: true });
+  await writeFile(resolve(source, ".usf/locks/held"), "runtime lock");
+  await writeFile(resolve(source, ".usf/work/linear/attempt.json"), "{}");
+  await writeFile(resolve(source, ".usf/work/retained-proof.json"), "retained");
+  await writeFile(resolve(source, "evidence/construction-authority/receipt.json"), "receipt");
+
+  let builds = 0;
+  const snapshot = lazyFixtureValue(async () => {
+    builds += 1;
+    return captureFixtureSnapshot(source);
+  });
+  const [first, second] = await Promise.all([snapshot(), snapshot()]);
+  assert.equal(builds, 1);
+  assert.equal(first, second);
+  assert.equal(Object.isFrozen(first), true);
+  assert.equal(first.every(record => Object.isFrozen(record)), true);
+  assert.equal(first.every(record => record.kind === "directory" || typeof record.encodedBytes === "string"), true);
+  const encoded = JSON.stringify(first);
+  await rm(source, { recursive: true, force: true });
+  testRoots.delete(source);
+  assert.equal(await snapshot(), first, "builder deletion must not invalidate the retained snapshot");
+
+  const roots = await Promise.all([0, 1].map(async () => {
+    const root = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), "usf-binding-snapshot-copy-"));
+    testRoots.add(root);
+    await materializeFixtureSnapshot(root, first);
+    return root;
+  }));
+  const [left, right] = roots as [string, string];
+  for (const root of roots) {
+    assert.deepEqual(await readFile(resolve(root, "nested/binary.dat")), bytes);
+    assert.equal((await lstat(resolve(root, "nested/binary.dat"))).mode & 0o7777, 0o640);
+    assert.equal((await lstat(resolve(root, "nested"))).mode & 0o7777, 0o750);
+    assert.equal(await readFile(resolve(root, "present-optional.txt"), "utf8"), "present\n");
+    for (const absent of ["absent-optional.txt", ".usf/locks", ".usf/work/linear"]) {
+      await assert.rejects(lstat(resolve(root, absent)), (error: unknown) =>
+        (error as NodeJS.ErrnoException).code === "ENOENT");
+    }
+    assert.equal(await readFile(resolve(root, ".usf/work/retained-proof.json"), "utf8"), "retained");
+    assert.equal(await readFile(resolve(root, "evidence/construction-authority/receipt.json"), "utf8"), "receipt");
+  }
+  const leftMetadata = await lstat(resolve(left, "nested/binary.dat"));
+  const rightMetadata = await lstat(resolve(right, "nested/binary.dat"));
+  assert.ok(leftMetadata.dev !== rightMetadata.dev || leftMetadata.ino !== rightMetadata.ino);
+  assert.equal(leftMetadata.nlink, 1);
+  assert.equal(rightMetadata.nlink, 1);
+  await writeFile(resolve(left, "nested/binary.dat"), "changed");
+  assert.deepEqual(await readFile(resolve(right, "nested/binary.dat")), bytes);
+  assert.equal(JSON.stringify(first), encoded, "consumer writes must not change immutable snapshot records");
+});
+
+test("fixture snapshot initialization rejects symlinks without exposing or rebuilding partial output", async () => {
+  const root = await mkdtemp(join(process.env.TMPDIR ?? tmpdir(), "usf-binding-snapshot-invalid-"));
+  testRoots.add(root);
+  await writeFile(resolve(root, "ordinary.txt"), "ordinary");
+  await symlink(resolve(root, "ordinary.txt"), resolve(root, "unsafe-link"));
+  let builds = 0;
+  const snapshot = lazyFixtureValue(async () => {
+    builds += 1;
+    return captureFixtureSnapshot(root);
+  });
+  const first = snapshot();
+  const second = snapshot();
+  assert.equal(first, second);
+  await assert.rejects(first, /fixture snapshot requires regular files or directories/);
+  await rm(resolve(root, "unsafe-link"));
+  await assert.rejects(snapshot(), /fixture snapshot requires regular files or directories/);
+  assert.equal(builds, 1, "failed initialization must not become an implicit authority rebuild");
+});
+
+test("published fixture snapshot retains native authority and rejects source and receipt tampering", async () => {
+  const snapshot = await publishedFixtureSnapshot();
+  const grant = snapshot.find(record => record.kind === "file" && record.path === "graph/linear-work-binding-grants.nq");
+  assert.ok(grant?.kind === "file");
+  const grantText = Buffer.from(grant.encodedBytes, "base64").toString("utf8");
+  const receipts = snapshot.filter((record): record is Extract<FixtureSnapshotRecord, { kind: "file" }> =>
+    record.kind === "file" && record.path.startsWith("evidence/construction-authority/") && record.path.endsWith(".json"));
+  const matching = receipts.filter(record => grantText.includes(record.path.split("/").at(-1)!.slice(0, -5)));
+  const receipt = matching.length === 1 ? matching[0] : receipts.length === 1 ? receipts[0] : undefined;
+  assert.ok(receipt, "the fixture must identify its genuine published construction receipt");
+
+  const controlRoot = await fixtureRoot();
+  const control = await prepareLinearBinding(await addBinding(controlRoot));
+  assert.equal(control.status, "PREPARED");
+  const sourcePath = "src/commands/linear-binding.ts";
+  const cases = [
+    { name: "source mutation", path: sourcePath, operation: "append" },
+    { name: "receipt tamper", path: receipt.path, operation: "replace" },
+    { name: "missing receipt", path: receipt.path, operation: "remove" },
+  ] as const;
+  for (const current of cases) {
+    const root = await fixtureRoot();
+    const selector = await addBinding(root);
+    const path = resolve(root, current.path);
+    const before = await readFile(path);
+    const originalMode = (await lstat(path)).mode & 0o7777;
+    const controlPath = resolve(controlRoot, current.path);
+    const controlBytes = await readFile(controlPath);
+    const controlMetadata = await lstat(controlPath);
+    const metadata = await lstat(path);
+    assert.ok(metadata.dev !== controlMetadata.dev || metadata.ino !== controlMetadata.ino);
+    assert.equal(metadata.nlink, 1);
+    if (current.operation === "remove") await rm(path);
+    else await writeFile(path, current.operation === "append"
+      ? Buffer.concat([before, Buffer.from("\n// fixture authority mutation\n")]) : Buffer.from("{}\n"));
+
+    assert.throws(() => assertFixtureConstructionAuthority(root),
+      /fixture construction authority must be current/, current.name);
+    await assert.rejects(prepareLinearBinding(selector), reason("LINEAR_BINDING_WORK_INACTIVE"), current.name);
+    assert.deepEqual(await readFile(controlPath), controlBytes, current.name + " must not alter a sibling");
+    const retained = snapshot.find(record => record.kind === "file" && record.path === current.path);
+    assert.ok(retained?.kind === "file");
+    assert.deepEqual(Buffer.from(retained.encodedBytes, "base64"), before, current.name + " must not alter the seed");
+
+    await writeFile(path, before, { mode: originalMode });
+    await chmod(path, originalMode);
+    assertFixtureConstructionAuthority(root);
+    const restored = await prepareLinearBinding(selector);
+    assert.equal(restored.status, "PREPARED");
+    assert.equal(restored.binding.unit.basisDigest, control.binding.unit.basisDigest);
   }
 });

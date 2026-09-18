@@ -1104,6 +1104,7 @@ test("integration consumes each graph-required validation exactly once in canoni
       "src/continuous/lifecycle.ts",
       "src/core/canonical.ts",
       "src/core/errors.ts",
+      "src/core/linear-repair.ts",
       "src/core/scope.ts",
       "src/graph/cli-transitions.ts",
       "src/graph/index.ts",

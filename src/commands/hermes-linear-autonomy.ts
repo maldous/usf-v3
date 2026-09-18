@@ -96,16 +96,37 @@ export interface LinearLaneDiscovery {
   readonly blocked: readonly { bindingIri: string; reasonCode: string; detail?: string }[];
 }
 
-export function currentLinearBindingSelections(sources: readonly { manifestPath: string; quads: readonly Quad[] }[]): { manifestPath: string; bindingIri: string }[] {
-  const bindings = new Set(sources.flatMap(({ quads }) => quads.filter((q) => q.predicate === predicate("type") && q.object === bindingType).map((q) => q.subject)));
-  const superseded = new Set(sources.flatMap(({ quads }) => quads.filter((q) => bindings.has(q.subject)
-    && q.predicate === predicate("supersedesBinding") && q.objectKind === "iri").map((q) => q.object)));
+function linearBindingSelectionPlan(sources: readonly { manifestPath: string; quads: readonly Quad[] }[]) {
+  const repairs = new Map<string, { manifestPath: string; authority: ReturnType<typeof deriveLinearBindingDeclaration> }>();
+  for (const { manifestPath, quads } of sources) {
+    for (const bindingIri of new Set(quads.filter(q => q.predicate === predicate("candidateRepair")).map(q => q.subject))) {
+      const authority = deriveLinearBindingDeclaration({ quads } as ReturnType<typeof loadSemanticGraph>, bindingIri);
+      if (authority.candidateRepair === undefined) refuse("LINEAR_BINDING_REPAIR_POLICY_INVALID");
+      const previous = repairs.get(bindingIri);
+      if (previous !== undefined && canonicalDigest(previous.authority) !== canonicalDigest(authority)) {
+        refuse("LINEAR_BINDING_REPAIR_POLICY_INVALID");
+      }
+      if (previous === undefined) repairs.set(bindingIri, { manifestPath, authority });
+    }
+  }
+  const conditional = new Set([...repairs.values()].filter(item => item.authority.candidateRepair!.round > 0)
+    .map(item => item.authority.bindingIri));
+  const bindings = new Set(sources.flatMap(({ quads }) => quads.filter(q => q.predicate === predicate("type") && q.object === bindingType).map(q => q.subject)));
+  // A conditional repair cannot hide its predecessor before the kernel admits it.
+  const superseded = new Set(sources.flatMap(({ quads }) => quads.filter(q => bindings.has(q.subject)
+    && !conditional.has(q.subject) && q.predicate === predicate("supersedesBinding") && q.objectKind === "iri").map(q => q.object)));
   const seen = new Set<string>();
-  return sources.flatMap(({ manifestPath, quads }) => quads.flatMap((q) => {
-    if (q.predicate !== predicate("type") || q.object !== bindingType || superseded.has(q.subject) || seen.has(q.subject)) return [];
+  const selections = sources.flatMap(({ manifestPath, quads }) => quads.flatMap(q => {
+    if (q.predicate !== predicate("type") || q.object !== bindingType || superseded.has(q.subject)
+      || conditional.has(q.subject) || seen.has(q.subject)) return [];
     seen.add(q.subject);
     return [{ manifestPath, bindingIri: q.subject }];
   }));
+  return { selections, repairs };
+}
+
+export function currentLinearBindingSelections(sources: readonly { manifestPath: string; quads: readonly Quad[] }[]): { manifestPath: string; bindingIri: string }[] {
+  return linearBindingSelectionPlan(sources).selections;
 }
 
 export function linearMutationLedgerSettled(summary: ReturnType<LinearStateStore["summary"]>): boolean {
@@ -115,22 +136,49 @@ export function linearMutationLedgerSettled(summary: ReturnType<LinearStateStore
 export async function discoverLinearLanes(root: string, manifests: readonly string[]): Promise<LinearLaneDiscovery> {
   const lanes: LinearLane[] = [];
   const blocked: { bindingIri: string; reasonCode: string; detail?: string }[] = [];
-  const sources = manifests.map((manifestPath) => ({ manifestPath, quads: loadSemanticGraph(root, manifestPath).quads }));
-  for (const { manifestPath, bindingIri } of currentLinearBindingSelections(sources)) {
-      const selector = { repositoryRoot: root, manifestPath, bindingIri };
-      try {
-        const observed = await observeLinearBinding(selector);
-        const packet = observed.binding.unit.packet;
-        lanes.push({ selector, binding: observed.binding, contextKey: canonicalDigest({
-          dependencies: packet.semanticDependencies.filter((dependency) => packet.readSet.includes(dependency.key)), readSet: packet.readSet,
-          capabilities: packet.modelCapabilities, privacy: packet.privacy,
-        }) });
-      } catch (error) { blocked.push({ bindingIri, reasonCode: linearReason(error), detail: linearDetail(error) }); }
+  const readSources = () => manifests.map(manifestPath => ({ manifestPath, quads: loadSemanticGraph(root, manifestPath).quads }));
+  const sources = readSources();
+  const snapshot = canonicalDigest(sources);
+  const plan = linearBindingSelectionPlan(sources);
+  for (const initial of plan.selections) {
+    let selector = { repositoryRoot: root, ...initial };
+    try {
+      let observed = await observeLinearBinding(selector);
+      const repairRoot = observed.binding.authority.candidateRepair?.rootBinding;
+      while (observed.status === "SETTLED" && observed.binding.authority.candidateRepair !== undefined) {
+        const policy = observed.binding.authority.candidateRepair;
+        if (policy.round >= policy.maximumRounds) break;
+        const successors = [...plan.repairs.values()].filter(({ authority }) =>
+          authority.candidateRepair!.rootBinding === repairRoot
+          && authority.candidateRepair!.round === policy.round + 1
+          && authority.candidateRepair!.predecessorBinding === selector.bindingIri);
+        if (successors.length !== 1) refuse("LINEAR_BINDING_REPAIR_POLICY_INVALID");
+        const successor = successors[0]!;
+        const next = { repositoryRoot: root, manifestPath: successor.manifestPath, bindingIri: successor.authority.bindingIri };
+        try {
+          const admitted = await observeLinearBinding(next);
+          selector = next;
+          observed = admitted;
+        } catch (error) {
+          // Only a positively authenticated, valid predecessor response keeps
+          // its existing delivery lane. Uncertain admission never falls back.
+          if (linearReason(error) === "LINEAR_BINDING_REPAIR_NOT_ADMITTED") break;
+          selector = next;
+          throw error;
+        }
+      }
+      if (repairRoot !== undefined && canonicalDigest(readSources()) !== snapshot) refuse("LINEAR_BINDING_AUTHORITY_MISMATCH");
+      const packet = observed.binding.unit.packet;
+      lanes.push({ selector, binding: observed.binding, contextKey: canonicalDigest({
+        dependencies: packet.semanticDependencies.filter(dependency => packet.readSet.includes(dependency.key)), readSet: packet.readSet,
+        capabilities: packet.modelCapabilities, privacy: packet.privacy,
+      }) });
+    } catch (error) { blocked.push({ bindingIri: selector.bindingIri, reasonCode: linearReason(error), detail: linearDetail(error) }); }
   }
-  const duplicates = new Set(lanes.filter((lane) => lanes.some((other) => other !== lane
-    && other.binding.authority.locator === lane.binding.authority.locator)).map((lane) => lane.selector.bindingIri));
+  const duplicates = new Set(lanes.filter(lane => lanes.some(other => other !== lane
+    && other.binding.authority.locator === lane.binding.authority.locator)).map(lane => lane.selector.bindingIri));
   for (const bindingIri of duplicates) blocked.push({ bindingIri, reasonCode: "LINEAR_BINDING_LOCATOR_AMBIGUOUS" });
-  return { lanes: lanes.filter((lane) => !duplicates.has(lane.selector.bindingIri))
+  return { lanes: lanes.filter(lane => !duplicates.has(lane.selector.bindingIri))
     .sort((a, b) => a.contextKey.localeCompare(b.contextKey) || a.selector.bindingIri.localeCompare(b.selector.bindingIri)), blocked };
 }
 

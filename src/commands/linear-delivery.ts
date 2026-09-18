@@ -399,6 +399,11 @@ export async function executeLinearDelivery(root: string, selector: LinearBindin
   }
 
   try {
+    if (settled.binding.authority.candidateRepair !== undefined) {
+      await (await import("./linear-binding.ts")).assertLinearCandidateRepairResponse(
+        Object.freeze({ ...selector, repositoryRoot }), settled.binding.unit.attemptKey,
+      );
+    }
     const contribution = await contributionFromSettledLinearResult(Object.freeze({ root: repositoryRoot, selector: Object.freeze({ ...selector, repositoryRoot }), binding: settled }));
     const resolution = resolveCommand([contribution]);
     if (resolution.status !== "resolved" || resolution.candidate === null) return refusal("LINEAR_DELIVERY_RESOLUTION_REFUSED", evidence);

@@ -1,5 +1,7 @@
 import type { SemanticGraph } from "./index.ts";
 import { isRepositoryRelativePath } from "../core/scope.ts";
+import { canonicalDigest } from "../core/canonical.ts";
+import { parseLinearCandidateRepairPolicy, type LinearCandidateRepairPolicy } from "../core/linear-repair.ts";
 
 export type OwningModel = "ANQR" | "USF" | "UXF" | "UIF";
 
@@ -26,6 +28,7 @@ export interface LinearBindingAuthority {
   readonly supersedes: string | null;
   readonly realisationDisposition?: "no-change";
   readonly sourceContext?: readonly LinearSourceContextSelection[];
+  readonly candidateRepair?: LinearCandidateRepairPolicy;
 }
 
 export class LinearBindingError extends Error {
@@ -113,9 +116,53 @@ export function deriveLinearBindingDeclaration(graph: SemanticGraph, bindingIri:
   const sourceContext = sourceContextSelections(field("sourceContext", "literal", "LINEAR_BINDING_SOURCE_CONTEXT_INVALID", true, 65536));
   if (sourceContext !== undefined && realisationDisposition !== null) refuse("LINEAR_BINDING_SOURCE_CONTEXT_INVALID");
   if (maximumOutputTokens !== undefined && realisationDisposition !== null) refuse("LINEAR_BINDING_OUTPUT_POLICY_INVALID");
+  const repairText = field("candidateRepair", "literal", "LINEAR_BINDING_REPAIR_POLICY_INVALID", true, 16384);
+  const candidateRepair = repairText === null ? undefined : parseLinearCandidateRepairPolicy(repairText)
+    ?? refuse("LINEAR_BINDING_REPAIR_POLICY_INVALID");
+  if (candidateRepair !== undefined && (realisationDisposition !== null || sourceContext === undefined
+    || (candidateRepair.round === 0
+      ? candidateRepair.rootBinding !== bindingIri
+      : candidateRepair.rootBinding === bindingIri || candidateRepair.predecessorBinding !== supersedes
+        || candidateRepair.predecessorBinding === bindingIri))) refuse("LINEAR_BINDING_REPAIR_POLICY_INVALID");
   return Object.freeze({ bindingIri, locator, workspace, issueUuid, owner, profile, targetManifest, workIri, fixedPrompt, maximumPromptTokens, supersedes,
     ...(realisationDisposition === null ? {} : { realisationDisposition }),
     ...(sourceContext === undefined ? {} : { sourceContext }),
     ...(maximumOutputTokens === undefined ? {} : { maximumOutputTokens }),
+    ...(candidateRepair === undefined ? {} : { candidateRepair }),
   });
+}
+
+/** Validate the complete finite declaration before any repair-chain dispatch. */
+export function deriveLinearCandidateRepairChain(
+  graph: SemanticGraph, authority: LinearBindingAuthority,
+): readonly LinearBindingAuthority[] {
+  const policy = authority.candidateRepair;
+  if (policy === undefined) return Object.freeze([]);
+  const subjects = [...new Set(graph.quads.filter(q => q.predicate === P + "candidateRepair").map(q => q.subject))];
+  const chain = subjects.map(subject => deriveLinearBindingDeclaration(graph, subject))
+    .filter(declaration => declaration.candidateRepair?.rootBinding === policy.rootBinding)
+    .sort((left, right) => left.candidateRepair!.round - right.candidateRepair!.round);
+  if (chain.length !== policy.maximumRounds + 1 || chain[0]?.bindingIri !== policy.rootBinding) {
+    refuse("LINEAR_BINDING_REPAIR_CHAIN_INVALID");
+  }
+  const shape = (entry: LinearBindingAuthority): string => canonicalDigest({
+    locator: entry.locator, owner: entry.owner, workIri: entry.workIri, profile: entry.profile,
+    targetManifest: entry.targetManifest, fixedPrompt: entry.fixedPrompt,
+    sourceContext: entry.sourceContext, maximumPromptTokens: entry.maximumPromptTokens,
+    maximumOutputTokens: entry.maximumOutputTokens ?? null,
+  });
+  const expected = shape(authority);
+  for (const [round, declaration] of chain.entries()) {
+    const current = declaration.candidateRepair!;
+    if (current.round !== round || current.maximumRounds !== policy.maximumRounds
+      || shape(declaration) !== expected
+      || (round > 0 && (current.predecessorBinding !== chain[round - 1]!.bindingIri
+        || declaration.supersedes !== chain[round - 1]!.bindingIri))) {
+      refuse("LINEAR_BINDING_REPAIR_CHAIN_INVALID");
+    }
+  }
+  if (chain[0]!.supersedes !== null && chain.some(entry => entry.bindingIri === chain[0]!.supersedes)) {
+    refuse("LINEAR_BINDING_REPAIR_CHAIN_INVALID");
+  }
+  return Object.freeze(chain);
 }

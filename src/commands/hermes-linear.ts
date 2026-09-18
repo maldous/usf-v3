@@ -3,9 +3,7 @@ import { resolve } from "node:path";
 import { canonicalDigest } from "../core/canonical.ts";
 import { exitCodes, UsfError } from "../core/errors.ts";
 import { loadSemanticGraph, objectValues } from "../graph/index.ts";
-import type { Quad } from "../graph/nquads.ts";
 import { deriveWork } from "../graph/work.ts";
-import type { PreparedLinearBinding, LinearBindingSelector } from "./linear-binding.ts";
 import { observeLinearBinding } from "./linear-binding.ts";
 import { loadCredentialEnvFile, type CredentialEnvironment } from "../providers/config.ts";
 import { LinearClient, readLinearPolicySource, parseLinearPolicy, type LinearIssue, type LinearPolicy, type LinearTeamPolicy, type LinearWorkspacePolicy } from "./linear-client.ts";
@@ -17,11 +15,15 @@ import { currentStewardshipDependencies } from "./hermes-stewardship.ts";
 import { registerForegroundSupervisor, unregisterForegroundSupervisor, foregroundSupervisorStopRequested, type HermesSupervisorRecord } from "./hermes-supervisor-foreground.ts";
 import { readRuntimeAuthority } from "../graph/runtime-authority.ts";
 import { executeLinearDelivery } from "./linear-delivery.ts";
-import { reconcileHistoricalLinearComments } from "./hermes-linear-autonomy.ts";
+import {
+  reconcileHistoricalLinearComments, currentLinearBindingSelections, discoverLinearLanes,
+  compatibleLinearLanes, linearMutationLedgerSettled, type LinearLane, type LinearLaneDiscovery,
+} from "./hermes-linear-autonomy.ts";
+export { currentLinearBindingSelections, discoverLinearLanes, compatibleLinearLanes, linearMutationLedgerSettled };
+export type { LinearLane, LinearLaneDiscovery };
 import type { CommandResult } from "./dispatcher.ts";
 
 const predicate = (name: string): string => `urn:usf:predicate:${name}`;
-const bindingType = "urn:usf:type:LinearIssueWorkBinding";
 
 export function linearReason(error: unknown): string {
   const code = typeof error === "object" && error !== null
@@ -84,67 +86,6 @@ export async function loadLinearCredentials(root: string, path: string, names: r
 }
 
 
-export interface LinearLane {
-  readonly selector: LinearBindingSelector;
-  readonly binding: PreparedLinearBinding;
-  readonly contextKey: string;
-}
-
-export interface LinearLaneDiscovery {
-  readonly lanes: readonly LinearLane[];
-  readonly blocked: readonly { bindingIri: string; reasonCode: string }[];
-}
-
-export function currentLinearBindingSelections(sources: readonly { manifestPath: string; quads: readonly Quad[] }[]): { manifestPath: string; bindingIri: string }[] {
-  const bindings = new Set(sources.flatMap(({ quads }) => quads.filter((q) => q.predicate === predicate("type") && q.object === bindingType).map((q) => q.subject)));
-  const superseded = new Set(sources.flatMap(({ quads }) => quads.filter((q) => bindings.has(q.subject)
-    && q.predicate === predicate("supersedesBinding") && q.objectKind === "iri").map((q) => q.object)));
-  const seen = new Set<string>();
-  return sources.flatMap(({ manifestPath, quads }) => quads.flatMap((q) => {
-    if (q.predicate !== predicate("type") || q.object !== bindingType || superseded.has(q.subject) || seen.has(q.subject)) return [];
-    seen.add(q.subject);
-    return [{ manifestPath, bindingIri: q.subject }];
-  }));
-}
-
-export function linearMutationLedgerSettled(summary: ReturnType<LinearStateStore["summary"]>): boolean {
-  return summary.pendingUnknownIntentIds.length === 0 && summary.intents.sent === 0 && summary.intents.prepared === 0;
-}
-
-export async function discoverLinearLanes(root: string, manifests: readonly string[]): Promise<LinearLaneDiscovery> {
-  const lanes: LinearLane[] = [];
-  const blocked: { bindingIri: string; reasonCode: string }[] = [];
-  const sources = manifests.map((manifestPath) => ({ manifestPath, quads: loadSemanticGraph(root, manifestPath).quads }));
-  for (const { manifestPath, bindingIri } of currentLinearBindingSelections(sources)) {
-      const selector = { repositoryRoot: root, manifestPath, bindingIri };
-      try {
-        const observed = await observeLinearBinding(selector);
-        const packet = observed.binding.unit.packet;
-        lanes.push({ selector, binding: observed.binding, contextKey: canonicalDigest({
-          dependencies: packet.semanticDependencies.filter((dependency) => packet.readSet.includes(dependency.key)), readSet: packet.readSet,
-          capabilities: packet.modelCapabilities, privacy: packet.privacy,
-        }) });
-      } catch (error) { blocked.push({ bindingIri, reasonCode: linearReason(error) }); }
-  }
-  const duplicates = new Set(lanes.filter((lane) => lanes.some((other) => other !== lane
-    && other.binding.authority.locator === lane.binding.authority.locator)).map((lane) => lane.selector.bindingIri));
-  for (const bindingIri of duplicates) blocked.push({ bindingIri, reasonCode: "LINEAR_BINDING_LOCATOR_AMBIGUOUS" });
-  return { lanes: lanes.filter((lane) => !duplicates.has(lane.selector.bindingIri))
-    .sort((a, b) => a.contextKey.localeCompare(b.contextKey) || a.selector.bindingIri.localeCompare(b.selector.bindingIri)), blocked };
-}
-
-function pathOverlaps(left: string, right: string): boolean {
-  return left === right || left.startsWith(`${right.replace(/\/$/u, "")}/`) || right.startsWith(`${left.replace(/\/$/u, "")}/`);
-}
-
-export function compatibleLinearLanes(left: LinearLane, right: LinearLane): boolean {
-  const a = left.binding.unit.packet;
-  const b = right.binding.unit.packet;
-  return left.binding.authority.locator !== right.binding.authority.locator
-    && a.id !== b.id && !a.dependsOn.includes(b.id) && !b.dependsOn.includes(a.id)
-    && !a.writeSet.some((path) => [...b.readSet, ...b.writeSet].some((other) => pathOverlaps(path, other)))
-    && !b.writeSet.some((path) => a.readSet.some((other) => pathOverlaps(path, other)));
-}
 
 export interface LinearCycleOutcome {
   readonly bindingIri: string;

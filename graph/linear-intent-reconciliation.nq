@@ -251,7 +251,6 @@
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/commands/check.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/commands/classify.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/commands/command-input.ts" <urn:usf:graph:linear-intent-reconciliation> .
-<urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/commands/construction-authority.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/commands/dispatcher.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/commands/execute.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/commands/graph-execute.ts" <urn:usf:graph:linear-intent-reconciliation> .
@@ -284,11 +283,11 @@
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/index.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/integrity.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/linear-binding.ts" <urn:usf:graph:linear-intent-reconciliation> .
+<urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/core/linear-repair.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/nquads.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/query.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/runtime-authority.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work-dependency.ts" <urn:usf:graph:linear-intent-reconciliation> .
-<urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/graph/work.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/architecture-observation.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/artefact-validation.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/authority-snapshot.ts" <urn:usf:graph:linear-intent-reconciliation> .
@@ -318,7 +317,6 @@
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/transports.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/providers/types.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/basis.ts" <urn:usf:graph:linear-intent-reconciliation> .
-<urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/construction-authority.ts" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process-launcher.py" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.apparmor" <urn:usf:graph:linear-intent-reconciliation> .
 <urn:usf:validation-runtime-closure:linear-intent-reconciliation:1> <urn:usf:predicate:repositoryReadFile> "src/realisation/fixture-process.ts" <urn:usf:graph:linear-intent-reconciliation> .

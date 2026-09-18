@@ -357,7 +357,7 @@
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:version> "1" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:applicability> "required" <urn:usf:graph:hermes-linear-autonomy> .
-<urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:command> "node --test --test-isolation=none tests/integration/hermes-linear.test.ts tests/unit/linear/client.test.ts tests/unit/linear/contribution.test.ts tests/unit/linear/state.test.ts tests/unit/linear/native-completion.test.ts tests/unit/linear/retained-intent-reconciliation.test.ts tests/unit/linear/continuation.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:command> "node --test --test-isolation=none tests/integration/hermes-linear.test.ts tests/unit/linear/client.test.ts tests/unit/linear/contribution.test.ts tests/unit/linear/state.test.ts tests/unit/linear/native-completion.test.ts tests/unit/linear/retained-intent-reconciliation.test.ts tests/unit/linear/continuation.test.ts tests/unit/linear/candidate-repair-discovery.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:validation:hermes-linear-autonomy> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:hermes-linear-autonomy> .
@@ -504,3 +504,12 @@
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "graph/cli-provider-qualification-help.nq" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "graph/cli-provider-qualification-help-grants.nq" <urn:usf:graph:hermes-linear-autonomy> .
 <urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:readPath> "tests/fixtures/cli-provider-qualification-help.acceptance.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:permitsWrite> "tests/unit/linear/candidate-repair-discovery.test.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:contract:hermes-linear-autonomy:1> <urn:usf:predicate:requires> <urn:usf:requirement:hermes-linear-bounded-candidate-repair> <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:requirement:hermes-linear-bounded-candidate-repair> <urn:usf:predicate:canonicalName> "hermes-linear-bounded-candidate-repair" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:requirement:hermes-linear-bounded-candidate-repair> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:requirement:hermes-linear-bounded-candidate-repair> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:requirement:hermes-linear-bounded-candidate-repair> <urn:usf:predicate:text> "Foreground and supervised Hermes share one lane-selection implementation. Conditional repair declarations never hide a prepared, unresolved, valid or completed predecessor. Select a repair only through the binding kernel's authenticated current-basis rejection predicate, retain the finite chain across restarts, fail closed on uncertain admission, recheck declarations after awaited observation, and report exhaustion without manual dispatch, projection deletion, implicit graph mutation or provider/integration replay." <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:requirement:hermes-linear-bounded-candidate-repair> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:validation-runtime-closure:hermes-linear-autonomy:1> <urn:usf:predicate:repositoryReadFile> "src/core/linear-repair.ts" <urn:usf:graph:hermes-linear-autonomy> .
+<urn:usf:work:hermes-linear-autonomy> <urn:usf:predicate:writePath> "tests/unit/linear/candidate-repair-discovery.test.ts" <urn:usf:graph:hermes-linear-autonomy> .

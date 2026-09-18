@@ -200,6 +200,7 @@
 <urn:usf:validation-runtime-closure:completion-clone-optimization:1> <urn:usf:predicate:forValidation> <urn:usf:validation:completion-clone-optimization> <urn:usf:graph:completion-clone-optimization> .
 <urn:usf:validation-runtime-closure:completion-clone-optimization:1> <urn:usf:predicate:repositoryReadFile> "config/privacy.json" <urn:usf:graph:completion-clone-optimization> .
 <urn:usf:validation-runtime-closure:completion-clone-optimization:1> <urn:usf:predicate:repositoryReadFile> "src/graph/linear-binding.ts" <urn:usf:graph:completion-clone-optimization> .
+<urn:usf:validation-runtime-closure:completion-clone-optimization:1> <urn:usf:predicate:repositoryReadFile> "src/core/linear-repair.ts" <urn:usf:graph:completion-clone-optimization> .
 <urn:usf:validation-runtime-closure:completion-clone-optimization:1> <urn:usf:predicate:repositoryReadFile> "evidence/semantic-first-bootstrap-admission.json" <urn:usf:graph:completion-clone-optimization> .
 <urn:usf:validation-runtime-closure:completion-clone-optimization:1> <urn:usf:predicate:repositoryReadFile> "graph/foundation.nq" <urn:usf:graph:completion-clone-optimization> .
 <urn:usf:validation-runtime-closure:completion-clone-optimization:1> <urn:usf:predicate:repositoryReadFile> "graph/integration.nq" <urn:usf:graph:completion-clone-optimization> .

@@ -330,7 +330,7 @@
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:type> <urn:usf:type:ValidationRuntimeClosure> <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation-runtime-closure:linear-work-binding:1> <urn:usf:predicate:version> "1" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation:linear-work-binding> <urn:usf:predicate:applicability> "required" <urn:usf:graph:linear-work-binding> .
-<urn:usf:validation:linear-work-binding> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/commands/linear-binding.test.ts tests/integration/linear-binding.test.ts tests/unit/linear/source-context.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:validation:linear-work-binding> <urn:usf:predicate:command> "node --test --test-isolation=none tests/unit/commands/linear-binding.test.ts tests/integration/linear-binding.test.ts tests/unit/linear/source-context.test.ts tests/unit/linear/candidate-repair.test.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "tests/unit/linear/source-context.test.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/unit/linear/source-context.test.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-source-context> <urn:usf:graph:linear-work-binding> .
@@ -345,6 +345,20 @@
 <urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
 <urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:text> "An explicit provider output-token limit is a positive integer bound authenticated by binding intent, prepared semantic work-unit assertion, execution evidence and retained predecessor reconstruction. Changing or removing it requires governed supersession and must not bypass unknown effects. Absent limits retain exact legacy identities and the executor default. Native no-change work cannot declare provider output policy; model, context, qualification, cost and execution-authority guards remain unchanged." <urn:usf:graph:linear-work-binding> .
 <urn:usf:requirement:linear-binding-output-budget> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "src/core/linear-repair.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "tests/unit/linear/candidate-repair.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:requires> <urn:usf:requirement:linear-binding-candidate-repair> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-candidate-repair> <urn:usf:predicate:canonicalName> "linear-binding-candidate-repair" <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-candidate-repair> <urn:usf:predicate:requirementSeverity> <urn:usf:requirement-severity:blocking> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-candidate-repair> <urn:usf:predicate:semanticStage> <urn:usf:stage:validation> <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-candidate-repair> <urn:usf:predicate:text> "Optional exact-replacement repair is a finite, fully graph-declared successor chain, never a resettable retry counter. Each conditional successor must preserve the exact issue, work, profile, prompt policy, source context, current basis and immutable acceptance; bind authenticated predecessor attempt, execution evidence, result and deterministically reproduced response rejection into its prepared prompt. Shared response preflight and guarded admission refuse unknown effects, stale authority, malformed lineage, insufficient context, runtime failures, integration replay and exhausted rounds. Legacy identities and all provider, scope, permission, execution and completion guards remain unchanged." <urn:usf:graph:linear-work-binding> .
+<urn:usf:requirement:linear-binding-candidate-repair> <urn:usf:predicate:type> <urn:usf:type:Requirement> <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "src/core/linear-repair.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/unit/linear/candidate-repair.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "tests/unit/graph/runtime-startup-closure.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/unit/graph/runtime-startup-closure.test.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:contract:linear-work-binding:1> <urn:usf:predicate:permitsWrite> "tests/fixtures/runtime-startup-closure.ts" <urn:usf:graph:linear-work-binding> .
+<urn:usf:work:linear-work-binding> <urn:usf:predicate:writePath> "tests/fixtures/runtime-startup-closure.ts" <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation:linear-work-binding> <urn:usf:predicate:environment> <urn:usf:environment:hermetic> <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation:linear-work-binding> <urn:usf:predicate:executionMode> <urn:usf:mode:confined-fixture-process:2> <urn:usf:graph:linear-work-binding> .
 <urn:usf:validation:linear-work-binding> <urn:usf:predicate:hostToolDependency> <urn:usf:host-tool:bwrap:0.9.0> <urn:usf:graph:linear-work-binding> .
