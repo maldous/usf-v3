@@ -569,7 +569,7 @@ function assertRepairBoundary(intent: ContinuationIntent, state: ContinuationSta
 }
 
 /** An append is reversible only if the complete, exact tail is the authorized typed record set. */
-function reverseRepairAppend(bytes: Buffer, lines: readonly string[], expectedDigest: string): void {
+function reverseRepairAppendBytes(bytes: Buffer, lines: readonly string[], expectedDigest: string): Buffer {
   const source = bytes.toString("utf8");
   if (!source.endsWith("\n") || source.includes("\r") || new Set(lines).size !== lines.length) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
   const all = source.slice(0, -1).split("\n");
@@ -580,7 +580,13 @@ function reverseRepairAppend(bytes: Buffer, lines: readonly string[], expectedDi
     if (index < 0) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
     remaining.splice(index, 1);
   }
-  if (sha256(Buffer.from(remaining.join("\n") + "\n")) !== expectedDigest) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
+  const result = Buffer.from(remaining.join("\n") + "\n");
+  if (sha256(result) !== expectedDigest) refuse("LINEAR_CONTINUATION_HANDOFF_DELTA_INVALID");
+  return result;
+}
+
+function reverseRepairAppend(bytes: Buffer, lines: readonly string[], expectedDigest: string): void {
+  reverseRepairAppendBytes(bytes, lines, expectedDigest);
 }
 
 function authenticateRepairPreimage(root: string, intent: ContinuationIntent, expected: FileFact): void {
@@ -622,7 +628,7 @@ function currentRepairPublication(root: string, selected: { workIri: string; pro
     || canonicalJson(value, { rejectAbsolutePaths: true }) + "\n" !== file.bytes.toString("utf8")
     || value.operations.some(operation => operation.kind !== "add" || operation.sourcePath !== authority.sourcePath)
     || value.operations.length === 0) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
-  return { graph, current, receipt: value, file: file.fact, source: readFileFact(root, authority.sourcePath) };
+  return { graph, current, selected, authority, receipt: value, file: file.fact, source: readFileFact(root, authority.sourcePath) };
 }
 
 /** Authenticate the entire current source, not merely the existence of an active grant. */
@@ -634,6 +640,47 @@ function authenticateCurrentPublicationSource(publication: ReturnType<typeof cur
     || source.fact.path !== receipt.semanticSourcePath || !digestPattern.test(receipt.baseSourceDigest)
     || receipt.baseSourceDigest === receipt.resultingSourceDigest) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
   reverseRepairAppend(source.bytes, receipt.operations.map(operation => operation.line), receipt.baseSourceDigest);
+}
+
+/** Authenticate every additive publication between a retained source and the current grant. */
+function authenticatePublicationChain(root: string, publication: ReturnType<typeof currentRepairPublication>, expectedBase: string): void {
+  const { authority } = publication;
+  let bytes = publication.source.bytes, receipt = publication.receipt;
+  if (bytes === null || publication.source.fact.digest !== sha256(bytes)) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+  const intents = [...new Set(publication.graph.quads
+    .filter(row => row.predicate === predicate("publicationIntentDigest") && row.objectKind === "literal" && digestPattern.test(row.object))
+    .map(row => row.object))];
+  const seen = new Set<string>();
+  for (let hop = 0; hop < 64; hop++) {
+    if (seen.has(receipt.publicationIntentDigest) || receipt.resultingSourceDigest !== sha256(bytes)) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+    seen.add(receipt.publicationIntentDigest);
+    bytes = reverseRepairAppendBytes(bytes, receipt.operations.map(operation => operation.line), receipt.baseSourceDigest);
+    if (receipt.baseSourceDigest === expectedBase) return;
+    const matches = intents.flatMap(intent => {
+      if (seen.has(intent)) return [];
+      const path = constructionReceiptPath(intent, authority), file = readFileFact(root, path);
+      if (file.bytes === null) return [];
+      let value: any;
+      try { value = JSON.parse(file.bytes.toString("utf8")); } catch { return []; }
+      const { receiptDigest, ...body } = value ?? {};
+      return validateConstructionReceiptShape(root, value, authority)
+        && value.status === "verified" && value.members.length === 1
+        && value.members[0]?.workIri === publication.current.id
+        && value.semanticSourcePath === publication.source.fact.path
+        && value.publicationReceiptPath === path && value.publicationIntentDigest === intent
+        && value.profileIri === publication.selected.profile
+        && value.manifestPath === publication.selected.manifestPath
+        && value.resultingSourceDigest === receipt.baseSourceDigest
+        && canonicalDigest(body, { rejectAbsolutePaths: true }) === receiptDigest
+        && canonicalJson(value, { rejectAbsolutePaths: true }) + "\n" === file.bytes.toString("utf8")
+        && value.operations.length > 0
+        && value.operations.every((operation: any) => operation.kind === "add" && operation.sourcePath === publication.source.fact.path)
+        ? [value] : [];
+    });
+    if (matches.length !== 1) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+    receipt = matches[0];
+  }
+  refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
 }
 
 /** A missing historical fact is never converted to an absent historical file. */
@@ -777,8 +824,8 @@ function repairSnapshot(root: string, intent: ContinuationIntent, state: Continu
     if (admission.currentAuthorityOnlyPublicationSource === publication.source.fact.path) refuse("LINEAR_CONTINUATION_HANDOFF_CURRENT_AUTHORITY_SCOPE_INVALID");
     if (publication.source.bytes === null || publication.source.fact.mode !== before.mode) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
     if (same(before, publication.source.fact)) continue;
-    if (before.digest !== publication.receipt.baseSourceDigest || publication.source.fact.digest !== publication.receipt.resultingSourceDigest) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
-    reverseRepairAppend(publication.source.bytes, publication.receipt.operations.map(operation => operation.line), before.digest!);
+    if (publication.source.fact.digest !== publication.receipt.resultingSourceDigest) refuse("LINEAR_CONTINUATION_HANDOFF_PUBLICATION_INVALID");
+    authenticatePublicationChain(root, publication, before.digest!);
     replacements.set(publication.source.fact.path, publication.source.fact);
     replacements.set(publication.file.path, publication.file);
   }

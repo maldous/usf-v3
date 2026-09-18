@@ -15,7 +15,7 @@
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:preimageMode> "384" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:repositoryPath> "graph/linear-issue-bindings.nq" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-3:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionContinuationRepairInput> <urn:usf:graph:linear-issue-bindings> .
-<urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageDigest> "sha256:0080299a18ef1d247f820d1f742bfcbdac689322f01104710145d075ee9c75f4" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageDigest> "sha256:fdf6d002d2a36b02ccacecc485f2b148823c7419b953fccd2a9bae8766b8b5f2" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:postimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:preimageDigest> "sha256:fdb8f8964d9f5f42eed31c196e19d2a03d4929189fa65e0f3a6aa2a33fd72b38" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-4:1> <urn:usf:predicate:preimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
@@ -27,7 +27,7 @@
 <urn:usf:continuation-repair-input:workspace-identity-5:1> <urn:usf:predicate:preimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-5:1> <urn:usf:predicate:repositoryPath> "tests/integration/linear-native-completion.test.ts" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-5:1> <urn:usf:predicate:type> <urn:usf:type:ConstructionContinuationRepairInput> <urn:usf:graph:linear-issue-bindings> .
-<urn:usf:continuation-repair-input:workspace-identity-6:1> <urn:usf:predicate:postimageDigest> "sha256:8a402b9532f134088671a9f0ae195c0184a9a90e7571720e03d243dc22959888" <urn:usf:graph:linear-issue-bindings> .
+<urn:usf:continuation-repair-input:workspace-identity-6:1> <urn:usf:predicate:postimageDigest> "sha256:e1cdb027230bf78f983d0563e1958122f639a356edbb93063b0e0ece8d1a97c8" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-6:1> <urn:usf:predicate:postimageMode> "436" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-6:1> <urn:usf:predicate:preimageDigest> "sha256:798d8a9f5b68057b1b23b5e0dcada77ed60fecf5b9fe3105793f5d9aa14f6965" <urn:usf:graph:linear-issue-bindings> .
 <urn:usf:continuation-repair-input:workspace-identity-6:1> <urn:usf:predicate:preimageMode> "436" <urn:usf:graph:linear-issue-bindings> .

@@ -273,7 +273,7 @@ test("continuation authenticates cohort workspace identity without accepting sca
 
 test("repair handoff admits exactly one named untouched predecessor and exact reversible append", async () => {
   const { canonicalDigest, canonicalJson, sha256 } = await import("../../../src/core/canonical.ts");
-  const functions = await publisherBoundaryFunctions("linear-continuation", ["assertRepairBoundary", "reverseRepairAppend"], {
+  const functions = await publisherBoundaryFunctions("linear-continuation", ["assertRepairBoundary", "reverseRepairAppendBytes", "reverseRepairAppend"], {
     canonicalDigest, sha256, same: (a: unknown, b: unknown) => canonicalJson(a) === canonicalJson(b),
     refuse: (reasonCode: string) => { throw Object.assign(new Error(reasonCode), { reasonCode }); },
   });
@@ -841,7 +841,7 @@ async function currentAuthorityUnitBoundary() {
   const control = { missingEligibility: false, shapeValid: true, driftOnClosure: false, captureSourceReads: 0 };
   const extracted = await publisherBoundaryFunctions("linear-continuation",
     ["repairAdmission", "assertRepairBoundary", "currentRepairPublication", "authenticateCurrentPublicationSource",
-      "reverseRepairAppend", "currentAuthorityInput", "bindingPublicationCapture", "protectedFiles", "assertCurrentAuthorityInputLineage"], {
+      "reverseRepairAppendBytes", "reverseRepairAppend", "currentAuthorityInput", "bindingPublicationCapture", "protectedFiles", "assertCurrentAuthorityInputLineage"], {
       canonicalDigest, canonicalJson, sha256, parseRepositoryPath, isContinuationInputPath, predicate,
       same: (a: unknown, b: unknown) => canonicalJson(a) === canonicalJson(b), canonicalQuadLine: line,
       digestPattern: /^sha256:[a-f0-9]{64}$/u,
