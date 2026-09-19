@@ -981,6 +981,8 @@ test("prepares, fast-forwards and recovers one observed local Git integration wi
   assert.equal(observation.observedCarrierCommit, git(root, ["rev-parse", "HEAD"]));
   assert.equal(observation.observedCarrierTree, git(root, ["rev-parse", "HEAD^{tree}"]));
   assert.equal(await readFile(join(root, targetPath), "utf8"), after);
+  assert.equal((await stat(join(root, targetPath))).mode & 0o777, 0o644,
+    "the primary carrier materializes a canonical non-executable mode independently of host umask");
   assert.equal(await readFile(join(root, "README.md"), "utf8"), unrelatedAfter);
   assert.match(git(root, ["status", "--porcelain=v1", "--", "unrelated.local"]), /^\?\?/u);
   assert.equal(observation.postimageValidationTimedOut, false);
@@ -1146,6 +1148,13 @@ test("integration consumes each graph-required validation exactly once in canoni
   );
   const secondCheck = await runGraphDerivedCheck(root, spec.digest, validationIris[1]!);
   assert.equal(secondCheck.status, "pass", secondCheck.status === "refused" ? secondCheck.reasonCode : undefined);
+  assert.ok(firstCheck.status === "pass" && secondCheck.status === "pass");
+  const checkedReceipts = await Promise.all([firstCheck.receiptPath, secondCheck.receiptPath].map(async (receiptPath) =>
+    JSON.parse(await readFile(join(root, receiptPath), "utf8")) as {
+      validationAuthorityDependencies: Array<{ path: string }>;
+    }));
+  const validationAuthorityPaths = [...new Set(checkedReceipts.flatMap((receipt) =>
+    receipt.validationAuthorityDependencies.map((dependency) => dependency.path)))].sort();
 
   const duplicateResult = canonicalDigest("duplicate-postimage-result");
   await assert.rejects(
@@ -1160,7 +1169,19 @@ test("integration consumes each graph-required validation exactly once in canoni
   const observedAuthorities: Array<{ obligation: string; executionAuthority: string }> = [];
   const prepared = await prepareCandidateIntegration(root, {
     candidateDigests: [spec.digest],
-    verifier: async ({ authority }) => {
+    verifier: async ({ authority, repositoryRoot }) => {
+      for (const dependencyPath of validationAuthorityPaths) {
+        const dependency = await stat(join(repositoryRoot, dependencyPath));
+        assert.equal(dependency.mode & 0o022, 0,
+          `postimage validation dependency remains group/world writable: ${dependencyPath}`);
+        let ancestor = repositoryRoot;
+        for (const segment of dependencyPath.split("/").slice(0, -1)) {
+          ancestor = join(ancestor, segment);
+          const directory = await stat(ancestor);
+          assert.equal(directory.mode & 0o022, 0,
+            `postimage validation dependency ancestor remains group/world writable: ${dependencyPath}`);
+        }
+      }
       observedAuthorities.push({ obligation: authority.obligationIri, executionAuthority: authority.executionAuthorityResourceDigest });
       return { outcome: "pass", resultDigests: [canonicalDigest({ obligation: authority.obligationIri })] };
     },

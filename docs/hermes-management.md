@@ -61,6 +61,41 @@ permission: Hermes accepts only the already-materialised native one-unit graph,
 rederives its current binding before provider contact, and correlates a
 successful native result using the graph execution evidence digest.
 
+## Semantic authority and Linear tracking decision
+
+Semantic authority is the durable delivery system of record. Requirements,
+dependencies, acceptance criteria, work identity, permissions, provider
+constraints, evidence, proof and completion belong in the graph. Hermes must
+continue deriving and realising that work when Linear is empty, unavailable or
+contains unrelated issues.
+
+Linear is the operational attention and progress projection. Use a
+graph-authored `LinearIssueProposal` and `LinearIssueWorkBinding` when semantic
+work is expected to be long-running, repeatedly blocked, dependent on a human
+or external system, or needs an operational handoff and visible discussion.
+Short, locally recoverable work remains semantic-only unless the graph says it
+needs that coordination surface. An arbitrary issue in a configured team is
+observed as untracked inventory; it is not a requirement, dispatch instruction
+or graph-scoped completion blocker.
+
+The relationship is deliberately bidirectional but not co-authoritative:
+
+- graph state may deterministically create or update its declared Linear
+  projection;
+- authenticated Linear readback may supply coordination evidence and may cause
+  a bounded semantic proposal to be authored for ordinary validation;
+- Linear prose, status and assignment never mutate or activate semantic work;
+- semantic completion is the prerequisite for marking bound Linear work done;
+- closing, deleting or emptying Linear never completes or suppresses semantic
+  realization.
+
+Continuous improvement follows the same boundary. Settled outcomes and repeated
+failure evidence may produce advisory candidates; a governed semantic
+transaction must admit any durable requirement or policy change. Once admitted,
+normal Hermes cycles rederive the affected work and its optional Linear
+projection. This makes the loop self-healing without turning either ignored
+runtime state or a project-management inbox into authority.
+
 After an interruption, recover the saved native result from
 `.usf/graph-executions/<digest>.json` and run `linear-binding settle` with the
 same source manifest, binding IRI, and evidence digest. Settlement authenticates
@@ -142,9 +177,12 @@ merely because it has a similar name. Bare `usf hermes` is not an implemented
 management invocation; follow `usf hermes --help` and
 `usf hermes steward --help` for the registered surface.
 
-A future takeover reads Linear priorities and issue continuation, verifies local
-source/semantic identities and runtime state, claims or safely recovers
-stewardship, resumes existing valid work, then selects the next ready issue.
+A future takeover reads semantic readiness first, then uses graph-bound Linear
+priority and continuation as operational ordering within that authorised work.
+It verifies local source/semantic identities and runtime state, claims or safely
+recovers stewardship, resumes existing valid work, then selects the next ready
+semantic unit. Empty or unrelated Linear inventory cannot make that frontier
+disappear.
 The Linear binding and interrupted-session exercise have their own acceptance
 in USF-1162 and USF-1163. Ticket prose cannot dispatch work, prove completion or
 act as a concurrency lock. Cross-session review scheduling remains separately

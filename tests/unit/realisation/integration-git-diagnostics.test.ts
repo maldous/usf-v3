@@ -523,7 +523,7 @@ test("production preparation invokes the preflight after canonical authenticatio
   const preflight = source.indexOf("assertAuthenticatedCandidateWhitespace(canonicalRoot, preflightRecords.map", preparation);
   const receipts = source.indexOf("authenticatedCheckedReceipts(", preparation);
   const worktreeRoot = source.indexOf('const worktreesRoot = resolve(canonicalRoot, ".usf", "integration-worktrees")', preparation);
-  const worktreeAdd = source.indexOf('git(canonicalRoot, "worktree", ["add", "--detach", worktree, startingCarrierCommit])', preparation);
+  const worktreeAdd = source.indexOf('gitWithCanonicalMaterialisation(canonicalRoot, "worktree", ["add", "--detach", worktree, startingCarrierCommit])', preparation);
   assert.ok(authentication >= 0 && authentication < ordering);
   assert.ok(ordering < preflight);
   assert.ok(preflight < receipts && receipts < worktreeRoot && worktreeRoot < worktreeAdd);

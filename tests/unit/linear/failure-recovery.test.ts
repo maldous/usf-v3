@@ -201,8 +201,12 @@ try {
   assert.equal(third.outcomes.find(item => item.bindingIri === source)?.recovery?.disposition, "completed");
   assert.equal(current.completions, 2, "original and repair remote states use current native completion");
   const counts = [current.sourceDispatches, current.repairDispatches, current.creations, current.comments.length, current.completions];
+  const unrelatedIssue = "123e4567-e89b-42d3-a456-426614174099";
+  current.issues.set(unrelatedIssue, { id: unrelatedIssue, teamId, stateId: "started", assigneeId: null, priority: 5,
+    title: "Unrelated coordination issue", description: "Not graph-authored work." });
   const fourth = await cycle(firstFixture.root, await LinearStateStore.open(firstFixture.root), foreground);
   assert.deepEqual([current.sourceDispatches, current.repairDispatches, current.creations, current.comments.length, current.completions], counts);
+  assert.deepEqual(fourth.unboundIssueLocators, ["fixture:" + unrelatedIssue]);
   assert.equal(fourth.terminal, true, JSON.stringify(fourth));
   checked += 2;
   const { LinearFailureRecovery, deriveLinearRecoveryRules } = await import("./src/commands/linear-remediation.ts");

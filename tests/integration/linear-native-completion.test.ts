@@ -1735,7 +1735,7 @@ async function captureNativeHostInputs(
       const admitted = (await readBlobAt(root, receipt.successorStateDigest as string)).value;
       assert.equal(admitted.intentDigest, pointer.intentDigest);
       assert.equal(admitted.nextStep, 0);
-      assert.equal(admitted.pending, null);
+      assert.deepEqual(admitted.pending, receipt.adoptedPending ?? null);
       assert.equal(admitted.terminal, false);
       assert.deepEqual(admitted.completedEffects, []);
       assert.notEqual(admitted.integration, null);
@@ -2016,7 +2016,10 @@ async function captureNativeHostInputs(
       assert.equal(terminal.handoff.value.predecessorStateDigest, legacy.pointer.stateDigest);
       assert.notEqual(terminal.pointer.intentDigest, legacy.pointer.intentDigest);
       assert.ok(Array.isArray(terminal.handoff.value.publicationReceipts));
-      assert.equal(terminal.handoff.value.publicationReceipts.length, 2);
+      assert.equal(terminal.handoff.value.publicationReceipts.length, 4,
+        "handoff authenticates selected and controller receipts plus the complete two-receipt binding publication chain");
+      assert.ok(terminal.handoff.value.adoptedPending,
+        "the selected-work grant published for handoff is adopted, not replayed");
       assert.ok(expectedCurrentPublication);
       const currentInputs = terminal.handoff.value.currentAuthorityInputs;
       assert.ok(Array.isArray(currentInputs));
@@ -2123,6 +2126,7 @@ async function captureNativeHostInputs(
   // This is a genuine disposable controller publication, not an invented
   // future output hash. Continuation's three child steps may then stale this
   // admission basis, and must be authenticated as the declared bounded chain.
+  await publishConstruction(handoffRoot, selections[0]!);
   await publishConstruction(handoffRoot, selections[1]!);
   await publishConstruction(handoffRoot, controller);
   expectedCurrentPublication = await currentBindingPublication(handoffRoot);

@@ -1579,6 +1579,15 @@ function gitText(root: string, command: string, args: readonly string[] = []): s
   return git(root, command, args).toString("utf8").trim();
 }
 
+function gitWithCanonicalMaterialisation(root: string, command: string, args: readonly string[]): Buffer {
+  // Git derives non-executable checkout modes from the process umask. Keep the
+  // synchronous materialisation boundary deterministic, then restore the host
+  // setting before JavaScript can schedule another operation.
+  const priorUmask = process.umask(0o022);
+  try { return git(root, command, args); }
+  finally { process.umask(priorUmask); }
+}
+
 export interface AuthenticatedCandidateWhitespaceInput {
   readonly candidateDigest: string;
   readonly basisDigest: string;
@@ -1837,6 +1846,38 @@ function fileModeAt(root: string, repositoryPath: string): GitFileMode | null {
 function bytesAtIntegrationPath(root: string, repositoryPath: string): Buffer | null {
   const mode = fileModeAt(root, repositoryPath);
   return mode === null ? null : readFileSync(resolve(root, repositoryPath));
+}
+
+function privatiseIntegrationValidationDependencies(
+  worktree: string,
+  receipts: readonly CheckedCandidateReceipt[],
+): void {
+  const paths = bytewiseSorted([...new Set(receipts.flatMap((receipt) =>
+    receipt.validationAuthorityDependencies.map((dependency) => safeRepositoryPath(dependency.path))))]);
+  for (const path of paths) {
+    let cursor = worktree;
+    for (const part of path.split("/").slice(0, -1)) {
+      cursor = resolve(cursor, part);
+      const entry = lstatSync(cursor);
+      if (entry.isSymbolicLink() || !entry.isDirectory() || entry.uid !== processUid(entry.uid)
+        || realpathSync(cursor) !== cursor || relative(worktree, cursor).startsWith(`..${sep}`)) {
+        throw new IntegrationError("INTEGRATION_PRIVATE_STATE_UNSAFE", `Unsafe validation dependency ancestry: ${path}`);
+      }
+      chmodSync(cursor, 0o700);
+      if ((lstatSync(cursor).mode & 0o077) !== 0) {
+        throw new IntegrationError("INTEGRATION_PRIVATE_STATE_UNSAFE", `Validation dependency ancestry is not private: ${path}`);
+      }
+    }
+    const mode = fileModeAt(worktree, path);
+    if (mode === null) throw new IntegrationError("INTEGRATION_VALIDATION_INVALID", `Validation dependency is unavailable: ${path}`);
+    const target = resolve(worktree, path);
+    chmodSync(target, mode === "100755" ? 0o700 : 0o600);
+    const entry = lstatSync(target);
+    if (entry.isSymbolicLink() || !entry.isFile() || entry.uid !== processUid(entry.uid)
+      || entry.nlink !== 1 || (entry.mode & 0o077) !== 0 || realpathSync(target) !== target) {
+      throw new IntegrationError("INTEGRATION_PRIVATE_STATE_UNSAFE", `Validation dependency is not private: ${path}`);
+    }
+  }
 }
 
 function validationAuthorities(root: string, basis: RealisationBasis, phase: "candidate" | "postimage" = "postimage"): IntegrationValidationAuthority[] {
@@ -3134,7 +3175,7 @@ export async function prepareCandidateIntegration(root: string, options: Candida
       assertPrivateWorktreeRootSync(canonicalRoot, worktree);
       await rm(worktree, { recursive: true, force: true });
     }
-    git(canonicalRoot, "worktree", ["add", "--detach", worktree, startingCarrierCommit]);
+    gitWithCanonicalMaterialisation(canonicalRoot, "worktree", ["add", "--detach", worktree, startingCarrierCommit]);
     chmodSyncCompat(worktree, 0o700);
     assertPrivateWorktreeRootSync(canonicalRoot, worktree);
     if (realpathSync(gitText(worktree, "rev-parse", ["--show-toplevel"])) !== realpathSync(worktree)) throw new IntegrationError("INTEGRATION_GIT_FAILED");
@@ -3167,6 +3208,10 @@ export async function prepareCandidateIntegration(root: string, options: Candida
     git(worktree, "commit", ["--no-verify", "--no-gpg-sign", "-m", `USF integration ${request.requestDigest}`]);
     const preparedCarrierCommit = gitHead(worktree);
     const preparedCarrierTree = gitTree(worktree, preparedCarrierCommit);
+    // Git checkout honours the host umask but does not retain owner-private
+    // non-executable modes. Re-establish the authenticated validation boundary
+    // before any postimage verifier can observe or execute from the worktree.
+    privatiseIntegrationValidationDependencies(worktree, orderedReceipts);
     const postimageBases = orderedRecords.map((record) => deriveBasisAt(worktree, record.authenticated.constructionBasis, "INTEGRATION_POSTIMAGE_BASIS_INVALID"));
     const postimageValidationResults: PostimageValidationResult[] = [];
     for (let index = 0; index < orderedRecords.length; index += 1) {
@@ -3323,7 +3368,7 @@ export async function integrateCandidates(root: string, options: CandidateIntegr
     for (const basis of prepared.cohortMembers.map((member) => prepared.independentlyDerivedPostimageBases.find((candidateBasis) => candidateBasis.work.id === member.workIri)!)) {
       if (basis === undefined) throw new IntegrationError("INTEGRATION_POSTIMAGE_BASIS_INVALID");
     }
-    git(canonicalRoot, "merge", ["--ff-only", "--no-edit", prepared.preparedCarrierCommit]);
+    gitWithCanonicalMaterialisation(canonicalRoot, "merge", ["--ff-only", "--no-edit", prepared.preparedCarrierCommit]);
     if (gitHead(canonicalRoot) !== prepared.preparedCarrierCommit || gitTree(canonicalRoot, "HEAD") !== prepared.preparedCarrierTree) {
       throw new IntegrationError("INTEGRATION_PRIMARY_MOVED");
     }

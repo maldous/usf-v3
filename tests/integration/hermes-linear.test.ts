@@ -8,7 +8,7 @@ import { canonicalDigest } from "../../src/core/canonical.ts";
 import { LinearStateStore } from "../../src/commands/linear-state.ts";
 import { acquireSupervisorLifetimeLock, claimStewardship, releaseStewardship, withSupervisorActivity } from "../../src/continuous/stewardship.ts";
 import { linuxProcessInspector } from "../../src/continuous/lifecycle.ts";
-import { observeSupervisor, registerForegroundSupervisor, unregisterForegroundSupervisor } from "../../src/commands/hermes-lifecycle.ts";
+import { hermesCycleLastReason, observeSupervisor, registerForegroundSupervisor, unregisterForegroundSupervisor } from "../../src/commands/hermes-lifecycle.ts";
 import { mergeHermesState } from "../../src/commands/hermes.ts";
 import { parseStrictNQuads } from "../../src/graph/nquads.ts";
 import { linearReason as autonomousLinearReason } from "../../src/commands/hermes-linear-autonomy.ts";
@@ -22,6 +22,20 @@ test("Linear reason classification preserves stable USF error codes in both runt
   const error = Object.assign(new Error("governed refusal"), { code: "LINEAR_STATE_PROGRESS_REGRESSION" });
   assert.equal(linearReason(error), "LINEAR_STATE_PROGRESS_REGRESSION");
   assert.equal(autonomousLinearReason(error), "LINEAR_STATE_PROGRESS_REGRESSION");
+});
+
+test("cycle reason remains semantic-first while Linear tracking health stays separately visible", () => {
+  assert.equal(hermesCycleLastReason({ readyFrontier: 1, acceptedResults: 1 }, { terminal: false }), "progress");
+  assert.equal(hermesCycleLastReason({ readyFrontier: 1, acceptedResults: 0 }, { terminal: false }),
+    "the ready frontier produced no accepted result this cycle; linear tracking also requires attention");
+  assert.equal(hermesCycleLastReason({ readyFrontier: 0, acceptedResults: 0 }, { terminal: false }),
+    "no ready implementation work remains; linear tracking also requires attention");
+  assert.equal(hermesCycleLastReason({ readyFrontier: 0, acceptedResults: 0 }, { terminal: true }),
+    "no ready implementation work remains");
+  assert.equal(hermesCycleLastReason({ readyFrontier: 0, acceptedResults: 0,
+    facets: { capabilitiesWithRemainingWork: 2 } }, { terminal: false }),
+    "semantic realization is blocked with no ready implementation work; linear tracking also requires attention");
+  assert.equal(hermesCycleLastReason(null, { terminal: true }), "implementation lane refused");
 });
 
 test("Linear lanes exclude write/read overlap and allow disjoint work", () => {

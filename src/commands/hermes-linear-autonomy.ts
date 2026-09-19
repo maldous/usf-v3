@@ -633,10 +633,13 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
   return { schema: "urn:usf:hermes-linear-cycle:1", observedAt: new Date().toISOString(), policyDigest: canonicalDigest(policy),
     remoteIssueCount: remote.size, boundLaneCount: discovered.lanes.length, outcomes, discoveryErrors, updateErrors,
     authorityBlockers: discovered.blocked.map(blocker => ({ ...blocker, recovery: recoveryEscalation(blocker.reasonCode) })),
-    proposals, reconciliation, unboundIssueLocators: unbound, state: store.summary(),
-    terminal: discoveryErrors.length === 0 && updateErrors.length === 0 && discovered.blocked.length === 0 && unbound.length === 0
+    proposals, reconciliation, unboundIssueLocators: unbound,
+    trackingScope: Object.freeze({ authority: "graph-authored-linear-bindings", trackedIssueCount: boundLocators.size,
+      untrackedRemoteIssueCount: unbound.length }),
+    state: store.summary(),
+    terminal: discoveryErrors.length === 0 && updateErrors.length === 0 && discovered.blocked.length === 0
       && linearMutationLedgerSettled(store.summary())
       && proposals.every(proposal => proposal.reasonCode === undefined)
       && outcomes.length === discovered.lanes.length && outcomes.every(outcome => outcome.status === "completed"),
-    nonclaims: ["Unbound Linear prose does not authorize semantic work.", "Recovery intake and repair completion confer no authority on the original work.", "Only current published semantic completion permits a remote completed state."] };
+    nonclaims: ["Unbound Linear prose does not authorize semantic work or block graph-scoped completion.", "Recovery intake and repair completion confer no authority on the original work.", "Only current published semantic completion permits a remote completed state."] };
 }

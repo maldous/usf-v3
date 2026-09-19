@@ -659,6 +659,10 @@ export async function hermesLifecycleStatusCommand(repositoryRoot: string, args:
       lastReason: cycle === null ? "no cycle has run under a supervisor yet"
         : observed.liveness === "live" ? cycle.lastReason ?? null
         : cycle.terminalReason ?? cycle.lastReason ?? null,
+      semanticTerminal: cycle?.semanticTerminal ?? semanticImplementationTerminal(work),
+      linearTrackingTerminal: cycle?.linearTrackingTerminal
+        ?? (typeof cycle?.linear === "object" && cycle.linear !== null
+          ? (cycle.linear as { terminal?: unknown }).terminal === true : null),
       work: work === null ? null : Object.freeze({
         capabilities: work.capabilityCount,
         requirements: work.requirementCount,
@@ -746,11 +750,46 @@ interface CycleProjection {
   readonly dispatchConcurrency: Record<string, unknown> | null;
   /** Autonomous Linear discovery, delivery and reconciliation for this cycle. */
   readonly linear: Record<string, unknown> | null;
+  readonly semanticTerminal: boolean;
+  readonly linearTrackingTerminal: boolean;
   readonly facets: Record<string, unknown> | null;
   readonly blockers: readonly Record<string, unknown>[];
   readonly providerActivity: readonly Record<string, unknown>[];
   readonly idleCycles: number;
   readonly lastReason: string;
+}
+
+export function hermesCycleLastReason(
+  implementation: { readonly readyFrontier?: unknown; readonly acceptedResults?: unknown;
+    readonly blockedOnPredecessor?: unknown; readonly facets?: unknown } | null,
+  linear: { readonly terminal?: unknown },
+): string {
+  if (implementation === null) return "implementation lane refused";
+  const ready = Number(implementation.readyFrontier ?? 0);
+  const accepted = Number(implementation.acceptedResults ?? 0);
+  if (ready === 0) {
+    const semantic = semanticImplementationTerminal(implementation);
+    const reason = semantic ? "no ready implementation work remains"
+      : "semantic realization is blocked with no ready implementation work";
+    return linear.terminal === true ? reason
+      : `${reason}; linear tracking also requires attention`;
+  }
+  if (accepted === 0) {
+    return linear.terminal === true
+      ? "the ready frontier produced no accepted result this cycle"
+      : "the ready frontier produced no accepted result this cycle; linear tracking also requires attention";
+  }
+  return "progress";
+}
+
+export function semanticImplementationTerminal(
+  implementation: { readonly readyFrontier?: unknown; readonly blockedOnPredecessor?: unknown; readonly facets?: unknown } | null,
+): boolean {
+  if (implementation === null || Number(implementation.readyFrontier ?? 0) !== 0
+    || Number(implementation.blockedOnPredecessor ?? 0) !== 0) return false;
+  if (typeof implementation.facets !== "object" || implementation.facets === null) return true;
+  const remaining = (implementation.facets as { readonly capabilitiesWithRemainingWork?: unknown }).capabilitiesWithRemainingWork;
+  return Number(remaining ?? 0) === 0;
 }
 
 const implementationAccountingNames = Object.freeze([
@@ -1089,6 +1128,8 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
         usefulTokenTargetAchieved: usefulTokens >= parsed.usefulTokenTarget,
         dispatchConcurrency: (implementation?.dispatchConcurrency ?? null) as Record<string, unknown> | null,
         linear,
+        semanticTerminal: semanticImplementationTerminal(implementation),
+        linearTrackingTerminal: linear.terminal === true,
         providerActivity: Object.freeze(outcomes
           .filter((outcome) => outcome.outcome === "accepted")
           .map((outcome) => Object.freeze({
@@ -1097,11 +1138,7 @@ async function runAdmittedSupervisor(repositoryRoot: string, args: readonly stri
           }))
           .slice(0, 24)),
         idleCycles,
-        lastReason: linear.terminal !== true ? "linear lane requires attention"
-          : implementation === null ? "implementation lane refused"
-          : Number(implementation.readyFrontier ?? 0) === 0 ? "no ready implementation work remains"
-          : Number(implementation.acceptedResults ?? 0) === 0 ? "the ready frontier produced no accepted result this cycle"
-          : "progress",
+        lastReason: hermesCycleLastReason(implementation, linear),
       });
       await writeJson(repositoryRoot, cycleRecord, projection);
       if (signalled !== null) { reason = `signalled-${signalled}`; break; }
