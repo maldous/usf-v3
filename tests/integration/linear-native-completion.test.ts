@@ -48,6 +48,7 @@ const manifestPath = "graph/manifests/linear-work-binding.json";
 const bindingManifestPath = "graph/manifests/linear-issue-bindings.json";
 const bindingGraphPath = "graph/linear-issue-bindings.nq";
 const bindingIri = "urn:usf:linear-binding:native-completion-integration:1";
+const successorIri = "urn:usf:linear-binding:native-completion-integration:2";
 const predecessorIri = "urn:usf:linear-binding:native-completion-integration:0";
 const execFileAsync = promisify(execFile);
 
@@ -56,7 +57,7 @@ function object(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function fixtureBinding(native: boolean): string {
+function fixtureBinding(iri: string, supersedes?: string): string {
   const graph = "urn:usf:graph:linear-issue-bindings";
   const fields: ReadonlyArray<readonly [string, string, boolean]> = [
     ["type", "urn:usf:type:LinearIssueWorkBinding", true],
@@ -69,12 +70,12 @@ function fixtureBinding(native: boolean): string {
     ["targetManifest", manifestPath, false],
     ["maximumPromptTokens", "32000", false],
     ["fixedPrompt", "Authenticate the repaired binding work through every declared native completion obligation. Do not dispatch a provider or infer completion from a callback result.", false],
-    ...(native ? [
+    ...(supersedes === undefined ? [] : ([
       ["realisationDisposition", "no-change", false],
-      ["supersedesBinding", predecessorIri, true],
-    ] as const : []),
+      ["supersedesBinding", supersedes, true],
+    ] as const)),
   ];
-  return fields.map(([name, value, iri]) => `<${native ? bindingIri : predecessorIri}> <urn:usf:predicate:${name}> ${iri ? `<${value}>` : JSON.stringify(value)} <${graph}> .`).join("\n") + "\n";
+  return fields.map(([name, value, objectIri]) => `<${iri}> <urn:usf:predicate:${name}> ${objectIri ? `<${value}>` : JSON.stringify(value)} <${graph}> .`).join("\n") + "\n";
 }
 
 async function isolatedBindingRepository(root: string): Promise<void> {
@@ -143,7 +144,7 @@ async function isolatedBindingRepository(root: string): Promise<void> {
     `<${marker}> <urn:usf:predicate:text> "No construction or completion authority is published in this source." <${authority.targetGraphIri}> .`,
     `<${marker}> <urn:usf:predicate:type> <urn:usf:type:SemanticRecordType> <${authority.targetGraphIri}> .`,
   ].join("\n") + "\n");
-  await writeFile(resolve(root, bindingGraphPath), fixtureBinding(false) + fixtureBinding(true));
+  await writeFile(resolve(root, bindingGraphPath), fixtureBinding(predecessorIri) + fixtureBinding(bindingIri, predecessorIri));
   const evidencePath = ".usf/candidates/construction-authority/native-binding.evidence.json";
   const proofPath = ".usf/candidates/construction-authority/native-binding.proof.json";
   await mkdir(resolve(root, ".usf/candidates/construction-authority"), { recursive: true, mode: 0o700 });
@@ -267,6 +268,35 @@ test("native delivery supersedes retained provider history, publishes genuine pr
   assert.equal((await executeLinearDelivery(root, selector, ".usf/credentials/providers.env")).status, "completed");
   assert.deepEqual(await durableLedgerBytes(root), beforeReplay);
   assert.deepEqual(await readFile(resolve(root, receiptPath as string)), receiptBytes);
+  const settledNativeIssueBytes = await readFile(predecessor.issuePath);
+
+  // A second native binding is a real lifecycle successor, not a reason to
+  // erase or reinterpret the settled native journal. Receipt drift refuses
+  // before the issue pointer or any effect can move.
+  await writeFile(resolve(root, bindingGraphPath),
+    await readFile(resolve(root, bindingGraphPath), "utf8") + fixtureBinding(successorIri, bindingIri));
+  const successor = { ...selector, bindingIri: successorIri };
+  const beforeSuccessor = await durableLedgerBytes(root);
+  await writeFile(resolve(root, receiptPath as string), receiptBytes.toString("utf8").replace('"status":"verified"', '"status":"altered"'));
+  await assert.rejects(prepareLinearBinding(successor),
+    (error: unknown) => (error as { reasonCode?: string }).reasonCode === "LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN");
+  assert.deepEqual(await durableLedgerBytes(root), beforeSuccessor);
+  await writeFile(resolve(root, receiptPath as string), receiptBytes);
+
+  const successorPrepared = await prepareLinearBinding(successor);
+  assert.equal(successorPrepared.status, "PREPARED");
+  let successorEffects = 0;
+  const successorResult = await withNativeLinearCompletion(successor, successorPrepared.binding.unit.attemptKey, async () => {
+    successorEffects += 1;
+    return { repeated: true };
+  });
+  assert.equal(successorEffects, 0, "current semantic completion must not repeat a native effect");
+  assert.equal(successorResult.result, null);
+  assert.equal(successorResult.binding.status, "COMPLETED");
+  assert.equal((await observeLinearBinding(successor)).status, "COMPLETED");
+  const successorArchive = resolve(root,
+    ".usf/work/linear/" + successorPrepared.binding.unit.intentKey.slice(7) + "/predecessor-issue.json");
+  assert.deepEqual(await readFile(successorArchive), settledNativeIssueBytes);
 });
 
 // Two independent native lanes exercise current capture and an exact historical

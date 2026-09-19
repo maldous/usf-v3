@@ -14,6 +14,7 @@ import { loadSemanticGraph, type SemanticGraph } from "../graph/index.ts";
 import { deriveWork, evaluateCurrentNoChangeCompletion, type WorkPacket } from "../graph/work.ts";
 import { assertBasisMatchesPacket, assertRealisationBasis, type RealisationBasis } from "../realisation/basis.ts";
 import { withCandidateLock } from "../realisation/index.ts";
+import { validateWorkCompletionReceiptShape, type WorkCompletionPublicationReceipt } from "../realisation/work-completion.ts";
 
 const P = "urn:usf:predicate:";
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
@@ -1172,11 +1173,19 @@ function nativeFacts(binding: PreparedLinearBinding): NativeCompletionFacts {
 }
 
 function preparedNativeAttempt(value: unknown, binding: PreparedLinearBinding): value is LinearAttemptRecord {
+  return historicalPreparedNativeAttempt(value, {
+    intentKey: binding.unit.intentKey, bindingIri: binding.authority.bindingIri, workIri: binding.authority.workIri,
+  });
+}
+
+function historicalPreparedNativeAttempt(
+  value: unknown, expected: Readonly<{ intentKey: string; bindingIri: string; workIri: string }>,
+): value is LinearAttemptRecord {
   if (!value || typeof value !== "object" || !exactKeys(value, ["schema", "intentKey", "attemptKey", "unitIri", "bindingIri", "workIri", "basisDigest", "scopedDependencyDigest", "state", "executionResultIri", "executionResultDigest"])) return false;
   const record = value as LinearAttemptRecord;
   return record.schema === "urn:usf:linear-binding-attempt:1" && record.state === "PREPARED"
-    && record.intentKey === binding.unit.intentKey && record.bindingIri === binding.authority.bindingIri
-    && record.workIri === binding.authority.workIri && typeof record.basisDigest === "string" && DIGEST.test(record.basisDigest)
+    && record.intentKey === expected.intentKey && record.bindingIri === expected.bindingIri
+    && record.workIri === expected.workIri && typeof record.basisDigest === "string" && DIGEST.test(record.basisDigest)
     && typeof record.scopedDependencyDigest === "string" && DIGEST.test(record.scopedDependencyDigest)
     && record.attemptKey === canonicalDigest({ intentKey: record.intentKey, basisDigest: record.basisDigest, scopedDependencyDigest: record.scopedDependencyDigest })
     && record.unitIri === `urn:usf:work-unit:${record.attemptKey}`
@@ -1186,6 +1195,142 @@ function preparedNativeAttempt(value: unknown, binding: PreparedLinearBinding): 
 interface NativeIssueAdmission {
   readonly current: LinearIssueRecord | null;
   readonly predecessor: LinearIssueRecord | null;
+}
+
+function historicalNativeUnit(
+  graphText: string, authority: LinearBindingAuthority, journal: NativeCompletionJournal,
+): Omit<BoundSemanticWorkUnit, "packet"> {
+  let quads: readonly Quad[];
+  try { quads = parseStrictNQuads(graphText, `urn:usf:graph:hermes-input:${journal.terminal.attemptKey}`); }
+  catch { refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH"); }
+  const one = (name: string, kind: "iri" | "literal"): string => {
+    const values = quads.filter(quad => quad.subject === journal.terminal.unitIri
+      && quad.predicate === P + name && quad.objectKind === kind);
+    if (values.length !== 1) refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+    return values[0]!.object;
+  };
+  const prompt = one("prompt", "literal");
+  let promptValue: Record<string, unknown>;
+  try {
+    const parsed = JSON.parse(prompt) as unknown;
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+    promptValue = parsed as Record<string, unknown>;
+  } catch (error) {
+    if (error instanceof LinearBindingError) throw error;
+    refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+  }
+  if (promptValue.fixedPrompt !== authority.fixedPrompt || promptValue.realisationDisposition !== "no-change"
+    || Object.hasOwn(promptValue, "writeSetContext") || Object.hasOwn(promptValue, "sourceContext")
+    || Buffer.byteLength(prompt, "utf8") > authority.maximumPromptTokens) {
+    refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+  }
+  const capabilities = quads.filter(quad => quad.subject === journal.terminal.unitIri
+    && quad.predicate === P + "modelCapability").map(quad => quad.object);
+  const unit = Object.freeze({
+    schema: "urn:usf:bound-semantic-work-unit:1" as const,
+    unitIri: journal.terminal.unitIri, intentKey: journal.terminal.intentKey as `sha256:${string}`,
+    attemptKey: journal.terminal.attemptKey as `sha256:${string}`, bindingIri: authority.bindingIri,
+    locator: authority.locator, owner: authority.owner, profile: authority.profile,
+    bindingManifestPath: journal.bindingManifestPath, manifestPath: authority.targetManifest,
+    workIri: authority.workIri, basisDigest: journal.terminal.basisDigest,
+    scopedDependencyDigest: journal.terminal.scopedDependencyDigest, prompt,
+    maximumPromptTokens: authority.maximumPromptTokens, modelCapabilities: capabilities,
+    realisationDisposition: "no-change" as const,
+  });
+  if (one("attemptKey", "literal") !== unit.attemptKey || one("intentKey", "literal") !== unit.intentKey
+    || one("bindingIri", "iri") !== unit.bindingIri || one("workIri", "iri") !== unit.workIri
+    || one("basisDigest", "literal") !== unit.basisDigest
+    || one("scopedDependencyDigest", "literal") !== unit.scopedDependencyDigest
+    || one("owningModel", "literal") !== unit.owner || one("selectedProfile", "iri") !== unit.profile
+    || one("bindingManifestPath", "literal") !== unit.bindingManifestPath
+    || one("targetManifest", "literal") !== unit.manifestPath
+    || one("maximumPromptTokens", "literal") !== String(unit.maximumPromptTokens)
+    || one("realisationDisposition", "literal") !== "no-change"
+    || semanticWorkUnitGraph(unit) !== graphText) refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+  return unit;
+}
+
+async function authenticateNativeCompletionReceipt(
+  binding: PreparedLinearBinding, journal: NativeCompletionJournal,
+): Promise<void> {
+  const path = journal.completion.receiptFilePath;
+  if (!/^evidence\/work-completion\/[a-f0-9]{64}\.json$/u.test(path)) refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN");
+  const root = await realpath(binding.selector.repositoryRoot).catch(() => refuse("LINEAR_BINDING_REPOSITORY_UNREADABLE"));
+  const absolute = resolve(root, path);
+  const before = await lstat(absolute).catch(() => refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN"));
+  if (!before.isFile() || before.isSymbolicLink() || before.size > maximumRecordBytes
+    || await realpath(absolute).catch(() => "") !== absolute) refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN");
+  const bytes = await readFile(absolute);
+  const after = await lstat(absolute).catch(() => refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN"));
+  if (before.dev !== after.dev || before.ino !== after.ino || before.mode !== after.mode || before.nlink !== after.nlink
+    || before.size !== after.size || bytes.byteLength !== before.size
+    || sha256Bytes(bytes) !== journal.completion.receiptFileDigest) refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN");
+  let value: unknown;
+  try { value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
+  catch { refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN"); }
+  if (!validateWorkCompletionReceiptShape(root, value)) refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN");
+  const receipt = value as WorkCompletionPublicationReceipt;
+  const { receiptDigest, ...draft } = receipt;
+  if (`${canonicalJson(receipt, { rejectAbsolutePaths: true })}\n` !== bytes.toString("utf8")
+    || canonicalDigest(draft, { rejectAbsolutePaths: true }) !== receiptDigest
+    || receipt.status !== "verified" || receipt.publicationReceiptPath !== path
+    || receipt.profileIri !== journal.profile || receipt.manifestPath !== journal.manifestPath
+    || receipt.memberCount !== receipt.members.length
+    || receipt.members.filter(member => member.workIri === journal.workIri
+      && member.realisationBasisDigest === journal.completion.basisDigest
+      && member.scopedDependencyDigest === journal.completion.scopedDependencyDigest
+      && member.realisationReceiptIri === journal.completion.integrationReceipt
+      && member.evidenceIri === journal.completion.evidence
+      && member.proofResultIri === journal.completion.proofResult).length !== 1) {
+    refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN");
+  }
+}
+
+/** Authenticate a retained native settlement as immutable predecessor history. */
+async function authenticateNativePredecessor(binding: PreparedLinearBinding, issue: LinearIssueRecord): Promise<void> {
+  if (issue.realisationDisposition !== "no-change" || issue.state !== "SETTLED"
+    || typeof issue.nativeCompletionDigest !== "string" || !DIGEST.test(issue.nativeCompletionDigest)
+    || binding.authority.supersedes !== issue.bindingIri || issue.bindingIri === binding.authority.bindingIri
+    || issue.intentKey === binding.unit.intentKey) refuse("LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID");
+  const authority = deriveLinearBindingDeclaration(
+    loadSemanticGraph(binding.selector.repositoryRoot, binding.selector.manifestPath), issue.bindingIri,
+  );
+  if (authority.locator !== issue.locator || authority.owner !== binding.authority.owner
+    || authority.realisationDisposition !== "no-change" || bindingIntentKey(authority) !== issue.intentKey) {
+    refuse("LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID");
+  }
+  const journal = await readRecord<NativeCompletionJournal>(resolve(binding.selector.repositoryRoot,
+    `.usf/work/linear/${issue.intentKey.slice(7)}/native-completion.json`));
+  const expected = { intentKey: issue.intentKey, bindingIri: issue.bindingIri, workIri: authority.workIri };
+  if (journal === null || canonicalDigest(journal) !== issue.nativeCompletionDigest
+    || !exactKeys(journal, ["schema", "locator", "bindingIri", "intentKey", "workIri", "profile", "manifestPath", "bindingManifestPath", "origin", "terminal", "completion"])
+    || journal.schema !== "urn:usf:linear-binding-native-completion:1" || journal.locator !== issue.locator
+    || journal.bindingIri !== issue.bindingIri || journal.intentKey !== issue.intentKey || journal.workIri !== authority.workIri
+    || journal.profile !== authority.profile || journal.manifestPath !== authority.targetManifest
+    || journal.bindingManifestPath !== binding.selector.manifestPath
+    || !historicalPreparedNativeAttempt(journal.origin, expected)
+    || !historicalPreparedNativeAttempt(journal.terminal, expected)
+    || journal.terminal.attemptKey !== issue.attemptKey || journal.terminal.basisDigest !== issue.basisDigest
+    || !journal.completion || typeof journal.completion !== "object"
+    || !exactKeys(journal.completion, ["basisDigest", "scopedDependencyDigest", "integrationReceipt", "evidence", "proofResult", "receiptFilePath", "receiptFileDigest"])
+    || journal.completion.basisDigest !== journal.terminal.basisDigest
+    || journal.completion.scopedDependencyDigest !== journal.terminal.scopedDependencyDigest) {
+    refuse("LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID");
+  }
+  const digest = issue.nativeCompletionDigest as `sha256:${string}`;
+  for (const attempt of [...new Map([journal.origin, journal.terminal].map(entry => [entry.attemptKey, entry])).values()]) {
+    const actual = await readRecord<LinearAttemptRecord>(resolve(binding.selector.repositoryRoot,
+      `.usf/work/linear/${attempt.intentKey.slice(7)}/${attempt.attemptKey.slice(7)}.json`));
+    if (actual === null || !validAttempt(actual, attempt)
+      || canonicalDigest(actual) !== canonicalDigest(settledNativeAttempt(attempt, digest))) {
+      refuse("LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN");
+    }
+  }
+  const unitPath = resolve(binding.selector.repositoryRoot, `.usf/work/${journal.terminal.attemptKey.slice(7)}.nq`);
+  const graphText = await readTextRecord(unitPath);
+  if (graphText === null) refuse("LINEAR_BINDING_RESULT_CORRELATION_MISMATCH");
+  historicalNativeUnit(graphText, authority, journal);
+  await authenticateNativeCompletionReceipt(binding, journal);
 }
 
 /** Authenticate a retained provider terminal state, not current native completion. */
@@ -1259,7 +1404,8 @@ async function readNativeIssue(binding: PreparedLinearBinding): Promise<NativeIs
   if (!validIssueRecord(issue) || issue.locator !== binding.authority.locator) refuse("LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID");
   if (issue.realisationDisposition === "no-change" && issue.bindingIri === binding.authority.bindingIri
     && issue.intentKey === binding.unit.intentKey && issue.state === "PREPARED") return { current: issue, predecessor: null };
-  await authenticateProviderPredecessor(binding, issue);
+  if (issue.realisationDisposition === "no-change") await authenticateNativePredecessor(binding, issue);
+  else await authenticateProviderPredecessor(binding, issue);
   return { current: null, predecessor: issue };
 }
 
