@@ -131,7 +131,14 @@ register("src/commands/linear-binding.ts", { observeLinearBinding: async selecto
   return result;
 } });
 register("src/commands/linear-delivery.ts", { executeLinearDelivery: async (_root, selector) => {
-  if (selector.bindingIri === source) { current.sourceDispatches++; return failure(); }
+  if (selector.bindingIri === source) {
+    current.sourceDispatches++;
+    if (current.options.nativeRetryCompletes) {
+      current.sourceState = "COMPLETED";
+      return { status: "completed", evidence: { checkpointPath: "native-successor-completion" } };
+    }
+    return failure();
+  }
   assert.equal(selector.bindingIri, repair);
   current.repairDispatches++;
   current.repairState = "COMPLETED";
@@ -287,6 +294,23 @@ try {
     checked++;
   }
   {
+    const fixture = await setup({ nativeSuccessor: true });
+    await fixture.coordinator.retain(fixture.sourceLane, {
+      status: "refused", reasonCode: "LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID",
+      evidence: { checkpointPath: "old-kernel-pre-effect-refusal" }, failure: null,
+    });
+    current.options.nativeRetryCompletes = true;
+    const resumed = await cycle(fixture.root, await LinearStateStore.open(fixture.root));
+    assert.equal(resumed.outcomes.find(item => item.bindingIri === source)?.status, "completed", JSON.stringify(resumed));
+    assert.equal(current.sourceDispatches, 1, "the ordinary scheduler must invoke the repaired native successor");
+    const effects = [current.sourceDispatches, current.completions, current.comments.length];
+    const retained = await cycle(fixture.root, await LinearStateStore.open(fixture.root), foreground);
+    assert.equal(retained.outcomes.find(item => item.bindingIri === source)?.status, "completed", JSON.stringify(retained));
+    assert.deepEqual([current.sourceDispatches, current.completions, current.comments.length], effects,
+      "a later normal cycle must retain completion without redispatching or repeating remote effects");
+    checked++;
+  }
+  {
     const fixture = await setup();
     const outcome = await fixture.coordinator.retain(fixture.sourceLane, {
       status: "refused", reasonCode: "LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID",
@@ -400,7 +424,7 @@ try {
   assert.equal(result.error, undefined, result.error?.message);
   assert.equal(result.status, 0, result.stderr + result.stdout);
   const report = JSON.parse(result.stdout.trim());
-  assert.equal(report.checked, 36);
+  assert.equal(report.checked, 37);
   assert.equal(report.sharedCycle, true);
   assert.equal(report.nativeAuthenticationMocked, true);
   assert.equal(report.liveEffects, 0);

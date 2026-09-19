@@ -235,7 +235,7 @@ export class LinearFailureRecovery {
     if (this.store.intents().some(intent => intent.id !== intentId && bindings.includes(intent.identity.bindingIri)
       && (intent.state === "sent" || intent.state === "unknown"))) fail("LINEAR_RECOVERY_REMOTE_INTENT_UNKNOWN");
   }
-  private currentBinding(observed: Observed): void {
+  private currentBinding(observed: Pick<Observed, "binding">): void {
     const { authority, unit, basis } = observed.binding;
     const work = deriveWork(loadSemanticGraph(this.root, authority.targetManifest), { selector: authority.workIri, profile: authority.profile });
     const packet = work.items?.[0];
@@ -296,12 +296,18 @@ export class LinearFailureRecovery {
   private admitNativePreEffectResume(lane: LinearLane, failure: FailureRecord): boolean {
     if (failure.reasonCode !== NATIVE_PRE_EFFECT_REFUSAL) return false;
     const { authority, basis, attempt, unit } = lane.binding;
-    if (failure.failure !== null
-      || lane.observedStatus !== "PREPARED" || attempt.state !== "PREPARED"
-      || authority.realisationDisposition !== "no-change" || typeof authority.supersedes !== "string"
+    if (failure.failure !== null || authority.realisationDisposition !== "no-change" || typeof authority.supersedes !== "string"
       || failure.basisDigest !== basis.basisDigest || failure.attemptKey !== unit.attemptKey
       || failure.authorityDigest !== canonicalDigest(authority)) fail("LINEAR_RECOVERY_NATIVE_PRE_EFFECT_UNPROVEN");
-    this.currentBinding({ status: "PREPARED", binding: lane.binding });
+    if (lane.observedStatus === "COMPLETED" && attempt.state === "SETTLED") {
+      this.currentBinding({ binding: lane.binding });
+      this.dispositions.set(authority.bindingIri, {
+        disposition: "completed", reasonCode: "LINEAR_RECOVERY_CURRENT_COMPLETION_VERIFIED", externalBoundary: "none",
+      });
+      return true;
+    }
+    if (lane.observedStatus !== "PREPARED" || attempt.state !== "PREPARED") fail("LINEAR_RECOVERY_NATIVE_PRE_EFFECT_UNPROVEN");
+    this.currentBinding({ binding: lane.binding });
     this.dispositions.set(authority.bindingIri, {
       disposition: "resume-ready", reasonCode: "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_RETRY_ADMITTED",
       externalBoundary: "normal-supervisor",
@@ -476,7 +482,23 @@ export class LinearFailureRecovery {
     if (!disposition) return;
     if (!["repair-ready", "resume-ready", "completed"].includes(disposition.disposition)) fail(disposition.reasonCode);
     const route = [...this.routes.values()].find(item => item.source.selector.bindingIri === lane.selector.bindingIri || item.repair.selector.bindingIri === lane.selector.bindingIri);
-    if (!route) fail("LINEAR_RECOVERY_INTAKE_NOT_ADMITTED");
+    if (!route) {
+      if (disposition.disposition !== "resume-ready"
+        || disposition.reasonCode !== "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_RETRY_ADMITTED") fail("LINEAR_RECOVERY_INTAKE_NOT_ADMITTED");
+      if (this.stopped()) fail("LINEAR_RECOVERY_STOPPED");
+      this.uncertain([lane.selector.bindingIri]);
+      const retained = await readLinearRecord(this.root, key("failure", lane.selector.bindingIri));
+      if (retained === null) fail("LINEAR_RECOVERY_INTAKE_NOT_ADMITTED");
+      const observed = await observeLinearBinding(lane.selector);
+      if (!same(observed.binding.authority, lane.binding.authority)
+        || observed.binding.basis.basisDigest !== lane.binding.basis.basisDigest
+        || observed.binding.unit.attemptKey !== lane.binding.unit.attemptKey) fail("LINEAR_RECOVERY_BINDING_AUTHORITY_CHANGED");
+      await this.reconcile({ ...lane, observedStatus: observed.status, binding: observed.binding }, retained);
+      const revalidated = this.dispositions.get(lane.selector.bindingIri);
+      if (revalidated?.disposition !== "resume-ready"
+        || revalidated.reasonCode !== "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_RETRY_ADMITTED") fail(revalidated?.reasonCode ?? "LINEAR_RECOVERY_INTAKE_NOT_ADMITTED");
+      return;
+    }
     await this.authenticate(route);
     if (disposition.disposition === "repair-ready" && route.intake.state === "queued") {
       if (route.intake.attempts >= route.rule.maximumRepairAttempts) fail("LINEAR_RECOVERY_REPAIR_BUDGET_EXHAUSTED");
