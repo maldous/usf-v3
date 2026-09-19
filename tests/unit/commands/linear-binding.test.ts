@@ -663,7 +663,8 @@ test("native no-change settlement requires genuine terminal proof and serializes
   assert.equal(peak, 1);
   assert.ok(calls >= 1);
   assert.equal(outcomes.every(value => value.status === "rejected"), true);
-  assert.equal((await observeLinearBinding(selector)).status, "PREPARED");
+  assert.equal((await observeLinearBinding(selector)).status, "UNKNOWN",
+    "a durable native reservation without semantic completion is an unresolved effect boundary");
 });
 
 
@@ -764,7 +765,8 @@ test("native successor admits terminal provider history without borrowing comple
       })));
     assert.equal(effects, 1, "one successor reservation must exclude every competing effect");
     assert.equal(results.every(result => result.status === "rejected"), true);
-    assert.equal((await observeLinearBinding(selector)).status, "PREPARED", "old provider settlement is not new native completion");
+    assert.equal((await observeLinearBinding(selector)).status, "UNKNOWN",
+      "the successor reservation must not remain eligible as a pre-effect retry");
     const archive = resolve(selector.repositoryRoot, ".usf/work/linear/" + prepared.binding.unit.intentKey.slice(7) + "/predecessor-issue.json");
     assert.deepEqual(await readFile(archive), history[0]![1]);
     for (const [path, bytes] of history.slice(1)) assert.deepEqual(await readFile(path), bytes);

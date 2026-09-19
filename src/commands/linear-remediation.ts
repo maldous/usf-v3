@@ -343,16 +343,17 @@ export class LinearFailureRecovery {
       const failure = this.failure(lane, outcome);
       const failureKey = key("failure", lane.selector.bindingIri);
       const prior = await readLinearRecord(this.root, failureKey);
+      const observed = await observeLinearBinding(lane.selector);
+      if (!same(observed.binding.authority, lane.binding.authority)
+        || observed.binding.unit.attemptKey !== lane.binding.unit.attemptKey) fail("LINEAR_RECOVERY_SOURCE_BASIS_CHANGED");
+      this.currentBinding(observed);
+      const currentLane = { ...lane, observedStatus: observed.status, binding: observed.binding };
       // Preserve the original failure and its budget across restarts and later bases.
       if (prior === null) {
-        const observed = await observeLinearBinding(lane.selector);
-        if (!same(observed.binding.authority, lane.binding.authority)
-          || observed.binding.unit.attemptKey !== lane.binding.unit.attemptKey) fail("LINEAR_RECOVERY_SOURCE_BASIS_CHANGED");
-        this.currentBinding(observed);
         await writeLinearRecord(this.root, failureKey, record(failure));
         this.currentBinding(observed);
       }
-      await this.reconcile(lane, prior ?? record(failure));
+      await this.reconcile(currentLane, prior ?? record(failure));
     } catch (error) { this.dispositions.set(lane.selector.bindingIri, recoveryEscalation(code(error))); }
     return this.dispositions.get(lane.selector.bindingIri) ?? recoveryEscalation("LINEAR_RECOVERY_FAILURE_UNKNOWN");
   }

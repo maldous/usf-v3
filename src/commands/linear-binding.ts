@@ -1106,8 +1106,15 @@ export async function observeLinearBinding(selector: LinearBindingSelector): Pro
   if (binding.authority.realisationDisposition === "no-change") {
     const journal = await readNativeJournal(binding);
     if (journal !== null) return nativeJournalResult(binding, journal);
+    const { current: issue } = await readNativeIssue(binding);
     const prior = await readRecord<LinearAttemptRecord>(resolve(binding.selector.repositoryRoot, binding.attemptPath));
     if (prior !== null && (!validAttempt(prior, binding.attempt) || prior.state !== "PREPARED")) refuse("LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID");
+    // The native kernel reserves the issue pointer before invoking any effect.
+    // Without current semantic completion, that durable reservation is an
+    // unresolved effect boundary and can never be described as pre-effect.
+    if (issue !== null && completion(binding) === null) {
+      return Object.freeze({ status: "UNKNOWN", binding: prior === null ? binding : Object.freeze({ ...binding, attempt: Object.freeze(prior) }) });
+    }
     // Semantic completion alone must not hide an unclosed native ledger.
     return Object.freeze({ status: "PREPARED", binding: prior === null ? binding : Object.freeze({ ...binding, attempt: Object.freeze(prior) }) });
   }

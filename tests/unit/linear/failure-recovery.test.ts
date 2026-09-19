@@ -37,8 +37,10 @@ function reset(options = {}) {
     sourceBasis: canonicalDigest("source basis"), repairBasis: canonicalDigest("repair basis"),
     controllerBasis: canonicalDigest("controller basis"), controllerActive: true,
     command: invalidCommand, sourceDispatches: 0, repairDispatches: 0, creations: 0, comments: [],
-    completions: 0, observeHook: null, authorityVersion: 1,
-    issues: new Map([[sourceIssue, { id: sourceIssue, teamId, stateId: "started", assigneeId: null, priority: 1, title: "Source", description: "Source" }]]),
+    completions: 0, startedUpdates: 0, observeHook: null, authorityVersion: 1,
+    issues: new Map([[sourceIssue, { id: sourceIssue, teamId,
+      stateId: options.nativeRetryReservesWithoutCompletion ? "backlog" : "started",
+      assigneeId: null, priority: 1, title: "Source", description: "Source" }]]),
   };
   current.quads = [source, repair].flatMap((binding, index) => [
     q(binding, "type", "urn:usf:type:LinearIssueWorkBinding", "iri"),
@@ -96,7 +98,8 @@ function observed(bindingIri) {
   return {
     status, binding: {
       selector: { repositoryRoot: "/unused", manifestPath: manifest, bindingIri }, authority,
-      basis: { basisDigest: basis }, attempt: { state: status === "COMPLETED" ? "SETTLED" : status },
+      basis: { basisDigest: basis }, attempt: { state: status === "COMPLETED" ? "SETTLED"
+        : current.options.nativeSuccessor && !isRepair && status === "UNKNOWN" ? "PREPARED" : status },
       unit: { attemptKey: canonicalDigest([bindingIri, basis]), intentKey: canonicalDigest(bindingIri), basisDigest: basis,
         manifestPath: manifest, workIri: work, profile: authority.profile, packet: packet(work) },
     },
@@ -133,6 +136,11 @@ register("src/commands/linear-binding.ts", { observeLinearBinding: async selecto
 register("src/commands/linear-delivery.ts", { executeLinearDelivery: async (_root, selector) => {
   if (selector.bindingIri === source) {
     current.sourceDispatches++;
+    if (current.options.nativeRetryReservesWithoutCompletion) {
+      current.sourceState = "UNKNOWN";
+      return { status: "refused", reasonCode: "LINEAR_BINDING_NATIVE_COMPLETION_UNPROVEN",
+        evidence: { checkpointPath: "native-reservation-without-completion" }, failure: null };
+    }
     if (current.options.nativeRetryCompletes) {
       current.sourceState = "COMPLETED";
       return { status: "completed", evidence: { checkpointPath: "native-successor-completion" } };
@@ -165,6 +173,7 @@ register("src/commands/linear-client.ts", { readLinearPolicySource: forbidden, p
     async findCommentRequestMatches() { return []; }
     async updateIssue(input) {
       if (input.stateId === "completed") current.completions++;
+      if (input.stateId === "started") current.startedUpdates++;
       current.issues.set(input.id, { ...current.issues.get(input.id), ...input });
     }
   },
@@ -291,6 +300,25 @@ try {
       disposition: "resume-ready", reasonCode: "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_RETRY_ADMITTED",
       externalBoundary: "normal-supervisor",
     }, "an exact current PREPARED no-change successor may cross the repaired pre-effect boundary once");
+    checked++;
+  }
+  {
+    const fixture = await setup({ nativeSuccessor: true, nativeRetryReservesWithoutCompletion: true });
+    await fixture.coordinator.retain(fixture.sourceLane, {
+      status: "refused", reasonCode: "LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID",
+      evidence: { checkpointPath: "old-kernel-pre-effect-refusal" }, failure: null,
+    });
+    const first = await cycle(fixture.root, await LinearStateStore.open(fixture.root));
+    assert.equal(current.sourceDispatches, 1, "the old pre-effect admission may be consumed exactly once");
+    assert.equal(current.startedUpdates, 1, "the admitted attempt may project started exactly once");
+    assert.equal(first.outcomes.find(item => item.bindingIri === source)?.recovery?.reasonCode,
+      "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_UNPROVEN", JSON.stringify(first));
+    const comments = current.comments.length;
+    const second = await cycle(fixture.root, await LinearStateStore.open(fixture.root), foreground);
+    assert.equal(second.outcomes.find(item => item.bindingIri === source)?.recovery?.reasonCode,
+      "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_UNPROVEN", JSON.stringify(second));
+    assert.deepEqual([current.sourceDispatches, current.startedUpdates, current.comments.length], [1, 1, comments],
+      "an unresolved native reservation must not redispatch or repeat Linear projection effects");
     checked++;
   }
   {
@@ -424,7 +452,7 @@ try {
   assert.equal(result.error, undefined, result.error?.message);
   assert.equal(result.status, 0, result.stderr + result.stdout);
   const report = JSON.parse(result.stdout.trim());
-  assert.equal(report.checked, 37);
+  assert.equal(report.checked, 38);
   assert.equal(report.sharedCycle, true);
   assert.equal(report.nativeAuthenticationMocked, true);
   assert.equal(report.liveEffects, 0);

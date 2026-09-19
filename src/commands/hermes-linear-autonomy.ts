@@ -571,8 +571,8 @@ export async function runHermesLinearCycle(root: string, policy: LinearPolicy, c
     let evidence: string[] = [];
     let settled = before;
     if (before.status !== "COMPLETED") {
-      await updateRemoteState(mutations, lane, match, "started", [lane.binding.basis.basisDigest], guard);
       await recovery.beforeLane(lane);
+      await updateRemoteState(mutations, lane, match, "started", [lane.binding.basis.basisDigest], guard);
       const delivered = await executeLinearDelivery(root, lane.selector, providerEnvFile);
       evidence = [delivered.evidence.checkpointPath, canonicalDigest(delivered.evidence)].filter(reference => reference.length > 0);
       if (delivered.status !== "completed") {
