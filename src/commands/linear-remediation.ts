@@ -10,6 +10,7 @@ import type { LinearPolicy } from "./linear-client.ts";
 const P = "urn:usf:predicate:";
 const TYPE = "urn:usf:type:HermesFailureRecoveryRule";
 const FAMILY = "CHECK_COMMAND_CONTRACT_INVALID";
+const NATIVE_PRE_EFFECT_REFUSAL = "LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID";
 const DIGEST = /^sha256:[0-9a-f]{64}$/u;
 const CONTROLLER = "urn:usf:work:hermes-linear-autonomy";
 const PROFILE = "urn:usf:profile:hermes-linear-autonomy:1";
@@ -285,6 +286,29 @@ export class LinearFailureRecovery {
     };
   }
 
+  /**
+   * A native successor can be retried only when the retained refusal proves the
+   * old kernel stopped at its state-admission boundary.  The exact current
+   * no-change binding must still be PREPARED and must match the retained basis,
+   * attempt and authority.  Any reservation or later effect changes that
+   * observation and remains fail-closed in the native completion kernel.
+   */
+  private admitNativePreEffectResume(lane: LinearLane, failure: FailureRecord): boolean {
+    if (failure.reasonCode !== NATIVE_PRE_EFFECT_REFUSAL) return false;
+    const { authority, basis, attempt, unit } = lane.binding;
+    if (failure.failure !== null
+      || lane.observedStatus !== "PREPARED" || attempt.state !== "PREPARED"
+      || authority.realisationDisposition !== "no-change" || typeof authority.supersedes !== "string"
+      || failure.basisDigest !== basis.basisDigest || failure.attemptKey !== unit.attemptKey
+      || failure.authorityDigest !== canonicalDigest(authority)) fail("LINEAR_RECOVERY_NATIVE_PRE_EFFECT_UNPROVEN");
+    this.currentBinding({ status: "PREPARED", binding: lane.binding });
+    this.dispositions.set(authority.bindingIri, {
+      disposition: "resume-ready", reasonCode: "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_RETRY_ADMITTED",
+      externalBoundary: "normal-supervisor",
+    });
+    return true;
+  }
+
   async plan(lanes: readonly LinearLane[]): Promise<void> {
     this.lanes = lanes;
     for (const lane of lanes) {
@@ -336,6 +360,7 @@ export class LinearFailureRecovery {
       || !DIGEST.test(failure.authorityDigest) || !DIGEST.test(failure.evidenceDigest)
       || typeof failure.reasonCode !== "string" || failure.failure === undefined) fail("LINEAR_RECOVERY_RECORD_INVALID");
     if (this.policyError) fail(this.policyError);
+    if (this.admitNativePreEffectResume(lane, failure)) return;
     if (failure.reasonCode !== FAMILY && failure.reasonCode !== "CHECK_CONFINEMENT_UNAVAILABLE") fail("LINEAR_RECOVERY_FAILURE_UNKNOWN");
     if (failure.failure !== null && (!["admission-validation", "validation", "completion-validation"].includes(failure.failure.phase)
       || typeof failure.failure.validationIri !== "string" || !failure.failure.validationIri.startsWith("urn:")

@@ -33,7 +33,7 @@ const q = (subject, name, object, objectKind = "literal") => ({
 let current;
 function reset(options = {}) {
   current = {
-    options, sourceState: "SETTLED", repairState: "PREPARED",
+    options, sourceState: options.nativeSuccessor ? "PREPARED" : "SETTLED", repairState: "PREPARED",
     sourceBasis: canonicalDigest("source basis"), repairBasis: canonicalDigest("repair basis"),
     controllerBasis: canonicalDigest("controller basis"), controllerActive: true,
     command: invalidCommand, sourceDispatches: 0, repairDispatches: 0, creations: 0, comments: [],
@@ -89,6 +89,9 @@ function observed(bindingIri) {
     bindingIri, workIri: work, targetManifest: manifest, profile: isRepair ? repairProfile : sourceProfile,
     locator: "fixture:" + (isRepair ? repairIssue : sourceIssue), workspace: "fixture",
     owner: "USF", issueUuid: isRepair ? repairIssue : sourceIssue, fixedPrompt: "Authority " + current.authorityVersion,
+    ...(current.options.nativeSuccessor && !isRepair ? {
+      realisationDisposition: "no-change", supersedes: "urn:test:binding:source:predecessor",
+    } : {}),
   };
   return {
     status, binding: {
@@ -272,6 +275,28 @@ try {
     checked++;
   }
   {
+    const fixture = await setup({ nativeSuccessor: true });
+    const outcome = await fixture.coordinator.retain(fixture.sourceLane, {
+      status: "refused", reasonCode: "LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID",
+      evidence: { checkpointPath: "native-pre-effect-checkpoint" }, failure: null,
+    });
+    assert.deepEqual(outcome, {
+      disposition: "resume-ready", reasonCode: "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_RETRY_ADMITTED",
+      externalBoundary: "normal-supervisor",
+    }, "an exact current PREPARED no-change successor may cross the repaired pre-effect boundary once");
+    checked++;
+  }
+  {
+    const fixture = await setup();
+    const outcome = await fixture.coordinator.retain(fixture.sourceLane, {
+      status: "refused", reasonCode: "LINEAR_BINDING_NATIVE_COMPLETION_STATE_INVALID",
+      evidence: { checkpointPath: "non-native-checkpoint" }, failure: null,
+    });
+    assert.equal(outcome.reasonCode, "LINEAR_RECOVERY_NATIVE_PRE_EFFECT_UNPROVEN",
+      "ordinary or non-PREPARED work cannot inherit native retry admission");
+    checked++;
+  }
+  {
     const fixture = await setup();
     const value = failure(); value.reasonCode = "CHECK_TIMEOUT"; value.failure.reasonCode = "CHECK_TIMEOUT";
     assert.equal((await fixture.coordinator.retain(fixture.sourceLane, value)).reasonCode, "LINEAR_RECOVERY_FAILURE_UNKNOWN");
@@ -375,7 +400,7 @@ try {
   assert.equal(result.error, undefined, result.error?.message);
   assert.equal(result.status, 0, result.stderr + result.stdout);
   const report = JSON.parse(result.stdout.trim());
-assert.equal(report.checked, 34);
+  assert.equal(report.checked, 36);
   assert.equal(report.sharedCycle, true);
   assert.equal(report.nativeAuthenticationMocked, true);
   assert.equal(report.liveEffects, 0);
