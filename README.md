@@ -1,5 +1,11 @@
 # USF V3
 
+**A repository-contained foundation for evidence-driven AI software delivery.**
+
+USF connects versioned semantic requirements to bounded changes, deterministic checks and explicit evidence. ANQR is its first product realisation. It explores how AI-assisted engineering can preserve the difference between a proposed change, a checked result and an accepted outcome.
+
+[Matthew Aldous](https://aldous.info/) · [Programme directive](GOAL.md) · [Current implementation boundary](#current-claim)
+
 USF V3 is a repository-contained semantic delivery foundation. ANQR is its
 first product realisation, not a product-specific branch of the kernel. V3
 turns a versioned product profile and its bounded semantic closure into
